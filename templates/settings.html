@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Einstellungen · Solar-Tracker{% endblock %}
+{% block content %}
+<h1>Einstellungen</h1>
+
+<section class="card">
+  <h2>Anlagendaten</h2>
+  <form id="plant-form">
+    <label>Anlagenleistung (kWp)
+      <input type="number" step="0.1" name="kwp" value="{{ kwp }}">
+    </label>
+    <button type="submit">Speichern</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Monatliche Sollwerte (kWh)</h2>
+  <p class="muted">Leer lassen = Standardwert für alle Jahre. Wenn du Jahr setzt, gilt der Wert nur für dieses Jahr.</p>
+  <form id="targets-form" class="targets-grid">
+    {% set months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'] %}
+    {% for m in range(1, 13) %}
+      {% set ns = namespace(val='') %}
+      {% for t in targets %}
+        {% if t.month == m and t.year is none %}{% set ns.val = t.kwh %}{% endif %}
+      {% endfor %}
+      <label>{{ months[m-1] }}
+        <input type="number" step="1" data-month="{{ m }}" value="{{ ns.val }}">
+      </label>
+    {% endfor %}
+    <button type="submit">Sollwerte speichern</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Home Assistant Sync</h2>
+  <p class="muted">
+    URL: <code>{{ ha_url or '—' }}</code><br>
+    Entity: <code>{{ ha_entity or '—' }}</code><br>
+    (Änderung erfolgt über <code>.env</code>.)
+  </p>
+  <form id="sync-form">
+    <label>Von <input type="date" name="from" required></label>
+    <label>Bis <input type="date" name="to" required></label>
+    <button type="submit">Jetzt synchronisieren</button>
+  </form>
+  <div id="sync-status" class="muted"></div>
+</section>
+
+<script>
+document.getElementById('plant-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const kwp = e.target.kwp.value;
+  const r = await fetch('/api/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({kwp})});
+  alert(r.ok ? 'Gespeichert.' : 'Fehler beim Speichern.');
+});
+
+document.getElementById('targets-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const inputs = e.target.querySelectorAll('input[data-month]');
+  for (const i of inputs) {
+    if (i.value === '') continue;
+    await fetch('/api/targets', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({month: Number(i.dataset.month), kwh: Number(i.value), year: null})});
+  }
+  alert('Sollwerte gespeichert.');
+});
+
+document.getElementById('sync-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const status = document.getElementById('sync-status');
+  status.textContent = 'Synchronisiere…';
+  const body = {from: e.target.from.value, to: e.target.to.value};
+  const r = await fetch('/api/sync/ha', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  const j = await r.json();
+  if (r.ok) {
+    status.textContent = `Fertig: ${j.imported} importiert, ${j.skipped_manual} manuelle Werte nicht überschrieben.`;
+  } else {
+    status.textContent = `Fehler: ${j.error}`;
+  }
+});
+</script>
+{% endblock %}

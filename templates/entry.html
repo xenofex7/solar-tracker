@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Eingabe · Solar-Tracker{% endblock %}
+{% block content %}
+<h1>Manuelle Tageseingabe</h1>
+
+<section class="card">
+  <form id="entry-form" class="inline-form">
+    <label>Datum <input type="date" name="date" required></label>
+    <label>kWh <input type="number" step="0.01" min="0" name="kwh" required></label>
+    <button type="submit">Speichern</button>
+  </form>
+  <div id="entry-status" class="muted"></div>
+</section>
+
+<section class="card">
+  <h2>Letzte 30 Einträge</h2>
+  <table class="data">
+    <thead><tr><th>Datum</th><th>kWh</th><th>Quelle</th><th></th></tr></thead>
+    <tbody id="recent-body">
+      {% for r in recent %}
+        <tr>
+          <td>{{ r.date }}</td>
+          <td>{{ '%.2f' | format(r.kwh) }}</td>
+          <td>{{ r.source }}</td>
+          <td><button class="del" data-date="{{ r.date }}">Löschen</button></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<script>
+document.getElementById('entry-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const status = document.getElementById('entry-status');
+  const body = {date: e.target.date.value, kwh: Number(e.target.kwh.value)};
+  const r = await fetch('/api/production', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  const j = await r.json();
+  status.textContent = r.ok ? 'Gespeichert.' : `Fehler: ${j.error}`;
+  if (r.ok) setTimeout(() => location.reload(), 500);
+});
+
+document.querySelectorAll('button.del').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!confirm(`Eintrag vom ${btn.dataset.date} löschen?`)) return;
+    await fetch(`/api/production/${btn.dataset.date}`, {method:'DELETE'});
+    location.reload();
+  });
+});
+</script>
+{% endblock %}

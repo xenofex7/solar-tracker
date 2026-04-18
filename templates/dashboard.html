@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Solar-Tracker{% endblock %}
+{% block content %}
+<section class="toolbar">
+  <label for="year-select">Jahr</label>
+  <select id="year-select">
+    {% for y in years %}
+      <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+    {% endfor %}
+  </select>
+  <span class="muted" id="status"></span>
+</section>
+
+<section class="kpis" id="kpis"></section>
+
+<section class="grid">
+  <div class="card">
+    <h3>Monatsvergleich: Ist vs. Soll</h3>
+    <canvas id="chart-monthly"></canvas>
+  </div>
+  <div class="card">
+    <h3>Abweichung Ist − Soll (%)</h3>
+    <canvas id="chart-deviation"></canvas>
+  </div>
+  <div class="card wide">
+    <h3>Kumulativer Jahresertrag</h3>
+    <canvas id="chart-cumulative"></canvas>
+  </div>
+  <div class="card wide">
+    <h3>Tägliche Produktion (inkl. 7-Tage-Mittel)</h3>
+    <canvas id="chart-daily"></canvas>
+  </div>
+  <div class="card wide">
+    <h3>Kalender-Heatmap</h3>
+    <canvas id="chart-heatmap"></canvas>
+  </div>
+  <div class="card">
+    <h3>Tagesverteilung pro Monat (Min/Median/Max)</h3>
+    <canvas id="chart-distribution"></canvas>
+  </div>
+  <div class="card">
+    <h3>Jahresvergleich (Monatssummen)</h3>
+    <canvas id="chart-yearcomp"></canvas>
+  </div>
+  <div class="card">
+    <h3>Top 5 Tage</h3>
+    <table class="data" id="top-table"><thead><tr><th>Datum</th><th>kWh</th></tr></thead><tbody></tbody></table>
+  </div>
+  <div class="card">
+    <h3>Flop 5 Tage</h3>
+    <table class="data" id="flop-table"><thead><tr><th>Datum</th><th>kWh</th></tr></thead><tbody></tbody></table>
+  </div>
+</section>
+
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}
