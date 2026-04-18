@@ -19,10 +19,10 @@
     <tbody id="recent-body">
       {% for r in recent %}
         <tr>
-          <td>{{ r.date }}</td>
-          <td>{{ '%.2f' | format(r.kwh) }}</td>
+          <td>{{ r.date | ddmmyyyy }}</td>
+          <td>{{ r.kwh | chf }} kWh</td>
           <td>{{ r.source }}</td>
-          <td><button class="del" data-date="{{ r.date }}">Löschen</button></td>
+          <td><button class="del" data-date="{{ r.date }}" data-display="{{ r.date | ddmmyyyy }}">Löschen</button></td>
         </tr>
       {% endfor %}
     </tbody>
@@ -42,7 +42,7 @@ document.getElementById('entry-form').addEventListener('submit', async (e) => {
 
 document.querySelectorAll('button.del').forEach(btn => {
   btn.addEventListener('click', async () => {
-    if (!confirm(`Eintrag vom ${btn.dataset.date} löschen?`)) return;
+    if (!confirm(`Eintrag vom ${btn.dataset.display} löschen?`)) return;
     await fetch(`/api/production/${btn.dataset.date}`, {method:'DELETE'});
     location.reload();
   });

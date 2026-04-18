@@ -45,14 +45,12 @@ def init_db():
         conn.executescript(SCHEMA)
 
 
-def upsert_production(date: str, kwh: float, source: str):
+def upsert_production(date: str, kwh: float, source: str) -> str:
     now = datetime.utcnow().isoformat(timespec="seconds")
     with connect() as conn:
         existing = conn.execute(
-            "SELECT source FROM daily_production WHERE date = ?", (date,)
+            "SELECT kwh FROM daily_production WHERE date = ?", (date,)
         ).fetchone()
-        if existing and existing["source"] == "manual" and source != "manual":
-            return False
         conn.execute(
             """
             INSERT INTO daily_production (date, kwh, source, updated_at)
@@ -64,7 +62,7 @@ def upsert_production(date: str, kwh: float, source: str):
             """,
             (date, kwh, source, now),
         )
-        return True
+        return "inserted" if existing is None else "updated"
 
 
 def delete_production(date: str):

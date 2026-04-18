@@ -101,6 +101,7 @@ button.del { background: var(--bad); color: white; padding: 4px 8px; }
 }
 .card.wide { grid-column: 1 / -1; }
 .card canvas { max-height: 360px; }
+main > .card + .card { margin-top: 16px; }
 
 table.data { width: 100%; border-collapse: collapse; }
 table.data th, table.data td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }

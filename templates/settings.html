@@ -43,6 +43,20 @@
     <label>Bis <input type="date" name="to" required></label>
     <button type="submit">Jetzt synchronisieren</button>
   </form>
+  <script>
+    (() => {
+      const form = document.getElementById('sync-form');
+      const today = new Date();
+      const from = new Date(today);
+      from.setMonth(from.getMonth() - 6);
+      const iso = (d) => {
+        const tz = d.getTimezoneOffset() * 60000;
+        return new Date(d - tz).toISOString().slice(0, 10);
+      };
+      form.from.value = iso(from);
+      form.to.value = iso(today);
+    })();
+  </script>
   <div id="sync-status" class="muted"></div>
 </section>
 
@@ -72,7 +86,7 @@ document.getElementById('sync-form').addEventListener('submit', async (e) => {
   const r = await fetch('/api/sync/ha', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   const j = await r.json();
   if (r.ok) {
-    status.textContent = `Fertig: ${j.imported} importiert, ${j.skipped_manual} manuelle Werte nicht überschrieben.`;
+    status.textContent = `Fertig: ${j.days} Tage abgeglichen (${j.inserted} neu, ${j.updated} aktualisiert).`;
   } else {
     status.textContent = `Fehler: ${j.error}`;
   }

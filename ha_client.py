@@ -1,8 +1,9 @@
+import json
 import os
 from datetime import datetime, timedelta, timezone
-from collections import defaultdict
+from urllib.parse import urlparse
 
-import requests
+from websocket import create_connection
 
 
 class HAClientError(Exception):
@@ -13,73 +14,86 @@ def _config():
     url = os.environ.get("HA_URL", "").rstrip("/")
     token = os.environ.get("HA_TOKEN", "")
     entity = os.environ.get("HA_ENTITY_ID", "")
-    cumulative = os.environ.get("HA_ENTITY_IS_CUMULATIVE", "true").lower() == "true"
     if not url or not token or not entity:
         raise HAClientError(
             "HA_URL, HA_TOKEN und HA_ENTITY_ID müssen in .env gesetzt sein."
         )
-    return url, token, entity, cumulative
+    return url, token, entity
 
 
-def _headers(token: str):
-    return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+def _ws_url(http_url: str) -> str:
+    p = urlparse(http_url)
+    if not p.netloc:
+        raise HAClientError(f"Ungültige HA_URL: {http_url}")
+    scheme = "wss" if p.scheme == "https" else "ws"
+    return f"{scheme}://{p.netloc}/api/websocket"
 
 
-def fetch_history(start: datetime, end: datetime):
-    url, token, entity, _ = _config()
-    endpoint = f"{url}/api/history/period/{start.isoformat()}"
-    params = {
-        "filter_entity_id": entity,
-        "end_time": end.isoformat(),
-        "minimal_response": "true",
-    }
-    r = requests.get(endpoint, headers=_headers(token), params=params, timeout=30)
-    if r.status_code != 200:
-        raise HAClientError(f"HA API {r.status_code}: {r.text[:200]}")
-    data = r.json()
-    return data[0] if data else []
-
-
-def _to_local_date(ts: str) -> str:
+def _fetch_statistics(start: datetime, end: datetime):
+    url, token, entity = _config()
+    ws = create_connection(_ws_url(url), timeout=30)
     try:
-        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-    except ValueError:
-        return ts[:10]
+        hello = json.loads(ws.recv())
+        if hello.get("type") != "auth_required":
+            raise HAClientError(f"Unerwartete HA-Antwort: {hello}")
+        ws.send(json.dumps({"type": "auth", "access_token": token}))
+        auth = json.loads(ws.recv())
+        if auth.get("type") != "auth_ok":
+            raise HAClientError(
+                f"HA-Auth fehlgeschlagen: {auth.get('message', auth)}"
+            )
+        ws.send(json.dumps({
+            "id": 1,
+            "type": "recorder/statistics_during_period",
+            "start_time": start.isoformat(),
+            "end_time": end.isoformat(),
+            "statistic_ids": [entity],
+            "period": "day",
+            "types": ["change"],
+        }))
+        msg = json.loads(ws.recv())
+        if not msg.get("success"):
+            err = msg.get("error") or {}
+            raise HAClientError(
+                f"HA Statistics Fehler: {err.get('message', msg)}"
+            )
+        return msg.get("result", {}).get(entity, [])
+    finally:
+        try:
+            ws.close()
+        except Exception:
+            pass
+
+
+def _row_day(start_value) -> str | None:
+    if start_value is None:
+        return None
+    if isinstance(start_value, (int, float)):
+        seconds = start_value / 1000 if start_value > 1e12 else start_value
+        dt = datetime.fromtimestamp(seconds, tz=timezone.utc)
+    else:
+        try:
+            dt = datetime.fromisoformat(str(start_value).replace("Z", "+00:00"))
+        except ValueError:
+            return None
     return dt.astimezone().date().isoformat()
 
 
-def states_to_daily_kwh(states: list, cumulative: bool) -> dict[str, float]:
-    per_day: dict[str, list[float]] = defaultdict(list)
-    for s in states:
-        val = s.get("state")
-        if val in (None, "unknown", "unavailable", ""):
-            continue
-        try:
-            v = float(val)
-        except (TypeError, ValueError):
-            continue
-        day = _to_local_date(s.get("last_changed") or s.get("last_updated") or "")
-        if not day:
-            continue
-        per_day[day].append(v)
+def fetch_daily(start_date: str, end_date: str) -> dict[str, float]:
+    start = datetime.fromisoformat(start_date).replace(tzinfo=timezone.utc)
+    end = (
+        datetime.fromisoformat(end_date) + timedelta(days=1)
+    ).replace(tzinfo=timezone.utc)
+    rows = _fetch_statistics(start, end)
 
     result: dict[str, float] = {}
-    if cumulative:
-        for day, values in sorted(per_day.items()):
-            if not values:
-                continue
-            result[day] = max(0.0, max(values) - min(values))
-    else:
-        for day, values in per_day.items():
-            result[day] = max(values)
+    for row in rows:
+        day = _row_day(row.get("start"))
+        change = row.get("change")
+        if not day or change is None:
+            continue
+        try:
+            result[day] = max(0.0, float(change))
+        except (TypeError, ValueError):
+            continue
     return result
-
-
-def fetch_daily(start_date: str, end_date: str) -> dict[str, float]:
-    _, _, _, cumulative = _config()
-    start = datetime.fromisoformat(start_date).replace(tzinfo=timezone.utc)
-    end = datetime.fromisoformat(end_date).replace(
-        hour=23, minute=59, second=59, tzinfo=timezone.utc
-    ) + timedelta(seconds=1)
-    states = fetch_history(start, end)
-    return states_to_daily_kwh(states, cumulative)

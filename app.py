@@ -13,6 +13,24 @@ load_dotenv()
 app = Flask(__name__)
 
 
+@app.template_filter("ddmmyyyy")
+def _fmt_ddmmyyyy(value):
+    if not value:
+        return ""
+    s = str(value)
+    if len(s) >= 10 and s[4] == "-" and s[7] == "-":
+        return f"{s[8:10]}.{s[5:7]}.{s[0:4]}"
+    return s
+
+
+@app.template_filter("chf")
+def _fmt_chf(value):
+    try:
+        return "{:,.0f}".format(float(value)).replace(",", "'")
+    except (TypeError, ValueError):
+        return value
+
+
 def _kwp() -> float:
     val = db.get_setting("kwp") or os.environ.get("PLANT_KWP", "0")
     try:
@@ -123,14 +141,20 @@ def api_sync_ha():
     except Exception as e:
         return jsonify({"error": f"Unerwarteter Fehler: {e}"}), 500
 
-    imported = 0
-    skipped = 0
+    inserted = 0
+    updated = 0
     for d, kwh in daily.items():
-        if db.upsert_production(d, round(kwh, 3), source="home_assistant"):
-            imported += 1
+        result = db.upsert_production(d, round(kwh, 3), source="home_assistant")
+        if result == "inserted":
+            inserted += 1
         else:
-            skipped += 1
-    return jsonify({"ok": True, "imported": imported, "skipped_manual": skipped})
+            updated += 1
+    return jsonify({
+        "ok": True,
+        "inserted": inserted,
+        "updated": updated,
+        "days": inserted + updated,
+    })
 
 
 @app.route("/api/summary")
@@ -175,7 +199,7 @@ def api_summary():
 
 def main():
     db.init_db()
-    port = int(os.environ.get("FLASK_PORT", "5000"))
+    port = int(os.environ.get("PORT") or os.environ.get("FLASK_PORT") or "5000")
     debug = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
     app.run(host="127.0.0.1", port=port, debug=debug)
 

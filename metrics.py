@@ -1,3 +1,4 @@
+import calendar
 from collections import defaultdict
 from datetime import date, timedelta
 from statistics import median
@@ -131,7 +132,18 @@ def summary(records: list[dict], targets: list[dict], year: int, kwp: float) -> 
     actual = monthly_actual(records, year)
     target = monthly_targets(targets, year)
     ytd_actual = round(sum(actual), 2)
-    ytd_target = round(sum(target), 2)
+
+    today = date.today()
+    if year < today.year:
+        ytd_target = round(sum(target), 2)
+    elif year > today.year:
+        ytd_target = 0.0
+    else:
+        full = sum(target[: today.month - 1])
+        days_in_month = calendar.monthrange(year, today.month)[1]
+        partial = target[today.month - 1] * (today.day / days_in_month)
+        ytd_target = round(full + partial, 2)
+
     delta = round(ytd_actual - ytd_target, 2)
     dev = (delta / ytd_target * 100.0) if ytd_target > 0 else None
 

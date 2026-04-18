@@ -1,8 +1,9 @@
 # Solar-Tracker
 
 Kleine, lokal laufende WebApp zum Vergleichen von **Ist-** und **Soll-Erträgen** einer
-Solaranlage. Ist-Daten kommen aus **Home Assistant** (REST API) oder per **manueller
-Eingabe**. Sollwerte sind monatliche kWh-Vorgaben aus der Anlagen-Planung.
+Solaranlage. Ist-Daten kommen aus **Home Assistant** (Long-Term Statistics via
+WebSocket) oder per **manueller Eingabe**. Sollwerte sind monatliche kWh-Vorgaben
+aus der Anlagen-Planung.
 
 ## Schnellstart
 
@@ -32,7 +33,12 @@ python app.py             # öffnet http://localhost:5000
 
 ## Home Assistant
 
-Die App ruft `/api/history/period/…` mit einem Long-Lived Access Token ab.
-Erwartet wird ein kumulativer Energy-Sensor (z. B. `sensor.solar_total_energy`) —
-Tageswerte werden dann als `max(state) − min(state)` pro Tag berechnet.
-Für Sensoren, die bereits Tagessummen liefern, `HA_ENTITY_IS_CUMULATIVE=false` setzen.
+Die App verbindet sich per WebSocket zu `HA_URL` und ruft
+`recorder/statistics_during_period` mit `period: "day"` und `types: ["change"]`
+ab. Damit kommen die Daten aus den **Long-Term Statistics**, die HA – anders
+als die Recorder-History – dauerhaft aufbewahrt (nicht nur `purge_keep_days`).
+So lassen sich auch mehrere Jahre rückwirkend abgleichen.
+
+Erwartet wird ein Energy-Sensor mit `device_class: energy` und
+`state_class: total_increasing` (oder `total`), z. B. `sensor.solar_total_energy`.
+Der Sync überschreibt bestehende Einträge für dieselben Tage – auch manuelle.
