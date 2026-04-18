@@ -1,44 +1,66 @@
-# Solar-Tracker
+# Solar Tracker
 
-Kleine, lokal laufende WebApp zum Vergleichen von **Ist-** und **Soll-Erträgen** einer
-Solaranlage. Ist-Daten kommen aus **Home Assistant** (Long-Term Statistics via
-WebSocket) oder per **manueller Eingabe**. Sollwerte sind monatliche kWh-Vorgaben
-aus der Anlagen-Planung.
+A small, locally-hosted web app that compares **actual** vs. **target** solar
+yield. Actuals come from **Home Assistant** (Long-Term Statistics via
+WebSocket) or **manual entry**. Targets are monthly kWh goals from the plant
+planning.
 
-## Schnellstart
+## Quick start
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env      # HA_URL, HA_TOKEN, HA_ENTITY_ID eintragen
-python seed_demo.py       # optional: Demo-Daten für die Charts
-python app.py             # öffnet http://localhost:5000
+cp .env.example .env      # set HA_URL, HA_TOKEN, HA_ENTITY_ID
+python seed_demo.py       # optional: demo data so the charts render
+python app.py             # opens http://localhost:5000
 ```
 
-## Funktionen
+## Features
 
-- Dashboard mit 9 Visualisierungen:
-  1. Monatsvergleich Ist vs. Soll (Balken)
-  2. Abweichung in % pro Monat
-  3. Kumulativer Jahresertrag vs. Soll-Linie
-  4. Tägliche Produktion + 7-Tage-Mittel
-  5. Kalender-Heatmap (alle Tage eines Jahres)
-  6. Tagesverteilung pro Monat (Min/Median/Max)
-  7. Jahresvergleich
-  8. Top/Flop 5 Tage
-  9. KPI-Kacheln (YTD Ist/Soll, Δ, bester Tag, spezifischer Ertrag)
-- Manuelle Tageseingabe (`/entry`)
-- Monatliche Sollwerte + Home-Assistant-Sync (`/settings`)
+- Dashboard with nine visualisations:
+  1. Monthly actual vs. target (bars)
+  2. Deviation in % per month
+  3. Cumulative yearly yield vs. target line
+  4. Daily production + 7-day rolling average
+  5. Calendar heatmap (every day of the year)
+  6. Daily distribution per month (min/median/max)
+  7. Year-over-year comparison
+  8. Top / bottom 5 days
+  9. KPI tiles (YTD actual/target, Δ, best day, specific yield)
+- Manual daily entry (`/entry`)
+- Monthly targets + Home Assistant sync (`/settings`)
+- Dates as `dd.mm.yyyy`, Swiss thousands (`1'234 kWh`)
+- "Today" marker on daily and cumulative charts (current year only)
+- YTD target is pro-rated to today for the current year
 
 ## Home Assistant
 
-Die App verbindet sich per WebSocket zu `HA_URL` und ruft
-`recorder/statistics_during_period` mit `period: "day"` und `types: ["change"]`
-ab. Damit kommen die Daten aus den **Long-Term Statistics**, die HA – anders
-als die Recorder-History – dauerhaft aufbewahrt (nicht nur `purge_keep_days`).
-So lassen sich auch mehrere Jahre rückwirkend abgleichen.
+The app connects to `HA_URL` via WebSocket and calls
+`recorder/statistics_during_period` with `period: "day"` and
+`types: ["change"]`. Data therefore comes from **Long-Term Statistics**, which
+Home Assistant keeps indefinitely — unlike the recorder history, which is
+purged after `purge_keep_days`. This lets you back-fill and re-sync multiple
+years at once.
 
-Erwartet wird ein Energy-Sensor mit `device_class: energy` und
-`state_class: total_increasing` (oder `total`), z. B. `sensor.solar_total_energy`.
-Der Sync überschreibt bestehende Einträge für dieselben Tage – auch manuelle.
+Expected sensor: an energy sensor with `device_class: energy` and
+`state_class: total_increasing` (or `total`), e.g. `sensor.solar_total_energy`.
+
+The sync form on `/settings` defaults to the last six months. Each run
+overwrites existing entries for the selected days — including manual ones —
+so the database stays in sync with Home Assistant.
+
+## Configuration
+
+`.env` keys:
+
+| Key             | Purpose                                                    |
+| --------------- | ---------------------------------------------------------- |
+| `HA_URL`        | Base URL of Home Assistant (e.g. `http://ha.local:8123`)   |
+| `HA_TOKEN`      | Long-Lived Access Token                                    |
+| `HA_ENTITY_ID`  | Statistic entity (e.g. `sensor.solar_total_energy`)        |
+| `PLANT_KWP`     | Installed peak power, used for specific yield (kWh/kWp)    |
+| `FLASK_PORT`    | HTTP port (default `5000`)                                 |
+| `FLASK_DEBUG`   | `true` enables Flask debug mode                            |
+
+The plant size can also be set on `/settings`, which overrides `PLANT_KWP`.
