@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-04-19
 ### Fixed
 - Worker crash on first boot when two gunicorn workers initialised the
   SQLite schema in parallel; app is now loaded with `--preload` and
@@ -29,5 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v1.0.1...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
+[1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
