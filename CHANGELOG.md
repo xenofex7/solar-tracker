@@ -6,6 +6,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `LICENSE` file (MIT).
+- `requirements.lock.txt` with pinned exact versions; Dockerfile
+  installs from the lock for reproducible builds.
+- `pyproject.toml` with ruff config (line-length, select rules).
+- `tests/test_metrics.py` — 21 unit tests covering `monthly_actual`,
+  `monthly_targets`, `deviation_pct`, `self_consumption`,
+  `financial_series`, `payback`, `monthly_flows`, `cumulative`,
+  `rolling_avg` and `summary`.
+- GitHub Actions `ci.yml` that runs ruff and pytest on push / PR.
+- Chart.js and chartjs-chart-matrix are now bundled locally under
+  `static/js/vendor/` instead of being loaded from jsdelivr; stricter
+  CSP allows only self-hosted scripts.
+- All dashboard canvases get `role="img"` and an `aria-label`
+  describing the chart content for screen readers.
+
+### Changed
+- Flask app sets `Content-Security-Policy`, `X-Frame-Options: DENY`,
+  `X-Content-Type-Options: nosniff` and `Referrer-Policy: same-origin`
+  on every response.
+- Global `:focus-visible` outline in the accent color so keyboard
+  focus is always visible on the dark theme.
+
+### Fixed
+- `renderKpis` now HTML-escapes group titles, labels and class names
+  before building the `innerHTML` string — defense in depth in case
+  any of those ever become user-controlled.
+
 ## [1.2.1] - 2026-04-19
 ### Changed
 - `seed_demo.py` now seeds a full dataset (commissioning date, price,

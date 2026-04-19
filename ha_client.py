@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from urllib.parse import urlparse
 
 from websocket import create_connection
@@ -70,7 +70,7 @@ def _row_day(start_value) -> str | None:
         return None
     if isinstance(start_value, (int, float)):
         seconds = start_value / 1000 if start_value > 1e12 else start_value
-        dt = datetime.fromtimestamp(seconds, tz=timezone.utc)
+        dt = datetime.fromtimestamp(seconds, tz=UTC)
     else:
         try:
             dt = datetime.fromisoformat(str(start_value).replace("Z", "+00:00"))
@@ -80,10 +80,10 @@ def _row_day(start_value) -> str | None:
 
 
 def fetch_daily(start_date: str, end_date: str) -> dict[str, float]:
-    start = datetime.fromisoformat(start_date).replace(tzinfo=timezone.utc)
+    start = datetime.fromisoformat(start_date).replace(tzinfo=UTC)
     end = (
         datetime.fromisoformat(end_date) + timedelta(days=1)
-    ).replace(tzinfo=timezone.utc)
+    ).replace(tzinfo=UTC)
     rows = _fetch_statistics(start, end)
 
     result: dict[str, float] = {}

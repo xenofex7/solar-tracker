@@ -22,6 +22,7 @@ const fmtDate = (iso) => {
   const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
   return m ? `${m[3]}.${m[2]}.${m[1]}` : iso;
 };
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 const charts = {};
 
@@ -341,8 +342,8 @@ function renderKpis(data) {
 
   const el = document.getElementById('kpis');
   el.innerHTML = groups.map(g =>
-    `<div class="kpi-group"><h3>${g.title}</h3><div class="kpis">${g.kpis.map(k =>
-      `<div class="kpi"><div class="label">${k.label}</div><div class="value ${k.cls || ''}">${k.value}</div></div>`
+    `<div class="kpi-group"><h3>${esc(g.title)}</h3><div class="kpis">${g.kpis.map(k =>
+      `<div class="kpi"><div class="label">${esc(k.label)}</div><div class="value ${esc(k.cls || '')}">${k.value}</div></div>`
     ).join('')}</div></div>`
   ).join('');
 }

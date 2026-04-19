@@ -29,6 +29,25 @@ def _inject_version():
     return {"app_version": APP_VERSION}
 
 
+@app.after_request
+def _security_headers(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "same-origin")
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; "
+        "script-src 'self'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'",
+    )
+    return response
+
+
 @app.template_filter("ddmmyyyy")
 def _fmt_ddmmyyyy(value):
     if not value:
@@ -42,7 +61,7 @@ def _fmt_ddmmyyyy(value):
 @app.template_filter("chf")
 def _fmt_chf(value):
     try:
-        return "{:,.0f}".format(float(value)).replace(",", "'")
+        return f"{float(value):,.0f}".replace(",", "'")
     except (TypeError, ValueError):
         return value
 

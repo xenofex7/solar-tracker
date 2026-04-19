@@ -82,7 +82,7 @@ def monthly_targets(
 
 def deviation_pct(actual: list[float], target: list[float]) -> list[float | None]:
     result = []
-    for a, t in zip(actual, target):
+    for a, t in zip(actual, target, strict=False):
         if t and t > 0:
             result.append((a - t) / t * 100.0)
         else:
