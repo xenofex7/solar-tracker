@@ -6,10 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- HA sync returned a 500 when concurrent readers locked SQLite during
+  per-day upserts; it now writes all days in a single transaction.
+
 ### Changed
-- Home Assistant sync writes all days in a single transaction and logs
-  separate timings for the HA fetch and the DB write so slow syncs can
-  be attributed to the right side.
+- HA sync response and status text separate HA fetch time from DB
+  write time so slow syncs can be attributed to the right side.
 - Dashboard reloads on viewport width change so charts resize cleanly.
 
 ## [1.0.1] - 2026-04-19
