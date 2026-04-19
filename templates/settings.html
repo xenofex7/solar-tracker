@@ -5,12 +5,45 @@
 
 <section class="card">
   <h2>Anlagendaten</h2>
-  <form id="plant-form">
+  <form id="plant-form" class="inline-form">
     <label>Anlagenleistung (kWp)
       <input type="number" step="0.1" name="kwp" value="{{ kwp }}">
     </label>
+    <label>Ertragspreis (CHF / kWh)
+      <input type="number" step="0.001" name="price_per_kwh" value="{{ price_per_kwh }}">
+    </label>
     <button type="submit">Speichern</button>
   </form>
+</section>
+
+<section class="card">
+  <h2>Anlagekosten</h2>
+  <p class="muted">Einzelne Positionen erfassen (Solar‑Bauer, Elektriker …). Förderungen/Rückerstattungen als negativen Betrag eintragen.</p>
+  <form id="cost-form" class="inline-form">
+    <label>Bezeichnung <input type="text" name="label" required placeholder="Solar‑Bauer"></label>
+    <label>Betrag (CHF) <input type="number" step="0.01" name="amount_chf" required></label>
+    <label>Datum <input type="date" name="date"></label>
+    <button type="submit">Position hinzufügen</button>
+  </form>
+  <table class="data" id="costs-table">
+    <thead><tr><th>Datum</th><th>Bezeichnung</th><th>Betrag</th><th></th></tr></thead>
+    <tbody>
+      {% for c in costs %}
+        <tr data-id="{{ c.id }}">
+          <td>{{ (c.date | ddmmyyyy) if c.date else '—' }}</td>
+          <td>{{ c.label }}</td>
+          <td>{{ c.amount_chf | chf }} CHF</td>
+          <td><button class="del" data-id="{{ c.id }}" data-label="{{ c.label }}">Löschen</button></td>
+        </tr>
+      {% endfor %}
+      <tr class="total">
+        <td></td>
+        <td><strong>Total Investition</strong></td>
+        <td id="cost-total"><strong>{{ total_invested | chf }} CHF</strong></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
 <section class="card">
@@ -63,9 +96,29 @@
 <script>
 document.getElementById('plant-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const kwp = e.target.kwp.value;
-  const r = await fetch('/api/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({kwp})});
+  const body = { kwp: e.target.kwp.value, price_per_kwh: e.target.price_per_kwh.value };
+  const r = await fetch('/api/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   alert(r.ok ? 'Gespeichert.' : 'Fehler beim Speichern.');
+});
+
+document.getElementById('cost-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const body = {
+    label: e.target.label.value,
+    amount_chf: Number(e.target.amount_chf.value),
+    date: e.target.date.value || null,
+  };
+  const r = await fetch('/api/costs', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if (r.ok) location.reload();
+  else { const j = await r.json(); alert('Fehler: ' + (j.error || 'unbekannt')); }
+});
+
+document.querySelectorAll('#costs-table button.del').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!confirm(`Position "${btn.dataset.label}" löschen?`)) return;
+    await fetch(`/api/costs/${btn.dataset.id}`, {method:'DELETE'});
+    location.reload();
+  });
 });
 
 document.getElementById('targets-form').addEventListener('submit', async (e) => {

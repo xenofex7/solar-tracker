@@ -128,6 +128,54 @@ def heatmap_data(records: list[dict], year: int) -> list[dict]:
     return out
 
 
+def cumulative_revenue(records: list[dict], price: float) -> list[dict]:
+    rows = sorted(records, key=lambda r: r["date"])
+    out, s = [], 0.0
+    for r in rows:
+        s += r["kwh"] * price
+        out.append({"date": r["date"], "revenue": round(s, 2)})
+    return out
+
+
+def payback(records: list[dict], invested: float, price: float) -> dict:
+    if invested <= 0 or price <= 0 or not records:
+        return {
+            "invested": round(invested, 2),
+            "revenue_total": 0.0,
+            "remaining": round(invested, 2),
+            "payback_date": None,
+            "progress_pct": 0.0,
+            "avg_daily_revenue": 0.0,
+        }
+    cum = cumulative_revenue(records, price)
+    revenue_total = cum[-1]["revenue"] if cum else 0.0
+    payback_date = None
+    for row in cum:
+        if row["revenue"] >= invested:
+            payback_date = row["date"]
+            break
+    remaining = max(0.0, invested - revenue_total)
+    if len(cum) >= 2:
+        window = cum[-365:]
+        span = max(1, (date.fromisoformat(window[-1]["date"]) - date.fromisoformat(window[0]["date"])).days)
+        avg_daily = (window[-1]["revenue"] - window[0]["revenue"]) / span
+    else:
+        avg_daily = cum[-1]["revenue"]
+    if payback_date is None and avg_daily > 0 and remaining > 0:
+        days_needed = remaining / avg_daily
+        last_date = date.fromisoformat(cum[-1]["date"])
+        projected = last_date + timedelta(days=int(round(days_needed)))
+        payback_date = projected.isoformat()
+    return {
+        "invested": round(invested, 2),
+        "revenue_total": round(revenue_total, 2),
+        "remaining": round(remaining, 2),
+        "payback_date": payback_date,
+        "progress_pct": round(min(100.0, revenue_total / invested * 100.0), 1),
+        "avg_daily_revenue": round(avg_daily, 4),
+    }
+
+
 def summary(records: list[dict], targets: list[dict], year: int, kwp: float) -> dict:
     actual = monthly_actual(records, year)
     target = monthly_targets(targets, year)

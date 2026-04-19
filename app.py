@@ -39,6 +39,14 @@ def _kwp() -> float:
         return 0.0
 
 
+def _price_per_kwh() -> float:
+    val = db.get_setting("price_per_kwh") or "0"
+    try:
+        return float(val)
+    except ValueError:
+        return 0.0
+
+
 @app.route("/")
 def dashboard():
     years = db.available_years() or [date.today().year]
@@ -52,6 +60,9 @@ def settings_page():
         "settings.html",
         targets=targets,
         kwp=_kwp(),
+        price_per_kwh=_price_per_kwh(),
+        costs=db.list_costs(),
+        total_invested=db.total_invested(),
         ha_url=os.environ.get("HA_URL", ""),
         ha_entity=os.environ.get("HA_ENTITY_ID", ""),
     )
@@ -157,12 +168,49 @@ def api_sync_ha():
     })
 
 
+@app.route("/api/costs", methods=["GET"])
+def api_costs_get():
+    return jsonify({
+        "items": db.list_costs(),
+        "total": round(db.total_invested(), 2),
+    })
+
+
+@app.route("/api/costs", methods=["POST"])
+def api_costs_post():
+    payload = request.get_json(force=True)
+    label = (payload.get("label") or "").strip()
+    amount = payload.get("amount_chf")
+    cdate = payload.get("date") or None
+    if not label or amount is None:
+        return jsonify({"error": "label und amount_chf erforderlich"}), 400
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        return jsonify({"error": "ungültiger Betrag"}), 400
+    if cdate:
+        try:
+            datetime.fromisoformat(cdate)
+        except ValueError:
+            return jsonify({"error": "ungültiges Datum"}), 400
+    new_id = db.add_cost(label, amount, cdate)
+    return jsonify({"ok": True, "id": new_id})
+
+
+@app.route("/api/costs/<int:cost_id>", methods=["DELETE"])
+def api_costs_delete(cost_id):
+    db.delete_cost(cost_id)
+    return jsonify({"ok": True})
+
+
 @app.route("/api/summary")
 def api_summary():
     year = int(request.args.get("year", date.today().year))
     records = db.get_production()
     targets = db.get_targets()
     kwp = _kwp()
+    price = _price_per_kwh()
+    invested = db.total_invested()
 
     actual = metrics.monthly_actual(records, year)
     target = metrics.monthly_targets(targets, year)
@@ -177,6 +225,8 @@ def api_summary():
     year_cmp = metrics.year_comparison(records)
     heat = metrics.heatmap_data(records, year)
     summ = metrics.summary(records, targets, year, kwp)
+    cum_rev = metrics.cumulative_revenue(records, price)
+    pay = metrics.payback(records, invested, price)
 
     return jsonify({
         "year": year,
@@ -193,6 +243,11 @@ def api_summary():
         "year_comparison": year_cmp,
         "heatmap": heat,
         "summary": summ,
+        "finance": {
+            "price_per_kwh": price,
+            "cumulative_revenue": cum_rev,
+            "payback": pay,
+        },
         "available_years": db.available_years(),
     })
 

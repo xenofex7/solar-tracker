@@ -20,6 +20,7 @@ async function loadYear(year) {
   SolarCharts.renderDistribution(data);
   SolarCharts.renderYearComparison(data);
   SolarCharts.renderTopFlop(data);
+  SolarCharts.renderPayback(data);
   status.textContent = '';
 }
 

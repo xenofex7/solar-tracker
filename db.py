@@ -25,6 +25,13 @@ CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT
 );
+
+CREATE TABLE IF NOT EXISTS plant_costs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT NOT NULL,
+    amount_chf REAL NOT NULL,
+    date TEXT
+);
 """
 
 
@@ -140,6 +147,36 @@ def get_setting(key: str, default=None):
             "SELECT value FROM settings WHERE key = ?", (key,)
         ).fetchone()
         return row["value"] if row else default
+
+
+def add_cost(label: str, amount_chf: float, date: str | None = None) -> int:
+    with connect() as conn:
+        cur = conn.execute(
+            "INSERT INTO plant_costs (label, amount_chf, date) VALUES (?, ?, ?)",
+            (label, amount_chf, date or None),
+        )
+        return cur.lastrowid
+
+
+def list_costs() -> list[dict]:
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT id, label, amount_chf, date FROM plant_costs ORDER BY date IS NULL, date, id"
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def delete_cost(cost_id: int):
+    with connect() as conn:
+        conn.execute("DELETE FROM plant_costs WHERE id = ?", (cost_id,))
+
+
+def total_invested() -> float:
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT COALESCE(SUM(amount_chf), 0) AS t FROM plant_costs"
+        ).fetchone()
+    return float(row["t"])
 
 
 def available_years() -> list[int]:

@@ -16,6 +16,7 @@ Chart.defaults.font.family = '-apple-system, Segoe UI, Roboto, Helvetica, Arial,
 
 const fmtInt = (v) => Math.round(Number(v) || 0).toLocaleString('de-CH');
 const fmtKwh = (v) => `${fmtInt(v)} kWh`;
+const fmtChf = (v) => `${fmtInt(v)} CHF`;
 const fmtDate = (iso) => {
   if (!iso) return '';
   const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -278,13 +279,68 @@ function renderKpis(data) {
     { label: 'Spez. Ertrag', value: spec },
     { label: 'Erfasste Tage', value: fmtInt(s.days_recorded) },
   ];
+
+  const fin = data.finance;
+  if (fin && fin.payback && fin.payback.invested > 0) {
+    const p = fin.payback;
+    const paybackVal = p.payback_date ? fmtDate(p.payback_date) : '—';
+    const progressCls = p.progress_pct >= 100 ? 'good' : '';
+    kpis.push(
+      { label: 'Investition', value: fmtChf(p.invested) },
+      { label: 'Ertrag bisher', value: fmtChf(p.revenue_total) },
+      { label: 'Fortschritt', value: `${p.progress_pct.toLocaleString('de-CH', {maximumFractionDigits: 1})} %`, cls: progressCls },
+      { label: 'Amortisation', value: paybackVal },
+    );
+  }
   const el = document.getElementById('kpis');
   el.innerHTML = kpis.map(k =>
     `<div class="kpi"><div class="label">${k.label}</div><div class="value ${k.cls || ''}">${k.value}</div></div>`
   ).join('');
 }
 
+function renderPayback(data) {
+  destroy('payback');
+  const ctx = document.getElementById('chart-payback');
+  if (!ctx) return;
+  const fin = data.finance;
+  const invested = fin?.payback?.invested || 0;
+  const series = fin?.cumulative_revenue || [];
+  if (invested <= 0 || !series.length) {
+    const parent = ctx.closest('.card');
+    if (parent) parent.style.display = 'none';
+    return;
+  }
+  const parent = ctx.closest('.card');
+  if (parent) parent.style.display = '';
+  const labels = series.map(r => r.date);
+  const revenue = series.map(r => r.revenue);
+  const investedLine = labels.map(() => invested);
+  charts.payback = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Kumulativer Ertrag (CHF)', data: revenue, borderColor: CHART_COLORS.actualLine, backgroundColor: 'rgba(245,166,35,0.15)', pointRadius: 0, fill: true, tension: 0.1 },
+        { label: 'Investition (CHF)', data: investedLine, borderColor: CHART_COLORS.targetLine, borderDash: [6,4], pointRadius: 0, fill: false },
+      ],
+    },
+    options: {
+      plugins: {
+        tooltip: { callbacks: {
+          title: items => fmtDate(items[0].label),
+          label: item => `${item.dataset.label}: ${fmtChf(item.parsed.y)}`,
+        } },
+      },
+      scales: {
+        x: { ticks: { maxTicksLimit: 12, callback(v) { return fmtDate(this.getLabelForValue(v)); } } },
+        y: { beginAtZero: true, ticks: { callback: v => fmtChf(v) } },
+      },
+    },
+  });
+}
+
 window.SolarCharts = {
   renderKpis, renderMonthly, renderDeviation, renderCumulative,
   renderDaily, renderHeatmap, renderDistribution, renderYearComparison, renderTopFlop,
+  renderPayback,
 };
