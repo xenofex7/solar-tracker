@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - Footer showing the running app version (read from `VERSION`).
 
+### Fixed
+- Settings page rendered narrower than the dashboard because `main`
+  in the new flex column layout shrank to its content width; `main`
+  now has `width: 100%` so both pages fill the same max-width.
+
 ## [1.0.2] - 2026-04-19
 ### Fixed
 - HA sync returned a 500 when concurrent readers locked SQLite during
