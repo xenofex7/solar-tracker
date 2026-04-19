@@ -325,6 +325,8 @@ def api_summary():
     flows = metrics.monthly_flows(records, imports, exports, avg_import_price)
     if start_date:
         flows = [f for f in flows if f["period_end"] >= start_date]
+    if isinstance(year, int):
+        flows = [f for f in flows if f["year"] == year]
 
     return jsonify({
         "year": year,
