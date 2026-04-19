@@ -27,6 +27,17 @@ The SQLite database lives in `./data` on the host (mounted into the
 container), so stopping or rebuilding the container preserves all data.
 The container runs gunicorn with two workers.
 
+Pre-built multi-arch images are published to GitHub Container Registry
+on every push to `main` and every `v*` tag:
+
+```bash
+docker pull ghcr.io/xenofex7/solar-tracker:latest
+docker pull ghcr.io/xenofex7/solar-tracker:1.0.0
+```
+
+To run the published image, replace the `build: .` line in
+`docker-compose.yml` with `image: ghcr.io/xenofex7/solar-tracker:latest`.
+
 ## Features
 
 - Dashboard with nine visualisations:
