@@ -96,6 +96,7 @@ button.del.icon { padding: 6px 8px; display: inline-flex; align-items: center; j
 button.del.icon svg { display: block; }
 
 .muted { color: var(--muted); font-size: 14px; }
+#sync-status:not(:empty), #entry-status:not(:empty) { margin-top: 10px; }
 
 .kpis {
   display: grid;
@@ -181,6 +182,24 @@ form label {
   color: var(--muted);
 }
 form.inline-form { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+form.stacked-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 520px;
+}
+form.stacked-form label {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+form.stacked-form label:last-of-type { border-bottom: none; }
+form.stacked-form label > input,
+form.stacked-form label > select { flex: 0 0 220px; }
+form.stacked-form button { align-self: flex-start; margin-top: 6px; }
 
 .targets-grid {
   display: grid;

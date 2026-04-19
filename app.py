@@ -63,6 +63,17 @@ def _price_per_kwh() -> float:
         return 0.0
 
 
+def _start_date() -> str | None:
+    val = (db.get_setting("start_date") or "").strip()
+    if not val:
+        return None
+    try:
+        datetime.fromisoformat(val)
+    except ValueError:
+        return None
+    return val
+
+
 @app.route("/")
 def dashboard():
     years = db.available_years() or [date.today().year]
@@ -78,6 +89,7 @@ def settings_page():
         targets=targets,
         kwp=_kwp(),
         price_per_kwh=_price_per_kwh(),
+        start_date=_start_date() or "",
         costs=db.list_costs(),
         total_invested=db.total_invested(),
         recent=recent,
@@ -277,14 +289,21 @@ def api_summary():
         except ValueError:
             year = date.today().year
     records = db.get_production()
+    start_date = _start_date()
+    if start_date:
+        records = [r for r in records if r["date"] >= start_date]
     targets = db.get_targets()
     kwp = _kwp()
     price = _price_per_kwh()
     invested = db.total_invested()
 
     actual = metrics.monthly_actual(records, year)
-    multiplier = len(metrics.years_in_records(records)) if year == "all" else 1
-    target = metrics.monthly_targets(targets, year, multiplier=multiplier)
+    years_in_data = metrics.years_in_records(records)
+    multiplier = len(years_in_data) if year == "all" else 1
+    target = metrics.monthly_targets(
+        targets, year, multiplier=multiplier,
+        start_date=start_date, years_available=years_in_data,
+    )
     dev = metrics.deviation_pct(actual, target)
     cum_a = metrics.cumulative(actual)
     cum_t = metrics.cumulative(target)
@@ -295,7 +314,7 @@ def api_summary():
     tops = metrics.top_days(records, year, n=5)
     year_cmp = metrics.year_comparison(records)
     heat = metrics.heatmap_data(records, year)
-    summ = metrics.summary(records, targets, year, kwp)
+    summ = metrics.summary(records, targets, year, kwp, start_date=start_date)
     imports = db.list_grid_bills("import")
     exports = db.list_grid_bills("export")
     cum_rev = metrics.cumulative_revenue(records, imports, exports, price)
@@ -304,6 +323,8 @@ def api_summary():
     grid_tot = db.grid_totals()
     avg_import_price = grid_tot.get("import", {}).get("avg_price") or price
     flows = metrics.monthly_flows(records, imports, exports, avg_import_price)
+    if start_date:
+        flows = [f for f in flows if f["period_end"] >= start_date]
 
     return jsonify({
         "year": year,

@@ -15,9 +15,12 @@
 <section class="tab-panel active" data-tab="plant">
   <div class="card">
     <h2>Anlagendaten</h2>
-    <form id="plant-form" class="inline-form">
+    <form id="plant-form" class="stacked-form">
       <label>Anlagenleistung (kWp)
         <input type="number" step="0.1" name="kwp" value="{{ kwp }}">
+      </label>
+      <label>Inbetriebnahme
+        <input type="date" name="start_date" value="{{ start_date }}" title="Daten vor diesem Datum werden in allen Kennzahlen und Grafiken ausgeblendet.">
       </label>
       <label>Schätzpreis PV (CHF / kWh, Fallback)
         <input type="number" step="0.001" name="price_per_kwh" value="{{ price_per_kwh }}" title="Wird nur verwendet, wenn für einen Zeitraum keine Rücklieferungs-Rechnung existiert.">
@@ -230,7 +233,11 @@
 
 document.getElementById('plant-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const body = { kwp: e.target.kwp.value, price_per_kwh: e.target.price_per_kwh.value };
+  const body = {
+    kwp: e.target.kwp.value,
+    price_per_kwh: e.target.price_per_kwh.value,
+    start_date: e.target.start_date.value,
+  };
   const r = await fetch('/api/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   alert(r.ok ? 'Gespeichert.' : 'Fehler beim Speichern.');
 });

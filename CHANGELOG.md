@@ -8,11 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 - Footer showing the running app version (read from `VERSION`).
+- Commissioning date setting in Anlagendaten: records, monthly
+  targets and billing periods before this date are excluded from
+  all KPIs and charts so pre-commissioning zeroes do not dilute
+  averages and projections. The commissioning month is prorated
+  from the configured day.
 - Three new dashboard charts broken down per month: energy flows
   (self-consumed, exported, grid import), self-consumption ratio
   over time, financial flow (import cost, self-consumption savings,
   export credit). Quarterly bill data is prorated across months
   (exports by PV share, imports by day count).
+
+### Changed
+- Anlagendaten form is a stacked key/value list with dividers, and
+  the sync status message gets a small top margin so it no longer
+  butts against the form.
 
 ### Changed
 - Amortisation projection now uses yearly target × blended price
