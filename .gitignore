@@ -5,7 +5,5 @@ __pycache__/
 .venv/
 venv/
 .DS_Store
-.claude/*
-!.claude/commands/
-!.claude/launch.json
+.claude/
 CLAUDE.md
