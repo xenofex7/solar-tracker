@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Footer showing the running app version (read from `VERSION`).
+
 ## [1.0.2] - 2026-04-19
 ### Fixed
 - HA sync returned a 500 when concurrent readers locked SQLite during

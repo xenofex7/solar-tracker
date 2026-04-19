@@ -17,6 +17,17 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 app = Flask(__name__)
 db.init_db()
 
+try:
+    with open(os.path.join(os.path.dirname(__file__), "VERSION"), encoding="utf-8") as _vf:
+        APP_VERSION = _vf.read().strip()
+except OSError:
+    APP_VERSION = "dev"
+
+
+@app.context_processor
+def _inject_version():
+    return {"app_version": APP_VERSION}
+
 
 @app.template_filter("ddmmyyyy")
 def _fmt_ddmmyyyy(value):
