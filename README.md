@@ -38,6 +38,22 @@ docker pull ghcr.io/xenofex7/solar-tracker:1.0.0
 To run the published image, replace the `build: .` line in
 `docker-compose.yml` with `image: ghcr.io/xenofex7/solar-tracker:latest`.
 
+## Releasing a new version
+
+```bash
+# Record changes under ## [Unreleased] in CHANGELOG.md first, then:
+scripts/release.sh patch      # 1.0.0 -> 1.0.1
+scripts/release.sh minor      # 1.0.0 -> 1.1.0
+scripts/release.sh major      # 1.0.0 -> 2.0.0
+scripts/release.sh 1.2.3      # explicit version
+```
+
+The script bumps `VERSION`, rewrites `CHANGELOG.md` (moves the
+`Unreleased` block into a dated section), updates the example image
+tags in this README, commits the change, creates a `vX.Y.Z` tag and
+pushes both `main` and the new tag. GitHub Actions then builds and
+publishes the image to GHCR.
+
 ## Features
 
 - Dashboard with nine visualisations:
