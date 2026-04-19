@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- `seed_demo.py` now seeds a full dataset (commissioning date, price,
+  plant costs, quarterly grid bills) so the app renders all KPIs and
+  charts out of the box; idempotent on re-run.
+
+### Fixed
+- `db.set_target` no longer inserts duplicate generic monthly target
+  rows when rerun, because SQLite's UNIQUE treats NULL as distinct.
+- `seed_demo` seasonal daily kWh is now per-kWp so production scales
+  realistically for any plant size.
+
 ## [1.2.0] - 2026-04-19
 ### Added
 - SVG logo in the header brand and as browser favicon.

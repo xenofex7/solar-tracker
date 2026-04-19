@@ -141,14 +141,30 @@ def get_production(date_from: str = None, date_to: str = None):
 
 def set_target(month: int, kwh: float, year: int | None = None):
     with connect() as conn:
-        conn.execute(
-            """
-            INSERT INTO monthly_target (year, month, kwh)
-            VALUES (?, ?, ?)
-            ON CONFLICT(year, month) DO UPDATE SET kwh = excluded.kwh
-            """,
-            (year, month, kwh),
-        )
+        if year is None:
+            row = conn.execute(
+                "SELECT 1 FROM monthly_target WHERE year IS NULL AND month = ?",
+                (month,),
+            ).fetchone()
+            if row:
+                conn.execute(
+                    "UPDATE monthly_target SET kwh = ? WHERE year IS NULL AND month = ?",
+                    (kwh, month),
+                )
+            else:
+                conn.execute(
+                    "INSERT INTO monthly_target (year, month, kwh) VALUES (NULL, ?, ?)",
+                    (month, kwh),
+                )
+        else:
+            conn.execute(
+                """
+                INSERT INTO monthly_target (year, month, kwh)
+                VALUES (?, ?, ?)
+                ON CONFLICT(year, month) DO UPDATE SET kwh = excluded.kwh
+                """,
+                (year, month, kwh),
+            )
 
 
 def get_targets():
