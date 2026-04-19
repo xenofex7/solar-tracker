@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Test file import grouping to satisfy ruff 0.15 isort rules so CI
+  passes on GitHub Actions.
+
 ## [1.3.0] - 2026-04-19
 ### Added
 - `LICENSE` file (MIT).
