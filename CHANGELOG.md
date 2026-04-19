@@ -20,14 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   (exports by PV share, imports by day count).
 
 ### Changed
-- Anlagendaten form is a stacked key/value list with dividers, and
-  the sync status message gets a small top margin so it no longer
-  butts against the form.
-
-### Changed
 - Amortisation projection now uses yearly target × blended price
   (falls back to the historical daily average), with a sub-label
   showing the basis (Jahressoll or Verlauf).
+- Future months are blank in deviation and cumulative target charts;
+  monthly targets cap at today so there are no -100% bars for
+  not-yet months.
+- Anlagendaten form is a stacked key/value list with dividers, and
+  the sync status message gets a small top margin so it no longer
+  butts against the form.
 
 ### Fixed
 - Settings page rendered narrower than the dashboard because `main`
