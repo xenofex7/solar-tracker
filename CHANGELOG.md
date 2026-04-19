@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- SVG logo in the header brand and as browser favicon.
+
 ## [1.1.1] - 2026-04-19
 ### Fixed
 - Per-period charts (Energieflüsse, Eigenverbrauchsquote, Finanzfluss)
