@@ -37,16 +37,20 @@ def monthly_actual(records: list[dict], year) -> list[float]:
     return totals
 
 
-def _start_date_factor(year: int, month: int, start_date: str | None) -> float:
-    if not start_date:
-        return 1.0
-    sd = date.fromisoformat(start_date)
-    if year < sd.year or (year == sd.year and month < sd.month):
+def _eligibility_factor(year: int, month: int, start_date: str | None, today: date | None = None) -> float:
+    today = today or date.today()
+    days_in = calendar.monthrange(year, month)[1]
+    month_start = date(year, month, 1)
+    month_end = date(year, month, days_in)
+    lower = month_start
+    if start_date:
+        sd = date.fromisoformat(start_date)
+        if sd > lower:
+            lower = sd
+    upper = min(month_end, today)
+    if upper < lower:
         return 0.0
-    if year == sd.year and month == sd.month:
-        days_in = calendar.monthrange(year, month)[1]
-        return (days_in - sd.day + 1) / days_in
-    return 1.0
+    return ((upper - lower).days + 1) / days_in
 
 
 def monthly_targets(
@@ -62,7 +66,7 @@ def monthly_targets(
         out = [0.0] * 12
         for m in range(1, 13):
             for y in years:
-                factor = _start_date_factor(y, m, start_date)
+                factor = _eligibility_factor(y, m, start_date)
                 if factor > 0:
                     out[m - 1] += generic.get(m, 0.0) * factor
         if not years:
@@ -72,7 +76,7 @@ def monthly_targets(
     out = []
     for m in range(1, 13):
         base = specific.get(m, generic.get(m, 0.0))
-        out.append(base * _start_date_factor(year, m, start_date))
+        out.append(base * _eligibility_factor(year, m, start_date))
     return out
 
 
@@ -449,15 +453,7 @@ def summary(records: list[dict], targets: list[dict], year, kwp: float, start_da
         actual = monthly_actual(records, year)
         target = monthly_targets(targets, year, start_date=start_date)
         ytd_actual = round(sum(actual), 2)
-        if year < today.year:
-            ytd_target = round(sum(target), 2)
-        elif year > today.year:
-            ytd_target = 0.0
-        else:
-            full = sum(target[: today.month - 1])
-            days_in_month = calendar.monthrange(year, today.month)[1]
-            partial = target[today.month - 1] * (today.day / days_in_month)
-            ytd_target = round(full + partial, 2)
+        ytd_target = round(sum(target), 2)
         in_scope = [r for r in records if r["date"].startswith(f"{year}-")]
 
     delta = round(ytd_actual - ytd_target, 2)
