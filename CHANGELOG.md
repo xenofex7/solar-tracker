@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-04-19
 ### Added
 - Footer showing the running app version (read from `VERSION`).
 - Commissioning date setting in Anlagendaten: records, monthly
@@ -69,7 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v1.1.0...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
+[1.1.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.1.0
