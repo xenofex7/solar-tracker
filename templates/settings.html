@@ -314,7 +314,8 @@ document.getElementById('sync-form').addEventListener('submit', async (e) => {
   const r = await fetch('/api/sync/ha', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   const j = await r.json();
   if (r.ok) {
-    status.textContent = `Fertig: ${j.days} Tage abgeglichen (${j.inserted} neu, ${j.updated} aktualisiert).`;
+    const t = j.timings ? ` · HA ${j.timings.fetch_s}s + DB ${j.timings.write_s}s` : '';
+    status.textContent = `Fertig: ${j.days} Tage abgeglichen (${j.inserted} neu, ${j.updated} aktualisiert).${t}`;
   } else {
     status.textContent = `Fehler: ${j.error}`;
   }

@@ -1,4 +1,6 @@
+import logging
 import os
+import time
 from datetime import date, datetime
 
 from dotenv import load_dotenv
@@ -9,6 +11,8 @@ import metrics
 from ha_client import HAClientError, fetch_daily
 
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 app = Flask(__name__)
 db.init_db()
@@ -150,26 +154,32 @@ def api_sync_ha():
     end = payload.get("to") or date.today().isoformat()
     if not start:
         return jsonify({"error": "'from' erforderlich (YYYY-MM-DD)"}), 400
+
+    t0 = time.perf_counter()
     try:
         daily = fetch_daily(start, end)
     except HAClientError as e:
         return jsonify({"error": str(e)}), 502
     except Exception as e:
         return jsonify({"error": f"Unerwarteter Fehler: {e}"}), 500
+    t_fetch = time.perf_counter() - t0
 
-    inserted = 0
-    updated = 0
-    for d, kwh in daily.items():
-        result = db.upsert_production(d, round(kwh, 3), source="home_assistant")
-        if result == "inserted":
-            inserted += 1
-        else:
-            updated += 1
+    t1 = time.perf_counter()
+    items = [(d, round(kwh, 3)) for d, kwh in daily.items()]
+    inserted, updated = db.bulk_upsert_production(items, source="home_assistant")
+    t_write = time.perf_counter() - t1
+
+    app.logger.info(
+        "HA sync %s..%s: %d days (ins=%d, upd=%d) — fetch %.2fs, write %.2fs",
+        start, end, len(items), inserted, updated, t_fetch, t_write,
+    )
+
     return jsonify({
         "ok": True,
         "inserted": inserted,
         "updated": updated,
         "days": inserted + updated,
+        "timings": {"fetch_s": round(t_fetch, 2), "write_s": round(t_write, 2)},
     })
 
 

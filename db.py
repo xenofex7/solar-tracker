@@ -86,6 +86,36 @@ def upsert_production(date: str, kwh: float, source: str) -> str:
         return "inserted" if existing is None else "updated"
 
 
+def bulk_upsert_production(items: list[tuple[str, float]], source: str) -> tuple[int, int]:
+    if not items:
+        return 0, 0
+    now = datetime.utcnow().isoformat(timespec="seconds")
+    dates = [d for d, _ in items]
+    with connect() as conn:
+        placeholders = ",".join("?" * len(dates))
+        existing = {
+            row["date"]
+            for row in conn.execute(
+                f"SELECT date FROM daily_production WHERE date IN ({placeholders})",
+                dates,
+            ).fetchall()
+        }
+        conn.executemany(
+            """
+            INSERT INTO daily_production (date, kwh, source, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(date) DO UPDATE SET
+                kwh = excluded.kwh,
+                source = excluded.source,
+                updated_at = excluded.updated_at
+            """,
+            [(d, k, source, now) for d, k in items],
+        )
+    inserted = sum(1 for d, _ in items if d not in existing)
+    updated = len(items) - inserted
+    return inserted, updated
+
+
 def delete_production(date: str):
     with connect() as conn:
         conn.execute("DELETE FROM daily_production WHERE date = ?", (date,))

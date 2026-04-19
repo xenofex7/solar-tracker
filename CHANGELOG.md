@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Home Assistant sync writes all days in a single transaction and logs
+  separate timings for the HA fetch and the DB write so slow syncs can
+  be attributed to the right side.
+- Dashboard reloads on viewport width change so charts resize cleanly.
+
 ## [1.0.1] - 2026-04-19
 ### Fixed
 - Worker crash on first boot when two gunicorn workers initialised the
