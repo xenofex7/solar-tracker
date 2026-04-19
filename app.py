@@ -2,7 +2,7 @@ import os
 from datetime import date, datetime
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, redirect, render_template, request, url_for
 
 import db
 import metrics
@@ -56,6 +56,7 @@ def dashboard():
 @app.route("/settings")
 def settings_page():
     targets = db.get_targets()
+    recent = list(reversed(db.get_production()[-30:]))
     return render_template(
         "settings.html",
         targets=targets,
@@ -63,6 +64,10 @@ def settings_page():
         price_per_kwh=_price_per_kwh(),
         costs=db.list_costs(),
         total_invested=db.total_invested(),
+        recent=recent,
+        grid_imports=db.list_grid_bills("import"),
+        grid_exports=db.list_grid_bills("export"),
+        grid_totals=db.grid_totals(),
         ha_url=os.environ.get("HA_URL", ""),
         ha_entity=os.environ.get("HA_ENTITY_ID", ""),
     )
@@ -70,8 +75,7 @@ def settings_page():
 
 @app.route("/entry")
 def entry_page():
-    recent = db.get_production()[-30:]
-    return render_template("entry.html", recent=list(reversed(recent)))
+    return redirect(url_for("settings_page") + "#entry", code=301)
 
 
 @app.route("/api/production", methods=["GET"])
@@ -203,6 +207,43 @@ def api_costs_delete(cost_id):
     return jsonify({"ok": True})
 
 
+@app.route("/api/grid", methods=["GET"])
+def api_grid_get():
+    return jsonify({
+        "imports": db.list_grid_bills("import"),
+        "exports": db.list_grid_bills("export"),
+        "totals": db.grid_totals(),
+    })
+
+
+@app.route("/api/grid", methods=["POST"])
+def api_grid_post():
+    payload = request.get_json(force=True)
+    kind = (payload.get("kind") or "").strip()
+    period_start = (payload.get("period_start") or "").strip()
+    period_end = (payload.get("period_end") or "").strip()
+    invoice_no = (payload.get("invoice_no") or "").strip() or None
+    if kind not in ("import", "export"):
+        return jsonify({"error": "kind muss 'import' oder 'export' sein"}), 400
+    try:
+        datetime.fromisoformat(period_start)
+        datetime.fromisoformat(period_end)
+        kwh = float(payload.get("kwh"))
+        amount = float(payload.get("amount_chf"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "ungültige Werte"}), 400
+    if period_end < period_start or kwh < 0 or amount < 0:
+        return jsonify({"error": "ungültige Werte"}), 400
+    new_id = db.upsert_grid_bill(kind, period_start, period_end, kwh, amount, invoice_no)
+    return jsonify({"ok": True, "id": new_id})
+
+
+@app.route("/api/grid/<int:bill_id>", methods=["DELETE"])
+def api_grid_delete(bill_id):
+    db.delete_grid_bill(bill_id)
+    return jsonify({"ok": True})
+
+
 @app.route("/api/summary")
 def api_summary():
     year = int(request.args.get("year", date.today().year))
@@ -225,8 +266,12 @@ def api_summary():
     year_cmp = metrics.year_comparison(records)
     heat = metrics.heatmap_data(records, year)
     summ = metrics.summary(records, targets, year, kwp)
-    cum_rev = metrics.cumulative_revenue(records, price)
-    pay = metrics.payback(records, invested, price)
+    imports = db.list_grid_bills("import")
+    exports = db.list_grid_bills("export")
+    cum_rev = metrics.cumulative_revenue(records, imports, exports, price)
+    pay = metrics.payback(records, invested, imports, exports, price)
+    sc = metrics.self_consumption(records, exports)
+    grid_tot = db.grid_totals()
 
     return jsonify({
         "year": year,
@@ -247,6 +292,10 @@ def api_summary():
             "price_per_kwh": price,
             "cumulative_revenue": cum_rev,
             "payback": pay,
+        },
+        "grid": {
+            "totals": grid_tot,
+            "self_consumption": sc,
         },
         "available_years": db.available_years(),
     })

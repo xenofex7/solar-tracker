@@ -32,6 +32,19 @@ CREATE TABLE IF NOT EXISTS plant_costs (
     amount_chf REAL NOT NULL,
     date TEXT
 );
+
+CREATE TABLE IF NOT EXISTS grid_billing (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind TEXT NOT NULL,
+    period_start TEXT NOT NULL,
+    period_end TEXT NOT NULL,
+    kwh REAL NOT NULL,
+    amount_chf REAL NOT NULL,
+    invoice_no TEXT,
+    UNIQUE(kind, period_start, period_end)
+);
+
+DROP TABLE IF EXISTS electricity_costs;
 """
 
 
@@ -177,6 +190,68 @@ def total_invested() -> float:
             "SELECT COALESCE(SUM(amount_chf), 0) AS t FROM plant_costs"
         ).fetchone()
     return float(row["t"])
+
+
+def upsert_grid_bill(
+    kind: str,
+    period_start: str,
+    period_end: str,
+    kwh: float,
+    amount_chf: float,
+    invoice_no: str | None = None,
+) -> int:
+    with connect() as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO grid_billing (kind, period_start, period_end, kwh, amount_chf, invoice_no)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(kind, period_start, period_end) DO UPDATE SET
+                kwh = excluded.kwh,
+                amount_chf = excluded.amount_chf,
+                invoice_no = excluded.invoice_no
+            """,
+            (kind, period_start, period_end, kwh, amount_chf, invoice_no),
+        )
+        return cur.lastrowid
+
+
+def list_grid_bills(kind: str | None = None) -> list[dict]:
+    query = "SELECT id, kind, period_start, period_end, kwh, amount_chf, invoice_no FROM grid_billing"
+    params: tuple = ()
+    if kind:
+        query += " WHERE kind = ?"
+        params = (kind,)
+    query += " ORDER BY period_start, kind"
+    with connect() as conn:
+        rows = conn.execute(query, params).fetchall()
+    return [dict(r) for r in rows]
+
+
+def delete_grid_bill(bill_id: int):
+    with connect() as conn:
+        conn.execute("DELETE FROM grid_billing WHERE id = ?", (bill_id,))
+
+
+def grid_totals() -> dict:
+    with connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT kind,
+                   COALESCE(SUM(kwh), 0) AS kwh,
+                   COALESCE(SUM(amount_chf), 0) AS amount
+            FROM grid_billing GROUP BY kind
+            """
+        ).fetchall()
+    totals = {"import": {"kwh": 0.0, "amount": 0.0}, "export": {"kwh": 0.0, "amount": 0.0}}
+    for r in rows:
+        totals[r["kind"]] = {"kwh": float(r["kwh"]), "amount": float(r["amount"])}
+    avg_import = (totals["import"]["amount"] / totals["import"]["kwh"]) if totals["import"]["kwh"] else 0.0
+    avg_export = (totals["export"]["amount"] / totals["export"]["kwh"]) if totals["export"]["kwh"] else 0.0
+    return {
+        "import": {**totals["import"], "avg_price": avg_import},
+        "export": {**totals["export"], "avg_price": avg_export},
+        "net_cost": totals["import"]["amount"] - totals["export"]["amount"],
+    }
 
 
 def available_years() -> list[int]:

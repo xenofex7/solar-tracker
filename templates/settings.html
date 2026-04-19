@@ -3,97 +3,231 @@
 {% block content %}
 <h1>Einstellungen</h1>
 
-<section class="card">
-  <h2>Anlagendaten</h2>
-  <form id="plant-form" class="inline-form">
-    <label>Anlagenleistung (kWp)
-      <input type="number" step="0.1" name="kwp" value="{{ kwp }}">
-    </label>
-    <label>Ertragspreis (CHF / kWh)
-      <input type="number" step="0.001" name="price_per_kwh" value="{{ price_per_kwh }}">
-    </label>
-    <button type="submit">Speichern</button>
-  </form>
-</section>
+<nav class="tabs" id="settings-tabs">
+  <button type="button" data-tab="plant" class="active">Anlagendaten</button>
+  <button type="button" data-tab="costs">Anlagekosten</button>
+  <button type="button" data-tab="electricity">Stromkosten</button>
+  <button type="button" data-tab="targets">Sollwerte</button>
+  <button type="button" data-tab="entry">Manuelle Eingabe</button>
+  <button type="button" data-tab="ha">Home Assistant</button>
+</nav>
 
-<section class="card">
-  <h2>Anlagekosten</h2>
-  <p class="muted">Einzelne Positionen erfassen (Solar‑Bauer, Elektriker …). Förderungen/Rückerstattungen als negativen Betrag eintragen.</p>
-  <form id="cost-form" class="inline-form">
-    <label>Bezeichnung <input type="text" name="label" required placeholder="Solar‑Bauer"></label>
-    <label>Betrag (CHF) <input type="number" step="0.01" name="amount_chf" required></label>
-    <label>Datum <input type="date" name="date"></label>
-    <button type="submit">Position hinzufügen</button>
-  </form>
-  <table class="data" id="costs-table">
-    <thead><tr><th>Datum</th><th>Bezeichnung</th><th>Betrag</th><th></th></tr></thead>
-    <tbody>
-      {% for c in costs %}
-        <tr data-id="{{ c.id }}">
-          <td>{{ (c.date | ddmmyyyy) if c.date else '—' }}</td>
-          <td>{{ c.label }}</td>
-          <td>{{ c.amount_chf | chf }} CHF</td>
-          <td><button class="del" data-id="{{ c.id }}" data-label="{{ c.label }}">Löschen</button></td>
-        </tr>
-      {% endfor %}
-      <tr class="total">
-        <td></td>
-        <td><strong>Total Investition</strong></td>
-        <td id="cost-total"><strong>{{ total_invested | chf }} CHF</strong></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-</section>
-
-<section class="card">
-  <h2>Monatliche Sollwerte (kWh)</h2>
-  <p class="muted">Leer lassen = Standardwert für alle Jahre. Wenn du Jahr setzt, gilt der Wert nur für dieses Jahr.</p>
-  <form id="targets-form" class="targets-grid">
-    {% set months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'] %}
-    {% for m in range(1, 13) %}
-      {% set ns = namespace(val='') %}
-      {% for t in targets %}
-        {% if t.month == m and t.year is none %}{% set ns.val = t.kwh %}{% endif %}
-      {% endfor %}
-      <label>{{ months[m-1] }}
-        <input type="number" step="1" data-month="{{ m }}" value="{{ ns.val }}">
+<section class="tab-panel active" data-tab="plant">
+  <div class="card">
+    <h2>Anlagendaten</h2>
+    <form id="plant-form" class="inline-form">
+      <label>Anlagenleistung (kWp)
+        <input type="number" step="0.1" name="kwp" value="{{ kwp }}">
       </label>
-    {% endfor %}
-    <button type="submit">Sollwerte speichern</button>
-  </form>
+      <label>Ertragspreis (CHF / kWh)
+        <input type="number" step="0.001" name="price_per_kwh" value="{{ price_per_kwh }}">
+      </label>
+      <button type="submit">Speichern</button>
+    </form>
+  </div>
 </section>
 
-<section class="card">
-  <h2>Home Assistant Sync</h2>
-  <p class="muted">
-    URL: <code>{{ ha_url or '—' }}</code><br>
-    Entity: <code>{{ ha_entity or '—' }}</code><br>
-    (Änderung erfolgt über <code>.env</code>.)
-  </p>
-  <form id="sync-form">
-    <label>Von <input type="date" name="from" required></label>
-    <label>Bis <input type="date" name="to" required></label>
-    <button type="submit">Jetzt synchronisieren</button>
-  </form>
-  <script>
-    (() => {
-      const form = document.getElementById('sync-form');
-      const today = new Date();
-      const from = new Date(today);
-      from.setMonth(from.getMonth() - 6);
-      const iso = (d) => {
-        const tz = d.getTimezoneOffset() * 60000;
-        return new Date(d - tz).toISOString().slice(0, 10);
-      };
-      form.from.value = iso(from);
-      form.to.value = iso(today);
-    })();
-  </script>
-  <div id="sync-status" class="muted"></div>
+<section class="tab-panel" data-tab="costs">
+  <div class="card">
+    <h2>Anlagekosten</h2>
+    <p class="muted">Alle Investitionspositionen deiner PV‑Anlage erfassen – z. B. Solar‑Bauer, Elektriker, Module, Speicher. Förderungen und Rückerstattungen (Pronovo, kantonale Einmalvergütung) als <strong>negativen</strong> Betrag eintragen; sie werden automatisch von der Investitionssumme abgezogen.</p>
+    <form id="cost-form" class="inline-form">
+      <label>Datum <input type="date" name="date"></label>
+      <label>Bezeichnung <input type="text" name="label" required placeholder="Solar‑Bauer"></label>
+      <label>Betrag (CHF) <input type="number" step="0.01" name="amount_chf" required></label>
+      <button type="submit">Position hinzufügen</button>
+    </form>
+    <table class="data" id="costs-table">
+      <thead><tr><th>Datum</th><th>Bezeichnung</th><th class="num">Betrag</th><th class="action"></th></tr></thead>
+      <tbody>
+        {% for c in costs %}
+          <tr data-id="{{ c.id }}">
+            <td>{{ (c.date | ddmmyyyy) if c.date else '—' }}</td>
+            <td>{{ c.label }}</td>
+            <td class="num">{{ c.amount_chf | chf }} CHF</td>
+            <td class="action"><button class="del icon" data-id="{{ c.id }}" data-label="{{ c.label }}" aria-label="Löschen" title="Löschen"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td>
+          </tr>
+        {% endfor %}
+        <tr class="total">
+          <td></td>
+          <td><strong>Total Investition</strong></td>
+          <td class="num" id="cost-total"><strong>{{ total_invested | chf }} CHF</strong></td>
+          <td class="action"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="tab-panel" data-tab="electricity">
+  <div class="card">
+    <h2>Stromkosten</h2>
+    <p class="muted">Rechnungen vom Netzbetreiber erfassen: <strong>Bezug</strong> (Netzstrom) und <strong>Rücklieferung</strong> (Einspeisung). Periode, kWh und Betrag aus der Quartalsrechnung übernehmen.</p>
+    <form id="grid-form" class="inline-form">
+      <label>Art
+        <select name="kind" required>
+          <option value="import">Bezug</option>
+          <option value="export">Rücklieferung</option>
+        </select>
+      </label>
+      <label>Von <input type="date" name="period_start" required></label>
+      <label>Bis <input type="date" name="period_end" required></label>
+      <label>kWh <input type="number" step="0.01" min="0" name="kwh" required></label>
+      <label>Betrag (CHF) <input type="number" step="0.01" min="0" name="amount_chf" required></label>
+      <label>Rechnungs-Nr. <input type="text" name="invoice_no" placeholder="optional"></label>
+      <button type="submit">Speichern</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Netzbezug (Bezug)</h3>
+    <table class="data" id="imports-table">
+      <thead><tr><th>Periode</th><th class="num">kWh</th><th class="num">Kosten</th><th class="num">Ø Preis</th><th>Rechnung</th><th class="action"></th></tr></thead>
+      <tbody>
+        {% for b in grid_imports %}
+          <tr>
+            <td>{{ b.period_start | ddmmyyyy }} – {{ b.period_end | ddmmyyyy }}</td>
+            <td class="num">{{ b.kwh | chf }} kWh</td>
+            <td class="num">{{ b.amount_chf | chf }} CHF</td>
+            <td class="num">{{ "%.3f"|format((b.amount_chf / b.kwh) if b.kwh else 0) }} CHF/kWh</td>
+            <td>{{ b.invoice_no or '—' }}</td>
+            <td class="action"><button class="del icon" data-id="{{ b.id }}" aria-label="Löschen" title="Löschen"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td>
+          </tr>
+        {% endfor %}
+        <tr class="total">
+          <td><strong>Total</strong></td>
+          <td class="num"><strong>{{ grid_totals['import'].kwh | chf }} kWh</strong></td>
+          <td class="num"><strong>{{ grid_totals['import'].amount | chf }} CHF</strong></td>
+          <td class="num"><strong>{{ "%.3f"|format(grid_totals['import'].avg_price) }} CHF/kWh</strong></td>
+          <td></td>
+          <td class="action"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Rücklieferung (Einspeisung)</h3>
+    <table class="data" id="exports-table">
+      <thead><tr><th>Periode</th><th class="num">kWh</th><th class="num">Gutschrift</th><th class="num">Ø Preis</th><th>Rechnung</th><th class="action"></th></tr></thead>
+      <tbody>
+        {% for b in grid_exports %}
+          <tr>
+            <td>{{ b.period_start | ddmmyyyy }} – {{ b.period_end | ddmmyyyy }}</td>
+            <td class="num">{{ b.kwh | chf }} kWh</td>
+            <td class="num">{{ b.amount_chf | chf }} CHF</td>
+            <td class="num">{{ "%.3f"|format((b.amount_chf / b.kwh) if b.kwh else 0) }} CHF/kWh</td>
+            <td>{{ b.invoice_no or '—' }}</td>
+            <td class="action"><button class="del icon" data-id="{{ b.id }}" aria-label="Löschen" title="Löschen"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td>
+          </tr>
+        {% endfor %}
+        <tr class="total">
+          <td><strong>Total</strong></td>
+          <td class="num"><strong>{{ grid_totals['export'].kwh | chf }} kWh</strong></td>
+          <td class="num"><strong>{{ grid_totals['export'].amount | chf }} CHF</strong></td>
+          <td class="num"><strong>{{ "%.3f"|format(grid_totals['export'].avg_price) }} CHF/kWh</strong></td>
+          <td></td>
+          <td class="action"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="tab-panel" data-tab="targets">
+  <div class="card">
+    <h2>Monatliche Sollwerte (kWh)</h2>
+    <p class="muted">Leer lassen = Standardwert für alle Jahre. Wenn du Jahr setzt, gilt der Wert nur für dieses Jahr.</p>
+    <form id="targets-form" class="targets-grid">
+      {% set months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'] %}
+      {% for m in range(1, 13) %}
+        {% set ns = namespace(val='') %}
+        {% for t in targets %}
+          {% if t.month == m and t.year is none %}{% set ns.val = t.kwh %}{% endif %}
+        {% endfor %}
+        <label>{{ months[m-1] }}
+          <input type="number" step="1" data-month="{{ m }}" value="{{ ns.val }}">
+        </label>
+      {% endfor %}
+      <button type="submit">Sollwerte speichern</button>
+    </form>
+  </div>
+</section>
+
+<section class="tab-panel" data-tab="entry">
+  <div class="card">
+    <h2>Manuelle Tageseingabe</h2>
+    <form id="entry-form" class="inline-form">
+      <label>Datum <input type="date" name="date" required></label>
+      <label>kWh <input type="number" step="0.01" min="0" name="kwh" required></label>
+      <button type="submit">Speichern</button>
+    </form>
+    <div id="entry-status" class="muted"></div>
+    <h3 style="margin-top:18px;">Letzte 30 Einträge</h3>
+    <table class="data" id="entries-table">
+      <thead><tr><th>Datum</th><th class="num">kWh</th><th>Quelle</th><th class="action"></th></tr></thead>
+      <tbody>
+        {% for r in recent %}
+          <tr>
+            <td>{{ r.date | ddmmyyyy }}</td>
+            <td class="num">{{ r.kwh | chf }} kWh</td>
+            <td>{{ r.source }}</td>
+            <td class="action"><button class="del icon" data-date="{{ r.date }}" data-display="{{ r.date | ddmmyyyy }}" aria-label="Löschen" title="Löschen"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="tab-panel" data-tab="ha">
+  <div class="card">
+    <h2>Home Assistant Sync</h2>
+    <p class="muted">
+      URL: <code>{{ ha_url or '—' }}</code><br>
+      Entity: <code>{{ ha_entity or '—' }}</code><br>
+      (Änderung erfolgt über <code>.env</code>.)
+    </p>
+    <form id="sync-form" class="inline-form">
+      <label>Von <input type="date" name="from" required></label>
+      <label>Bis <input type="date" name="to" required></label>
+      <button type="submit">Jetzt synchronisieren</button>
+    </form>
+    <div id="sync-status" class="muted"></div>
+  </div>
 </section>
 
 <script>
+(() => {
+  const tabs = document.getElementById('settings-tabs');
+  const panels = document.querySelectorAll('.tab-panel');
+  const activate = (name) => {
+    tabs.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    panels.forEach(p => p.classList.toggle('active', p.dataset.tab === name));
+  };
+  tabs.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-tab]');
+    if (!b) return;
+    activate(b.dataset.tab);
+    history.replaceState(null, '', '#' + b.dataset.tab);
+  });
+  const initial = (location.hash || '').replace('#', '');
+  if (initial && document.querySelector(`.tab-panel[data-tab="${initial}"]`)) activate(initial);
+})();
+
+(() => {
+  const form = document.getElementById('sync-form');
+  const today = new Date();
+  const from = new Date(today);
+  from.setMonth(from.getMonth() - 6);
+  const iso = (d) => {
+    const tz = d.getTimezoneOffset() * 60000;
+    return new Date(d - tz).toISOString().slice(0, 10);
+  };
+  form.from.value = iso(from);
+  form.to.value = iso(today);
+})();
+
 document.getElementById('plant-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const body = { kwp: e.target.kwp.value, price_per_kwh: e.target.price_per_kwh.value };
@@ -121,6 +255,29 @@ document.querySelectorAll('#costs-table button.del').forEach(btn => {
   });
 });
 
+document.getElementById('grid-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const body = {
+    kind: e.target.kind.value,
+    period_start: e.target.period_start.value,
+    period_end: e.target.period_end.value,
+    kwh: Number(e.target.kwh.value),
+    amount_chf: Number(e.target.amount_chf.value),
+    invoice_no: e.target.invoice_no.value || null,
+  };
+  const r = await fetch('/api/grid', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if (r.ok) location.reload();
+  else { const j = await r.json(); alert('Fehler: ' + (j.error || 'unbekannt')); }
+});
+
+document.querySelectorAll('#imports-table button.del, #exports-table button.del').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!confirm('Eintrag löschen?')) return;
+    await fetch(`/api/grid/${btn.dataset.id}`, {method:'DELETE'});
+    location.reload();
+  });
+});
+
 document.getElementById('targets-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const inputs = e.target.querySelectorAll('input[data-month]');
@@ -129,6 +286,24 @@ document.getElementById('targets-form').addEventListener('submit', async (e) => 
     await fetch('/api/targets', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({month: Number(i.dataset.month), kwh: Number(i.value), year: null})});
   }
   alert('Sollwerte gespeichert.');
+});
+
+document.getElementById('entry-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const status = document.getElementById('entry-status');
+  const body = {date: e.target.date.value, kwh: Number(e.target.kwh.value)};
+  const r = await fetch('/api/production', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  const j = await r.json();
+  status.textContent = r.ok ? 'Gespeichert.' : `Fehler: ${j.error}`;
+  if (r.ok) setTimeout(() => location.reload(), 500);
+});
+
+document.querySelectorAll('#entries-table button.del').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!confirm(`Eintrag vom ${btn.dataset.display} löschen?`)) return;
+    await fetch(`/api/production/${btn.dataset.date}`, {method:'DELETE'});
+    location.reload();
+  });
 });
 
 document.getElementById('sync-form').addEventListener('submit', async (e) => {

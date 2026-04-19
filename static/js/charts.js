@@ -266,11 +266,11 @@ function renderKpis(data) {
   const delta = s.delta_kwh ?? 0;
   const pct = s.delta_pct;
   const deltaCls = delta >= 0 ? 'good' : 'bad';
-  const best = s.best_day ? `${fmtDate(s.best_day.date)}<br>${fmtKwh(s.best_day.kwh)}` : '—';
+  const best = s.best_day ? `${fmtDate(s.best_day.date)}<br><span class="sub">${fmtKwh(s.best_day.kwh)}</span>` : '—';
   const pctStr = pct === null ? '—' : `${pct.toLocaleString('de-CH', {maximumFractionDigits: 1})} %`;
   const spec = s.specific_yield !== null ? `${fmtInt(s.specific_yield)} kWh/kWp` : '—';
 
-  const kpis = [
+  const production = [
     { label: `Ist YTD ${s.year}`, value: fmtKwh(s.ytd_actual) },
     { label: `Soll YTD ${s.year}`, value: fmtKwh(s.ytd_target) },
     { label: 'Δ absolut', value: `${delta >= 0 ? '+' : '−'}${fmtKwh(Math.abs(delta))}`, cls: deltaCls },
@@ -280,21 +280,67 @@ function renderKpis(data) {
     { label: 'Erfasste Tage', value: fmtInt(s.days_recorded) },
   ];
 
+  const finance = [];
   const fin = data.finance;
   if (fin && fin.payback && fin.payback.invested > 0) {
     const p = fin.payback;
-    const paybackVal = p.payback_date ? fmtDate(p.payback_date) : '—';
+    const remainingStr = (iso) => {
+      if (!iso) return '';
+      const target = new Date(iso);
+      const now = new Date();
+      if (target <= now) return 'erreicht';
+      let months = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
+      if (target.getDate() < now.getDate()) months -= 1;
+      if (months < 0) months = 0;
+      const y = Math.floor(months / 12);
+      const m = months % 12;
+      if (y === 0) return `noch ${m} M`;
+      if (m === 0) return `noch ${y} J`;
+      return `noch ${y} J ${m} M`;
+    };
+    const paybackVal = p.payback_date
+      ? `${fmtDate(p.payback_date)}<br><span class="sub">${remainingStr(p.payback_date)}</span>`
+      : '—';
     const progressCls = p.progress_pct >= 100 ? 'good' : '';
-    kpis.push(
+    const b = p.breakdown || {};
+    const parts = [];
+    if (b.self_consumption_savings > 0) parts.push(`EV ${fmtChf(b.self_consumption_savings)}`);
+    if (b.export_credit > 0) parts.push(`Einsp. ${fmtChf(b.export_credit)}`);
+    if (b.estimated_other > 0) parts.push(`gesch. ${fmtChf(b.estimated_other)}`);
+    const revSub = parts.length ? `<br><span class="sub">${parts.join(' · ')}</span>` : '';
+    finance.push(
       { label: 'Investition', value: fmtChf(p.invested) },
-      { label: 'Ertrag bisher', value: fmtChf(p.revenue_total) },
+      { label: 'Ertrag bisher', value: `${fmtChf(p.revenue_total)}${revSub}` },
       { label: 'Fortschritt', value: `${p.progress_pct.toLocaleString('de-CH', {maximumFractionDigits: 1})} %`, cls: progressCls },
       { label: 'Amortisation', value: paybackVal },
     );
   }
+
+  const energy = [];
+  const grid = data.grid;
+  if (grid && grid.totals && (grid.totals['import'].amount > 0 || grid.totals['export'].amount > 0)) {
+    const sc = grid.self_consumption || {};
+    const net = grid.totals.net_cost || 0;
+    const scPct = sc.self_consumption_pct ?? 0;
+    const pctCls = scPct >= 30 ? 'good' : '';
+    energy.push(
+      { label: 'Netto-Stromkosten', value: fmtChf(net) },
+      { label: 'Eigenverbrauch', value: fmtKwh(sc.self_consumed_kwh ?? 0) },
+      { label: 'Eigenverbr.-Quote', value: `${scPct.toLocaleString('de-CH', {maximumFractionDigits: 1})} %`, cls: pctCls },
+    );
+  }
+
+  const groups = [
+    { title: 'Produktion', kpis: production },
+    { title: 'Finanzen', kpis: finance },
+    { title: 'Eigenverbrauch & Netz', kpis: energy },
+  ].filter(g => g.kpis.length);
+
   const el = document.getElementById('kpis');
-  el.innerHTML = kpis.map(k =>
-    `<div class="kpi"><div class="label">${k.label}</div><div class="value ${k.cls || ''}">${k.value}</div></div>`
+  el.innerHTML = groups.map(g =>
+    `<div class="kpi-group"><h3>${g.title}</h3><div class="kpis">${g.kpis.map(k =>
+      `<div class="kpi"><div class="label">${k.label}</div><div class="value ${k.cls || ''}">${k.value}</div></div>`
+    ).join('')}</div></div>`
   ).join('');
 }
 

@@ -128,17 +128,100 @@ def heatmap_data(records: list[dict], year: int) -> list[dict]:
     return out
 
 
-def cumulative_revenue(records: list[dict], price: float) -> list[dict]:
+def self_consumption(records: list[dict], export_bills: list[dict]) -> dict:
+    if not export_bills:
+        return {
+            "pv_in_export_periods": 0.0,
+            "exported_kwh": 0.0,
+            "self_consumed_kwh": 0.0,
+            "self_consumption_pct": 0.0,
+        }
+    total_export = sum(b["kwh"] for b in export_bills)
+    pv_sum = 0.0
+    for bill in export_bills:
+        start = bill["period_start"]
+        end = bill["period_end"]
+        for r in records:
+            if start <= r["date"] <= end:
+                pv_sum += r["kwh"]
+    self_consumed = max(0.0, pv_sum - total_export)
+    pct = (self_consumed / pv_sum * 100.0) if pv_sum > 0 else 0.0
+    return {
+        "pv_in_export_periods": round(pv_sum, 2),
+        "exported_kwh": round(total_export, 2),
+        "self_consumed_kwh": round(self_consumed, 2),
+        "self_consumption_pct": round(pct, 1),
+    }
+
+
+def financial_series(
+    records: list[dict],
+    import_bills: list[dict],
+    export_bills: list[dict],
+    fallback_price: float,
+) -> tuple[list[dict], dict]:
     rows = sorted(records, key=lambda r: r["date"])
-    out, s = [], 0.0
+
+    total_imp_kwh = sum(b["kwh"] for b in import_bills)
+    total_imp_amount = sum(b["amount_chf"] for b in import_bills)
+    avg_import_price = (total_imp_amount / total_imp_kwh) if total_imp_kwh > 0 else fallback_price
+
+    period_rates = []
+    total_pv_in_export = 0.0
+    for bill in export_bills:
+        start, end = bill["period_start"], bill["period_end"]
+        pv_in_period = sum(r["kwh"] for r in rows if start <= r["date"] <= end)
+        total_pv_in_export += pv_in_period
+        export_kwh = bill["kwh"]
+        export_amount = bill["amount_chf"]
+        self_kwh = max(0.0, pv_in_period - export_kwh)
+        savings = self_kwh * avg_import_price
+        rate = ((export_amount + savings) / pv_in_period) if pv_in_period > 0 else fallback_price
+        period_rates.append({"start": start, "end": end, "rate": rate})
+
+    def rate_for(d: str) -> float:
+        for p in period_rates:
+            if p["start"] <= d <= p["end"]:
+                return p["rate"]
+        return fallback_price
+
+    cum, s = [], 0.0
     for r in rows:
-        s += r["kwh"] * price
-        out.append({"date": r["date"], "revenue": round(s, 2)})
-    return out
+        s += r["kwh"] * rate_for(r["date"])
+        cum.append({"date": r["date"], "revenue": round(s, 2)})
+
+    total_exported_kwh = sum(b["kwh"] for b in export_bills)
+    total_export_credit = sum(b["amount_chf"] for b in export_bills)
+    self_consumed_kwh = max(0.0, total_pv_in_export - total_exported_kwh)
+    self_consumption_savings = self_consumed_kwh * avg_import_price
+    all_pv = sum(r["kwh"] for r in rows)
+    uncovered_pv = max(0.0, all_pv - total_pv_in_export)
+    estimated_other = uncovered_pv * fallback_price
+
+    breakdown = {
+        "avg_import_price": round(avg_import_price, 4),
+        "self_consumption_savings": round(self_consumption_savings, 2),
+        "export_credit": round(total_export_credit, 2),
+        "estimated_other": round(estimated_other, 2),
+        "total_revenue": round(self_consumption_savings + total_export_credit + estimated_other, 2),
+        "uncovered_pv_kwh": round(uncovered_pv, 2),
+    }
+    return cum, breakdown
 
 
-def payback(records: list[dict], invested: float, price: float) -> dict:
-    if invested <= 0 or price <= 0 or not records:
+def cumulative_revenue(records, import_bills, export_bills, fallback_price):
+    return financial_series(records, import_bills, export_bills, fallback_price)[0]
+
+
+def payback(
+    records: list[dict],
+    invested: float,
+    import_bills: list[dict],
+    export_bills: list[dict],
+    fallback_price: float,
+) -> dict:
+    cum, breakdown = financial_series(records, import_bills, export_bills, fallback_price)
+    if invested <= 0 or not cum:
         return {
             "invested": round(invested, 2),
             "revenue_total": 0.0,
@@ -146,8 +229,8 @@ def payback(records: list[dict], invested: float, price: float) -> dict:
             "payback_date": None,
             "progress_pct": 0.0,
             "avg_daily_revenue": 0.0,
+            "breakdown": breakdown,
         }
-    cum = cumulative_revenue(records, price)
     revenue_total = cum[-1]["revenue"] if cum else 0.0
     payback_date = None
     for row in cum:
@@ -171,8 +254,9 @@ def payback(records: list[dict], invested: float, price: float) -> dict:
         "revenue_total": round(revenue_total, 2),
         "remaining": round(remaining, 2),
         "payback_date": payback_date,
-        "progress_pct": round(min(100.0, revenue_total / invested * 100.0), 1),
+        "progress_pct": round(min(100.0, revenue_total / invested * 100.0) if invested > 0 else 0.0, 1),
         "avg_daily_revenue": round(avg_daily, 4),
+        "breakdown": breakdown,
     }
 
 
