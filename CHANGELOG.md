@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Worker crash on first boot when two gunicorn workers initialised the
+  SQLite schema in parallel; app is now loaded with `--preload` and
+  connections set `PRAGMA busy_timeout = 5000`.
+
 ## [1.0.0] - 2026-04-19
 
 ### Added
