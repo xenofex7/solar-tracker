@@ -4,6 +4,7 @@
 <section class="toolbar">
   <label for="year-select">Jahr</label>
   <select id="year-select">
+    <option value="all">Gesamt</option>
     {% for y in years %}
       <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
     {% endfor %}

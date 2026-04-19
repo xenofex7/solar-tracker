@@ -13,21 +13,34 @@ def _parse(d: str) -> date:
     return date.fromisoformat(d)
 
 
-def filter_year(records: list[dict], year: int) -> list[dict]:
+def _is_all(year) -> bool:
+    return year is None or year == "all"
+
+
+def filter_year(records: list[dict], year) -> list[dict]:
+    if _is_all(year):
+        return list(records)
     return [r for r in records if r["date"].startswith(f"{year}-")]
 
 
-def monthly_actual(records: list[dict], year: int) -> list[float]:
+def years_in_records(records: list[dict]) -> list[int]:
+    return sorted({int(r["date"][:4]) for r in records})
+
+
+def monthly_actual(records: list[dict], year) -> list[float]:
     totals = [0.0] * 12
     for r in records:
-        if not r["date"].startswith(f"{year}-"):
+        if not _is_all(year) and not r["date"].startswith(f"{year}-"):
             continue
         m = int(r["date"][5:7])
         totals[m - 1] += r["kwh"]
     return totals
 
 
-def monthly_targets(targets: list[dict], year: int) -> list[float]:
+def monthly_targets(targets: list[dict], year, multiplier: int = 1) -> list[float]:
+    if _is_all(year):
+        generic = {t["month"]: t["kwh"] for t in targets if t.get("year") is None}
+        return [generic.get(m, 0.0) * max(1, multiplier) for m in range(1, 13)]
     specific = {t["month"]: t["kwh"] for t in targets if t.get("year") == year}
     generic = {t["month"]: t["kwh"] for t in targets if t.get("year") is None}
     out = []
@@ -54,7 +67,9 @@ def cumulative(values: list[float]) -> list[float]:
     return out
 
 
-def daily_series(records: list[dict], year: int) -> list[dict]:
+def daily_series(records: list[dict], year) -> list[dict]:
+    if _is_all(year):
+        return sorted(records, key=lambda r: r["date"])
     in_year = [r for r in records if r["date"].startswith(f"{year}-")]
     in_year.sort(key=lambda r: r["date"])
     return in_year
@@ -71,10 +86,10 @@ def rolling_avg(values: list[float], window: int = 7) -> list[float | None]:
     return out
 
 
-def monthly_distribution(records: list[dict], year: int) -> list[dict]:
+def monthly_distribution(records: list[dict], year) -> list[dict]:
     buckets: dict[int, list[float]] = defaultdict(list)
     for r in records:
-        if not r["date"].startswith(f"{year}-"):
+        if not _is_all(year) and not r["date"].startswith(f"{year}-"):
             continue
         m = int(r["date"][5:7])
         buckets[m].append(r["kwh"])
@@ -99,10 +114,10 @@ def monthly_distribution(records: list[dict], year: int) -> list[dict]:
     return result
 
 
-def top_days(records: list[dict], year: int, n: int = 5) -> dict:
-    in_year = [r for r in records if r["date"].startswith(f"{year}-")]
-    top = sorted(in_year, key=lambda r: r["kwh"], reverse=True)[:n]
-    flop = sorted([r for r in in_year if r["kwh"] > 0], key=lambda r: r["kwh"])[:n]
+def top_days(records: list[dict], year, n: int = 5) -> dict:
+    pool = list(records) if _is_all(year) else [r for r in records if r["date"].startswith(f"{year}-")]
+    top = sorted(pool, key=lambda r: r["kwh"], reverse=True)[:n]
+    flop = sorted([r for r in pool if r["kwh"] > 0], key=lambda r: r["kwh"])[:n]
     return {"top": top, "flop": flop}
 
 
@@ -116,7 +131,12 @@ def year_comparison(records: list[dict]) -> dict[int, list[float]]:
     return years
 
 
-def heatmap_data(records: list[dict], year: int) -> list[dict]:
+def heatmap_data(records: list[dict], year) -> list[dict]:
+    if _is_all(year):
+        years = years_in_records(records)
+        if not years:
+            return []
+        year = years[-1]
     by_date = {r["date"]: r["kwh"] for r in records}
     out = []
     d = date(year, 1, 1)
@@ -260,28 +280,40 @@ def payback(
     }
 
 
-def summary(records: list[dict], targets: list[dict], year: int, kwp: float) -> dict:
-    actual = monthly_actual(records, year)
-    target = monthly_targets(targets, year)
-    ytd_actual = round(sum(actual), 2)
-
+def summary(records: list[dict], targets: list[dict], year, kwp: float) -> dict:
     today = date.today()
-    if year < today.year:
-        ytd_target = round(sum(target), 2)
-    elif year > today.year:
-        ytd_target = 0.0
+    if _is_all(year):
+        actual = monthly_actual(records, year)
+        ytd_actual = round(sum(actual), 2)
+        in_scope = list(records)
+        generic = {t["month"]: t["kwh"] for t in targets if t.get("year") is None}
+        full_year_target = sum(generic.values())
+        if in_scope:
+            first = date.fromisoformat(min(r["date"] for r in in_scope))
+            months_elapsed = (today.year - first.year) * 12 + (today.month - first.month)
+            days_in_month = calendar.monthrange(today.year, today.month)[1]
+            months_elapsed += today.day / days_in_month
+            ytd_target = round(full_year_target * (months_elapsed / 12.0), 2)
+        else:
+            ytd_target = 0.0
     else:
-        full = sum(target[: today.month - 1])
-        days_in_month = calendar.monthrange(year, today.month)[1]
-        partial = target[today.month - 1] * (today.day / days_in_month)
-        ytd_target = round(full + partial, 2)
+        actual = monthly_actual(records, year)
+        target = monthly_targets(targets, year)
+        ytd_actual = round(sum(actual), 2)
+        if year < today.year:
+            ytd_target = round(sum(target), 2)
+        elif year > today.year:
+            ytd_target = 0.0
+        else:
+            full = sum(target[: today.month - 1])
+            days_in_month = calendar.monthrange(year, today.month)[1]
+            partial = target[today.month - 1] * (today.day / days_in_month)
+            ytd_target = round(full + partial, 2)
+        in_scope = [r for r in records if r["date"].startswith(f"{year}-")]
 
     delta = round(ytd_actual - ytd_target, 2)
     dev = (delta / ytd_target * 100.0) if ytd_target > 0 else None
-
-    in_year = [r for r in records if r["date"].startswith(f"{year}-")]
-    best = max(in_year, key=lambda r: r["kwh"]) if in_year else None
-
+    best = max(in_scope, key=lambda r: r["kwh"]) if in_scope else None
     spec_yield = round(ytd_actual / kwp, 2) if kwp else None
 
     return {
@@ -291,7 +323,7 @@ def summary(records: list[dict], targets: list[dict], year: int, kwp: float) -> 
         "delta_kwh": delta,
         "delta_pct": round(dev, 2) if dev is not None else None,
         "best_day": best,
-        "days_recorded": len(in_year),
+        "days_recorded": len(in_scope),
         "specific_yield": spec_yield,
         "kwp": kwp,
     }

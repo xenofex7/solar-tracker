@@ -246,7 +246,14 @@ def api_grid_delete(bill_id):
 
 @app.route("/api/summary")
 def api_summary():
-    year = int(request.args.get("year", date.today().year))
+    year_param = request.args.get("year", str(date.today().year))
+    if year_param == "all":
+        year = "all"
+    else:
+        try:
+            year = int(year_param)
+        except ValueError:
+            year = date.today().year
     records = db.get_production()
     targets = db.get_targets()
     kwp = _kwp()
@@ -254,7 +261,8 @@ def api_summary():
     invested = db.total_invested()
 
     actual = metrics.monthly_actual(records, year)
-    target = metrics.monthly_targets(targets, year)
+    multiplier = len(metrics.years_in_records(records)) if year == "all" else 1
+    target = metrics.monthly_targets(targets, year, multiplier=multiplier)
     dev = metrics.deviation_pct(actual, target)
     cum_a = metrics.cumulative(actual)
     cum_t = metrics.cumulative(target)

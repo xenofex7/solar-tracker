@@ -29,7 +29,7 @@ header {
   border-bottom: 1px solid var(--border);
 }
 
-.brand { font-weight: 700; font-size: 18px; color: var(--accent); }
+.brand { font-weight: 700; font-size: 18px; color: var(--accent); text-decoration: none; }
 nav a {
   color: var(--text);
   text-decoration: none;

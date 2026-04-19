@@ -101,7 +101,7 @@ function renderCumulative(data) {
   destroy('cumulative');
   const ctx = document.getElementById('chart-cumulative');
   const now = new Date();
-  const monthIdx = data.year === now.getFullYear()
+  const monthIdx = (typeof data.year === 'number' && data.year === now.getFullYear())
     ? now.getMonth() + (now.getDate() - 1) / 30
     : null;
   charts.cumulative = new Chart(ctx, {
@@ -124,8 +124,9 @@ function renderDaily(data) {
   const labels = data.daily.map(d => d.date);
   const values = data.daily.map(d => d.kwh);
   const t = todayIso();
+  const isCurrentYear = typeof data.year === 'number' && data.year === new Date().getFullYear();
   let todayIdx = labels.indexOf(t);
-  if (todayIdx < 0 && data.year === new Date().getFullYear() && labels.length) {
+  if (todayIdx < 0 && isCurrentYear && labels.length) {
     todayIdx = labels.findIndex(l => l > t);
     if (todayIdx < 0) todayIdx = labels.length - 1;
   }
@@ -150,7 +151,7 @@ function renderDaily(data) {
         y: { beginAtZero: true, ticks: { callback: v => fmtKwh(v) } },
       },
     },
-    plugins: (todayIdx >= 0 && data.year === new Date().getFullYear()) ? [todayMarker(todayIdx)] : [],
+    plugins: (todayIdx >= 0 && isCurrentYear) ? [todayMarker(todayIdx)] : [],
   });
 }
 
@@ -270,9 +271,10 @@ function renderKpis(data) {
   const pctStr = pct === null ? '—' : `${pct.toLocaleString('de-CH', {maximumFractionDigits: 1})} %`;
   const spec = s.specific_yield !== null ? `${fmtInt(s.specific_yield)} kWh/kWp` : '—';
 
+  const scopeLabel = s.year === 'all' ? 'gesamt' : `YTD ${s.year}`;
   const production = [
-    { label: `Ist YTD ${s.year}`, value: fmtKwh(s.ytd_actual) },
-    { label: `Soll YTD ${s.year}`, value: fmtKwh(s.ytd_target) },
+    { label: `Ist ${scopeLabel}`, value: fmtKwh(s.ytd_actual) },
+    { label: `Soll ${scopeLabel}`, value: fmtKwh(s.ytd_target) },
     { label: 'Δ absolut', value: `${delta >= 0 ? '+' : '−'}${fmtKwh(Math.abs(delta))}`, cls: deltaCls },
     { label: 'Δ in %', value: pctStr, cls: deltaCls },
     { label: 'Bester Tag', value: best },

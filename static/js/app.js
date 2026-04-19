@@ -8,7 +8,10 @@ async function loadYear(year) {
   const sel = document.getElementById('year-select');
   if (data.available_years.length) {
     const current = sel.value;
-    sel.innerHTML = data.available_years.map(y => `<option value="${y}" ${Number(current)===y?'selected':''}>${y}</option>`).join('');
+    const opts = ['<option value="all">Gesamt</option>']
+      .concat(data.available_years.map(y => `<option value="${y}">${y}</option>`));
+    sel.innerHTML = opts.join('');
+    sel.value = current || String(data.year);
   }
 
   SolarCharts.renderKpis(data);
