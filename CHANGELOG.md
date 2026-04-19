@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Per-period charts (Energieflüsse, Eigenverbrauchsquote, Finanzfluss)
+  now honour the selected year instead of always showing all billing
+  periods.
+
 ## [1.1.0] - 2026-04-19
 ### Added
 - Footer showing the running app version (read from `VERSION`).
