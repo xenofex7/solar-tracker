@@ -34,7 +34,16 @@ header {
   border-bottom: 1px solid var(--border);
 }
 
-.brand { font-weight: 700; font-size: 18px; color: var(--accent); text-decoration: none; }
+.brand {
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--accent);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand img { display: block; }
 nav a {
   color: var(--text);
   text-decoration: none;
