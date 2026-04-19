@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 - Footer showing the running app version (read from `VERSION`).
+- Three new dashboard charts per billing period: energy flows (self-
+  consumed, exported, grid import), self-consumption ratio over time,
+  financial flow (import cost, self-consumption savings, export
+  credit).
+
+### Changed
+- Amortisation projection now uses yearly target × blended price
+  (falls back to the historical daily average), with a sub-label
+  showing the basis (Jahressoll or Verlauf).
 
 ### Fixed
 - Settings page rendered narrower than the dashboard because `main`

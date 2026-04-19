@@ -299,9 +299,11 @@ def api_summary():
     imports = db.list_grid_bills("import")
     exports = db.list_grid_bills("export")
     cum_rev = metrics.cumulative_revenue(records, imports, exports, price)
-    pay = metrics.payback(records, invested, imports, exports, price)
+    pay = metrics.payback(records, invested, imports, exports, price, targets=targets)
     sc = metrics.self_consumption(records, exports)
     grid_tot = db.grid_totals()
+    avg_import_price = grid_tot.get("import", {}).get("avg_price") or price
+    flows = metrics.period_flows(records, imports, exports, avg_import_price)
 
     return jsonify({
         "year": year,
@@ -326,6 +328,7 @@ def api_summary():
         "grid": {
             "totals": grid_tot,
             "self_consumption": sc,
+            "periods": flows,
         },
         "available_years": db.available_years(),
     })

@@ -148,6 +148,52 @@ def heatmap_data(records: list[dict], year) -> list[dict]:
     return out
 
 
+def _quarter_label(iso: str) -> str:
+    d = date.fromisoformat(iso)
+    q = (d.month - 1) // 3 + 1
+    return f"Q{q} {d.year}"
+
+
+def period_flows(
+    records: list[dict],
+    import_bills: list[dict],
+    export_bills: list[dict],
+    avg_import_price: float,
+) -> list[dict]:
+    flows = []
+    for ex in export_bills:
+        start, end = ex["period_start"], ex["period_end"]
+        pv = sum(r["kwh"] for r in records if start <= r["date"] <= end)
+        exported = ex["kwh"]
+        self_kwh = max(0.0, pv - exported)
+        imp_match = None
+        best_overlap = 0
+        for imp in import_bills:
+            o_start = max(imp["period_start"], start)
+            o_end = min(imp["period_end"], end)
+            if o_start <= o_end:
+                overlap = (date.fromisoformat(o_end) - date.fromisoformat(o_start)).days + 1
+                if overlap > best_overlap:
+                    best_overlap = overlap
+                    imp_match = imp
+        import_kwh = imp_match["kwh"] if imp_match else 0.0
+        import_cost = imp_match["amount_chf"] if imp_match else 0.0
+        flows.append({
+            "label": _quarter_label(start),
+            "period_start": start,
+            "period_end": end,
+            "pv_kwh": round(pv, 2),
+            "self_consumed_kwh": round(self_kwh, 2),
+            "exported_kwh": round(exported, 2),
+            "imported_kwh": round(import_kwh, 2),
+            "self_consumption_pct": round(self_kwh / pv * 100.0, 1) if pv > 0 else 0.0,
+            "export_credit": round(ex["amount_chf"], 2),
+            "import_cost": round(import_cost, 2),
+            "self_consumption_savings": round(self_kwh * avg_import_price, 2),
+        })
+    return flows
+
+
 def self_consumption(records: list[dict], export_bills: list[dict]) -> dict:
     if not export_bills:
         return {
@@ -239,6 +285,7 @@ def payback(
     import_bills: list[dict],
     export_bills: list[dict],
     fallback_price: float,
+    targets: list[dict] | None = None,
 ) -> dict:
     cum, breakdown = financial_series(records, import_bills, export_bills, fallback_price)
     if invested <= 0 or not cum:
@@ -249,6 +296,8 @@ def payback(
             "payback_date": None,
             "progress_pct": 0.0,
             "avg_daily_revenue": 0.0,
+            "projection_basis": "none",
+            "yearly_yield_estimate": 0.0,
             "breakdown": breakdown,
         }
     revenue_total = cum[-1]["revenue"] if cum else 0.0
@@ -258,12 +307,26 @@ def payback(
             payback_date = row["date"]
             break
     remaining = max(0.0, invested - revenue_total)
-    if len(cum) >= 2:
+
+    # Preferred projection: yearly target kWh × blended effective price
+    total_pv = sum(r["kwh"] for r in records)
+    blended_price = (revenue_total / total_pv) if total_pv > 0 else fallback_price
+    yearly_target_kwh = 0.0
+    if targets:
+        generic = {t["month"]: t["kwh"] for t in targets if t.get("year") is None}
+        yearly_target_kwh = sum(generic.values())
+    yearly_yield = yearly_target_kwh * blended_price
+    projection_basis = "targets" if yearly_yield > 0 else "history"
+
+    if yearly_yield > 0:
+        avg_daily = yearly_yield / 365.0
+    elif len(cum) >= 2:
         window = cum[-365:]
         span = max(1, (date.fromisoformat(window[-1]["date"]) - date.fromisoformat(window[0]["date"])).days)
         avg_daily = (window[-1]["revenue"] - window[0]["revenue"]) / span
     else:
         avg_daily = cum[-1]["revenue"]
+
     if payback_date is None and avg_daily > 0 and remaining > 0:
         days_needed = remaining / avg_daily
         last_date = date.fromisoformat(cum[-1]["date"])
@@ -276,6 +339,9 @@ def payback(
         "payback_date": payback_date,
         "progress_pct": round(min(100.0, revenue_total / invested * 100.0) if invested > 0 else 0.0, 1),
         "avg_daily_revenue": round(avg_daily, 4),
+        "projection_basis": projection_basis,
+        "yearly_yield_estimate": round(yearly_yield, 2),
+        "blended_price": round(blended_price, 4),
         "breakdown": breakdown,
     }
 

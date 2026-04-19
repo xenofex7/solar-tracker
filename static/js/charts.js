@@ -300,8 +300,9 @@ function renderKpis(data) {
       if (m === 0) return `noch ${y} J`;
       return `noch ${y} J ${m} M`;
     };
+    const basisLabel = p.projection_basis === 'targets' ? 'Jahressoll' : 'Verlauf';
     const paybackVal = p.payback_date
-      ? `${fmtDate(p.payback_date)}<br><span class="sub">${remainingStr(p.payback_date)}</span>`
+      ? `${fmtDate(p.payback_date)}<br><span class="sub">${remainingStr(p.payback_date)} · ${basisLabel}</span>`
       : '—';
     const progressCls = p.progress_pct >= 100 ? 'good' : '';
     const b = p.breakdown || {};
@@ -387,8 +388,99 @@ function renderPayback(data) {
   });
 }
 
+function _hideIfEmpty(ctx, show) {
+  if (!ctx) return false;
+  const card = ctx.closest('.card');
+  if (card) card.style.display = show ? '' : 'none';
+  return show;
+}
+
+function renderEnergyFlows(data) {
+  destroy('energy-flows');
+  const ctx = document.getElementById('chart-energy-flows');
+  const periods = data.grid?.periods || [];
+  if (!_hideIfEmpty(ctx, periods.length > 0)) return;
+  const labels = periods.map(p => p.label);
+  charts['energy-flows'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Eigenverbrauch', data: periods.map(p => p.self_consumed_kwh), backgroundColor: CHART_COLORS.actual, stack: 'pv' },
+        { label: 'Einspeisung', data: periods.map(p => p.exported_kwh), backgroundColor: CHART_COLORS.good, stack: 'pv' },
+        { label: 'Netzbezug', data: periods.map(p => p.imported_kwh), backgroundColor: 'rgba(52,152,219,0.75)', stack: 'grid' },
+      ],
+    },
+    options: {
+      plugins: {
+        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtKwh(item.parsed.y)}` } },
+      },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, beginAtZero: true, ticks: { callback: v => fmtKwh(v) } },
+      },
+    },
+  });
+}
+
+function renderSelfRatio(data) {
+  destroy('self-ratio');
+  const ctx = document.getElementById('chart-self-ratio');
+  const periods = data.grid?.periods || [];
+  if (!_hideIfEmpty(ctx, periods.length > 0)) return;
+  const labels = periods.map(p => p.label);
+  const values = periods.map(p => p.self_consumption_pct);
+  charts['self-ratio'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Eigenverbrauchsquote', data: values,
+        borderColor: CHART_COLORS.actualLine,
+        backgroundColor: 'rgba(245,166,35,0.18)',
+        fill: true, tension: 0.25, pointRadius: 4,
+      }],
+    },
+    options: {
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: item => `${item.parsed.y.toLocaleString('de-CH', {maximumFractionDigits: 1})} %` } },
+      },
+      scales: { y: { beginAtZero: true, suggestedMax: 100, ticks: { callback: v => `${v} %` } } },
+    },
+  });
+}
+
+function renderFinanceFlow(data) {
+  destroy('finance-flow');
+  const ctx = document.getElementById('chart-finance-flow');
+  const periods = data.grid?.periods || [];
+  if (!_hideIfEmpty(ctx, periods.length > 0)) return;
+  const labels = periods.map(p => p.label);
+  charts['finance-flow'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Bezugskosten', data: periods.map(p => -p.import_cost), backgroundColor: 'rgba(231,76,60,0.8)' },
+        { label: 'Eigenverbrauch gespart', data: periods.map(p => p.self_consumption_savings), backgroundColor: CHART_COLORS.actual },
+        { label: 'Einspeisung', data: periods.map(p => p.export_credit), backgroundColor: CHART_COLORS.good },
+      ],
+    },
+    options: {
+      plugins: {
+        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtChf(Math.abs(item.parsed.y))}` } },
+      },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, ticks: { callback: v => fmtChf(v) } },
+      },
+    },
+  });
+}
+
 window.SolarCharts = {
   renderKpis, renderMonthly, renderDeviation, renderCumulative,
   renderDaily, renderHeatmap, renderDistribution, renderYearComparison, renderTopFlop,
-  renderPayback,
+  renderPayback, renderEnergyFlows, renderSelfRatio, renderFinanceFlow,
 };

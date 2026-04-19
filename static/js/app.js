@@ -24,6 +24,9 @@ async function loadYear(year) {
   SolarCharts.renderYearComparison(data);
   SolarCharts.renderTopFlop(data);
   SolarCharts.renderPayback(data);
+  SolarCharts.renderEnergyFlows(data);
+  SolarCharts.renderSelfRatio(data);
+  SolarCharts.renderFinanceFlow(data);
   status.textContent = '';
 }
 
