@@ -11,6 +11,7 @@ from ha_client import HAClientError, fetch_daily
 load_dotenv()
 
 app = Flask(__name__)
+db.init_db()
 
 
 @app.template_filter("ddmmyyyy")
@@ -310,10 +311,10 @@ def api_summary():
 
 
 def main():
-    db.init_db()
     port = int(os.environ.get("PORT") or os.environ.get("FLASK_PORT") or "5000")
     debug = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
-    app.run(host="127.0.0.1", port=port, debug=debug)
+    host = os.environ.get("FLASK_HOST", "127.0.0.1")
+    app.run(host=host, port=port, debug=debug)
 
 
 if __name__ == "__main__":

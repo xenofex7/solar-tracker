@@ -16,6 +16,17 @@ python seed_demo.py       # optional: demo data so the charts render
 python app.py             # opens http://localhost:5000
 ```
 
+## Docker
+
+```bash
+cp .env.example .env      # set HA_URL, HA_TOKEN, HA_ENTITY_ID
+docker compose up -d      # builds and starts on http://localhost:5000
+```
+
+The SQLite database lives in `./data` on the host (mounted into the
+container), so stopping or rebuilding the container preserves all data.
+The container runs gunicorn with two workers.
+
 ## Features
 
 - Dashboard with nine visualisations:
