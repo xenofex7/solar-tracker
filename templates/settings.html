@@ -19,8 +19,8 @@
       <label>Anlagenleistung (kWp)
         <input type="number" step="0.1" name="kwp" value="{{ kwp }}">
       </label>
-      <label>Ertragspreis (CHF / kWh)
-        <input type="number" step="0.001" name="price_per_kwh" value="{{ price_per_kwh }}">
+      <label>Schätzpreis PV (CHF / kWh, Fallback)
+        <input type="number" step="0.001" name="price_per_kwh" value="{{ price_per_kwh }}" title="Wird nur verwendet, wenn für einen Zeitraum keine Rücklieferungs-Rechnung existiert.">
       </label>
       <button type="submit">Speichern</button>
     </form>
