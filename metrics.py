@@ -148,46 +148,98 @@ def heatmap_data(records: list[dict], year) -> list[dict]:
     return out
 
 
-def _quarter_label(iso: str) -> str:
-    d = date.fromisoformat(iso)
-    q = (d.month - 1) // 3 + 1
-    return f"Q{q} {d.year}"
+_MONTH_LABELS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
 
 
-def period_flows(
+def _iter_months(start_iso: str, end_iso: str):
+    s = date.fromisoformat(start_iso)
+    e = date.fromisoformat(end_iso)
+    y, m = s.year, s.month
+    while (y, m) <= (e.year, e.month):
+        yield y, m
+        m += 1
+        if m > 12:
+            m = 1
+            y += 1
+
+
+def _overlap_days(a1: date, a2: date, b1: date, b2: date) -> int:
+    s, e = max(a1, b1), min(a2, b2)
+    return (e - s).days + 1 if s <= e else 0
+
+
+def monthly_flows(
     records: list[dict],
     import_bills: list[dict],
     export_bills: list[dict],
     avg_import_price: float,
 ) -> list[dict]:
+    months = set()
+    for b in list(import_bills) + list(export_bills):
+        for ym in _iter_months(b["period_start"], b["period_end"]):
+            months.add(ym)
+    if not months:
+        return []
+
     flows = []
-    for ex in export_bills:
-        start, end = ex["period_start"], ex["period_end"]
-        pv = sum(r["kwh"] for r in records if start <= r["date"] <= end)
-        exported = ex["kwh"]
-        self_kwh = max(0.0, pv - exported)
-        imp_match = None
-        best_overlap = 0
+    for (y, m) in sorted(months):
+        mfirst = date(y, m, 1)
+        mlast = date(y, m, calendar.monthrange(y, m)[1])
+        mfirst_iso, mlast_iso = mfirst.isoformat(), mlast.isoformat()
+
+        pv_kwh = sum(r["kwh"] for r in records if mfirst_iso <= r["date"] <= mlast_iso)
+
+        exported = 0.0
+        export_credit = 0.0
+        for ex in export_bills:
+            ex_start = date.fromisoformat(ex["period_start"])
+            ex_end = date.fromisoformat(ex["period_end"])
+            if _overlap_days(mfirst, mlast, ex_start, ex_end) == 0:
+                continue
+            pv_in_period = sum(
+                r["kwh"] for r in records
+                if ex["period_start"] <= r["date"] <= ex["period_end"]
+            )
+            o_start_iso = max(ex_start, mfirst).isoformat()
+            o_end_iso = min(ex_end, mlast).isoformat()
+            pv_in_overlap = sum(
+                r["kwh"] for r in records if o_start_iso <= r["date"] <= o_end_iso
+            )
+            if pv_in_period > 0:
+                share = pv_in_overlap / pv_in_period
+            else:
+                total_days = (ex_end - ex_start).days + 1
+                share = _overlap_days(mfirst, mlast, ex_start, ex_end) / total_days if total_days else 0
+            exported += ex["kwh"] * share
+            export_credit += ex["amount_chf"] * share
+
+        imported = 0.0
+        import_cost = 0.0
         for imp in import_bills:
-            o_start = max(imp["period_start"], start)
-            o_end = min(imp["period_end"], end)
-            if o_start <= o_end:
-                overlap = (date.fromisoformat(o_end) - date.fromisoformat(o_start)).days + 1
-                if overlap > best_overlap:
-                    best_overlap = overlap
-                    imp_match = imp
-        import_kwh = imp_match["kwh"] if imp_match else 0.0
-        import_cost = imp_match["amount_chf"] if imp_match else 0.0
+            imp_start = date.fromisoformat(imp["period_start"])
+            imp_end = date.fromisoformat(imp["period_end"])
+            overlap = _overlap_days(mfirst, mlast, imp_start, imp_end)
+            if overlap == 0:
+                continue
+            total_days = (imp_end - imp_start).days + 1
+            share = overlap / total_days if total_days else 0
+            imported += imp["kwh"] * share
+            import_cost += imp["amount_chf"] * share
+
+        self_kwh = max(0.0, pv_kwh - exported)
+        self_pct = (self_kwh / pv_kwh * 100.0) if pv_kwh > 0 else 0.0
         flows.append({
-            "label": _quarter_label(start),
-            "period_start": start,
-            "period_end": end,
-            "pv_kwh": round(pv, 2),
+            "year": y,
+            "month": m,
+            "label": f"{_MONTH_LABELS[m-1]} {y}",
+            "period_start": mfirst_iso,
+            "period_end": mlast_iso,
+            "pv_kwh": round(pv_kwh, 2),
             "self_consumed_kwh": round(self_kwh, 2),
             "exported_kwh": round(exported, 2),
-            "imported_kwh": round(import_kwh, 2),
-            "self_consumption_pct": round(self_kwh / pv * 100.0, 1) if pv > 0 else 0.0,
-            "export_credit": round(ex["amount_chf"], 2),
+            "imported_kwh": round(imported, 2),
+            "self_consumption_pct": round(self_pct, 1),
+            "export_credit": round(export_credit, 2),
             "import_cost": round(import_cost, 2),
             "self_consumption_savings": round(self_kwh * avg_import_price, 2),
         })

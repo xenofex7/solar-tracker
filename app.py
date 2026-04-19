@@ -303,7 +303,7 @@ def api_summary():
     sc = metrics.self_consumption(records, exports)
     grid_tot = db.grid_totals()
     avg_import_price = grid_tot.get("import", {}).get("avg_price") or price
-    flows = metrics.period_flows(records, imports, exports, avg_import_price)
+    flows = metrics.monthly_flows(records, imports, exports, avg_import_price)
 
     return jsonify({
         "year": year,
