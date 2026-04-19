@@ -18,25 +18,27 @@ python app.py             # opens http://localhost:5000
 
 ## Docker
 
+The published image is hosted on GitHub Container Registry and
+`docker-compose.yml` references it by default, so no source checkout
+is required to deploy:
+
 ```bash
-cp .env.example .env      # set HA_URL, HA_TOKEN, HA_ENTITY_ID
-docker compose up -d      # builds and starts on http://localhost:5000
+mkdir solar-tracker && cd solar-tracker
+curl -O https://raw.githubusercontent.com/xenofex7/solar-tracker/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/xenofex7/solar-tracker/main/.env.example
+mv .env.example .env      # set HA_URL, HA_TOKEN, HA_ENTITY_ID
+docker compose up -d      # pulls ghcr.io/xenofex7/solar-tracker:latest
 ```
 
 The SQLite database lives in `./data` on the host (mounted into the
-container), so stopping or rebuilding the container preserves all data.
-The container runs gunicorn with two workers.
+container), so stopping or recreating the container preserves all
+data. The container runs gunicorn with two workers.
 
-Pre-built multi-arch images are published to GitHub Container Registry
-on every push to `main` and every `v*` tag:
+Available tags: `latest`, `1`, `1.0`, `1.0.0` — see
+`ghcr.io/xenofex7/solar-tracker`.
 
-```bash
-docker pull ghcr.io/xenofex7/solar-tracker:latest
-docker pull ghcr.io/xenofex7/solar-tracker:1.0.0
-```
-
-To run the published image, replace the `build: .` line in
-`docker-compose.yml` with `image: ghcr.io/xenofex7/solar-tracker:latest`.
+If you have the source checked out, `docker compose build` rebuilds
+the image locally (the compose file keeps `build: .` as a fallback).
 
 ## Releasing a new version
 

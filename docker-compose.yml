@@ -1,5 +1,6 @@
 services:
   solar-tracker:
+    image: ghcr.io/xenofex7/solar-tracker:latest
     build: .
     container_name: solar-tracker
     restart: unless-stopped
