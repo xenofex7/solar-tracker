@@ -436,17 +436,13 @@ def summary(records: list[dict], targets: list[dict], year, kwp: float, start_da
         actual = monthly_actual(records, year)
         ytd_actual = round(sum(actual), 2)
         in_scope = list(records)
-        generic = {t["month"]: t["kwh"] for t in targets if t.get("year") is None}
-        full_year_target = sum(generic.values())
         if in_scope:
-            first_iso = min(r["date"] for r in in_scope)
-            first = date.fromisoformat(first_iso)
-            if sd and sd > first:
-                first = sd
-            months_elapsed = (today.year - first.year) * 12 + (today.month - first.month)
-            days_in_month = calendar.monthrange(today.year, today.month)[1]
-            months_elapsed += today.day / days_in_month
-            ytd_target = round(full_year_target * (months_elapsed / 12.0), 2)
+            first_year = int(min(r["date"] for r in in_scope)[:4])
+            if sd and sd.year > first_year:
+                first_year = sd.year
+            years_available = list(range(first_year, today.year + 1))
+            target = monthly_targets(targets, year, start_date=start_date, years_available=years_available)
+            ytd_target = round(sum(target), 2)
         else:
             ytd_target = 0.0
     else:
