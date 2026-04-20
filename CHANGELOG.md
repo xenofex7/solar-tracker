@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Exclude `.claude/` from version control.
+- Rename Manuelle Eingabe tab to Produktion.
+
+### Fixed
+- Settings tabs and form handlers no longer blocked by `script-src 'self'` CSP (inline script extracted to `static/js/settings.js`).
+- All-years (Gesamt) target now uses per-month seasonal weights prorated from `start_date`, instead of flat 1/12 proration that inflated the target.
 
 ## [1.3.1] - 2026-04-19
 ### Fixed
