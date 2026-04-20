@@ -8,7 +8,7 @@
   <button type="button" data-tab="costs">Anlagekosten</button>
   <button type="button" data-tab="electricity">Stromkosten</button>
   <button type="button" data-tab="targets">Sollwerte</button>
-  <button type="button" data-tab="entry">Manuelle Eingabe</button>
+  <button type="button" data-tab="entry">Produktion</button>
   <button type="button" data-tab="ha">Home Assistant</button>
 </nav>
 
@@ -159,7 +159,9 @@
 
 <section class="tab-panel" data-tab="entry">
   <div class="card">
-    <h2>Manuelle Tageseingabe</h2>
+    <h2>Produktion</h2>
+    <p class="muted">Tageserträge der PV-Anlage. Daten aus dem HA-Sync landen automatisch hier; einzelne Tage können auch manuell erfasst oder korrigiert werden.</p>
+    <h3 style="margin-top:12px;">Manuelle Eingabe</h3>
     <form id="entry-form" class="inline-form">
       <label>Datum <input type="date" name="date" required></label>
       <label>kWh <input type="number" step="0.01" min="0" name="kwh" required></label>
