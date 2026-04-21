@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="{{ lang }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="{{ url_for('static', filename='js/vendor/chart.umd.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/vendor/chartjs-chart-matrix.min.js') }}"></script>
+  <script src="/i18n.js"></script>
 </head>
 <body>
   <header>
@@ -16,8 +17,8 @@
       <span>Solar-Tracker</span>
     </a>
     <nav>
-      <a href="{{ url_for('dashboard') }}">Dashboard</a>
-      <a href="{{ url_for('settings_page') }}">Einstellungen</a>
+      <a href="{{ url_for('dashboard') }}">{{ T.nav_dashboard }}</a>
+      <a href="{{ url_for('settings_page') }}">{{ T.nav_settings }}</a>
     </nav>
   </header>
   <main>

@@ -14,7 +14,7 @@ Chart.defaults.color = CHART_COLORS.text;
 Chart.defaults.borderColor = CHART_COLORS.grid;
 Chart.defaults.font.family = '-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
 
-const fmtInt = (v) => Math.round(Number(v) || 0).toLocaleString('de-CH');
+const fmtInt = (v) => Math.round(Number(v) || 0).toLocaleString(window.T?.locale || 'de-CH');
 const fmtKwh = (v) => `${fmtInt(v)} kWh`;
 const fmtChf = (v) => `${fmtInt(v)} CHF`;
 const fmtDate = (iso) => {
@@ -54,7 +54,7 @@ const todayMarker = (xIndex) => ({
     ctx.setLineDash([]);
     ctx.fillStyle = CHART_COLORS.text;
     ctx.font = '11px -apple-system, Segoe UI, Roboto, sans-serif';
-    const label = 'heute';
+    const label = window.T?.label_today || 'today';
     const tw = ctx.measureText(label).width;
     const lx = Math.min(px + 4, chartArea.right - tw - 2);
     ctx.fillText(label, lx, chartArea.top + 12);
@@ -62,16 +62,22 @@ const todayMarker = (xIndex) => ({
   },
 });
 
+function localizeMonths(months) {
+  const names = window.T?.months_short;
+  if (!names) return months;
+  return months.map(m => names[m - 1] || m);
+}
+
 function renderMonthly(data) {
   destroy('monthly');
   const ctx = document.getElementById('chart-monthly');
   charts.monthly = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: data.months,
+      labels: localizeMonths(data.months),
       datasets: [
-        { label: 'Ist (kWh)',  data: data.monthly_actual,  backgroundColor: CHART_COLORS.actual },
-        { label: 'Soll (kWh)', data: data.monthly_target, backgroundColor: CHART_COLORS.target },
+        { label: window.T?.chart_actual_kwh || 'Actual (kWh)',  data: data.monthly_actual,  backgroundColor: CHART_COLORS.actual },
+        { label: window.T?.chart_target_kwh || 'Target (kWh)', data: data.monthly_target, backgroundColor: CHART_COLORS.target },
       ],
     },
     options: {
@@ -88,8 +94,8 @@ function renderDeviation(data) {
   charts.deviation = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: data.months,
-      datasets: [{ label: 'Abweichung %', data: data.deviation_pct.map(v => v ?? 0), backgroundColor: colors }],
+      labels: localizeMonths(data.months),
+      datasets: [{ label: window.T?.chart_deviation_pct || 'Deviation %', data: data.deviation_pct.map(v => v ?? 0), backgroundColor: colors }],
     },
     options: {
       plugins: { legend: { display: false } },
@@ -108,10 +114,10 @@ function renderCumulative(data) {
   charts.cumulative = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: data.months,
+      labels: localizeMonths(data.months),
       datasets: [
-        { label: 'Ist kumuliert',  data: data.cumulative_actual, borderColor: CHART_COLORS.actualLine, backgroundColor: 'rgba(245,166,35,0.15)', fill: true, tension: 0.2 },
-        { label: 'Soll kumuliert', data: data.cumulative_target, borderColor: CHART_COLORS.targetLine, borderDash: [6,4], fill: false, tension: 0.2 },
+        { label: window.T?.chart_cumulative_actual || 'Actual cumul.',  data: data.cumulative_actual, borderColor: CHART_COLORS.actualLine, backgroundColor: 'rgba(245,166,35,0.15)', fill: true, tension: 0.2 },
+        { label: window.T?.chart_cumulative_target || 'Target cumul.', data: data.cumulative_target, borderColor: CHART_COLORS.targetLine, borderDash: [6,4], fill: false, tension: 0.2 },
       ],
     },
     options: { scales: { y: { beginAtZero: true, ticks: { callback: v => fmtKwh(v) } } } },
@@ -136,8 +142,8 @@ function renderDaily(data) {
     data: {
       labels,
       datasets: [
-        { label: 'Tageswert', data: values, borderColor: CHART_COLORS.actualLine, backgroundColor: 'rgba(245,166,35,0.15)', pointRadius: 1.5, fill: true, tension: 0.1 },
-        { label: '7-Tage-Mittel', data: data.rolling_avg_7d, borderColor: CHART_COLORS.targetLine, pointRadius: 0, borderWidth: 2, fill: false, tension: 0.2 },
+        { label: window.T?.chart_daily_value || 'Daily value', data: values, borderColor: CHART_COLORS.actualLine, backgroundColor: 'rgba(245,166,35,0.15)', pointRadius: 1.5, fill: true, tension: 0.1 },
+        { label: window.T?.chart_7d_avg || '7-day avg', data: data.rolling_avg_7d, borderColor: CHART_COLORS.targetLine, pointRadius: 0, borderWidth: 2, fill: false, tension: 0.2 },
       ],
     },
     options: {
@@ -170,11 +176,13 @@ function renderHeatmap(data) {
     return { x: week, y: dow, v: d.kwh, date: d.date };
   });
 
+  const weekdays = window.T?.weekdays_short || ['Mo','Tu','We','Th','Fr','Sa','Su'];
+
   charts.heatmap = new Chart(ctx, {
     type: 'matrix',
     data: {
       datasets: [{
-        label: 'Tägliche kWh',
+        label: window.T?.chart_daily_kwh || 'Daily kWh',
         data: points,
         backgroundColor(ctx) {
           const v = ctx.dataset.data[ctx.dataIndex].v;
@@ -202,7 +210,7 @@ function renderHeatmap(data) {
           ticks: {
             stepSize: 1,
             autoSkip: false,
-            callback: v => ['Mo','Di','Mi','Do','Fr','Sa','So'][Math.round(v)] ?? '',
+            callback: v => weekdays[Math.round(v)] ?? '',
           },
           grid: { display: false },
         },
@@ -220,11 +228,11 @@ function renderDistribution(data) {
   charts.distribution = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: data.months,
+      labels: localizeMonths(data.months),
       datasets: [
-        { label: 'Min',    data: mins,    backgroundColor: 'rgba(52,152,219,0.6)' },
-        { label: 'Median', data: medians, backgroundColor: 'rgba(245,166,35,0.85)' },
-        { label: 'Max',    data: maxs,    backgroundColor: 'rgba(76,175,80,0.75)' },
+        { label: window.T?.label_min || 'Min',    data: mins,    backgroundColor: 'rgba(52,152,219,0.6)' },
+        { label: window.T?.label_median || 'Median', data: medians, backgroundColor: 'rgba(245,166,35,0.85)' },
+        { label: window.T?.label_max || 'Max',    data: maxs,    backgroundColor: 'rgba(76,175,80,0.75)' },
       ],
     },
     options: { scales: { y: { beginAtZero: true, ticks: { callback: v => fmtKwh(v) } } } },
@@ -245,7 +253,7 @@ function renderYearComparison(data) {
   }));
   charts.yearcomp = new Chart(ctx, {
     type: 'line',
-    data: { labels: data.months, datasets },
+    data: { labels: localizeMonths(data.months), datasets },
     options: { scales: { y: { beginAtZero: true, ticks: { callback: v => fmtKwh(v) } } } },
   });
 }
@@ -264,23 +272,24 @@ function renderTopFlop(data) {
 }
 
 function renderKpis(data) {
+  const T = window.T || {};
   const s = data.summary;
   const delta = s.delta_kwh ?? 0;
   const pct = s.delta_pct;
   const deltaCls = delta >= 0 ? 'good' : 'bad';
   const best = s.best_day ? `${fmtDate(s.best_day.date)}<br><span class="sub">${fmtKwh(s.best_day.kwh)}</span>` : '—';
-  const pctStr = pct === null ? '—' : `${pct.toLocaleString('de-CH', {maximumFractionDigits: 1})} %`;
+  const pctStr = pct === null ? '—' : `${pct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`;
   const spec = s.specific_yield !== null ? `${fmtInt(s.specific_yield)} kWh/kWp` : '—';
 
-  const scopeLabel = s.year === 'all' ? 'gesamt' : `YTD ${s.year}`;
+  const scopeLabel = s.year === 'all' ? (T.label_total || 'total') : `YTD ${s.year}`;
   const production = [
-    { label: `Ist ${scopeLabel}`, value: fmtKwh(s.ytd_actual) },
-    { label: `Soll ${scopeLabel}`, value: fmtKwh(s.ytd_target) },
-    { label: 'Δ absolut', value: `${delta >= 0 ? '+' : '−'}${fmtKwh(Math.abs(delta))}`, cls: deltaCls },
-    { label: 'Δ in %', value: pctStr, cls: deltaCls },
-    { label: 'Bester Tag', value: best },
-    { label: 'Spez. Ertrag', value: spec },
-    { label: 'Erfasste Tage', value: fmtInt(s.days_recorded) },
+    { label: `${T.kpi_actual || 'Actual'} ${scopeLabel}`, value: fmtKwh(s.ytd_actual) },
+    { label: `${T.kpi_target || 'Target'} ${scopeLabel}`, value: fmtKwh(s.ytd_target) },
+    { label: T.kpi_delta_abs || 'Δ absolute', value: `${delta >= 0 ? '+' : '−'}${fmtKwh(Math.abs(delta))}`, cls: deltaCls },
+    { label: T.kpi_delta_pct || 'Δ in %', value: pctStr, cls: deltaCls },
+    { label: T.kpi_best_day || 'Best day', value: best },
+    { label: T.kpi_specific_yield || 'Spec. yield', value: spec },
+    { label: T.kpi_days_recorded || 'Days recorded', value: fmtInt(s.days_recorded) },
   ];
 
   const finance = [];
@@ -291,32 +300,35 @@ function renderKpis(data) {
       if (!iso) return '';
       const target = new Date(iso);
       const now = new Date();
-      if (target <= now) return 'erreicht';
+      if (target <= now) return T.kpi_payback_reached || 'reached';
       let months = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
       if (target.getDate() < now.getDate()) months -= 1;
       if (months < 0) months = 0;
       const y = Math.floor(months / 12);
       const m = months % 12;
-      if (y === 0) return `noch ${m} M`;
-      if (m === 0) return `noch ${y} J`;
-      return `noch ${y} J ${m} M`;
+      const fmt = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+      if (y === 0) return fmt(T.kpi_remaining_months || '{m} mo. left', { m });
+      if (m === 0) return fmt(T.kpi_remaining_years || '{y} yr. left', { y });
+      return fmt(T.kpi_remaining_years_months || '{y} yr. {m} mo. left', { y, m });
     };
-    const basisLabel = p.projection_basis === 'targets' ? 'Jahressoll' : 'Verlauf';
+    const basisLabel = p.projection_basis === 'targets'
+      ? (T.kpi_basis_targets || 'Annual target')
+      : (T.kpi_basis_history || 'History');
     const paybackVal = p.payback_date
       ? `${fmtDate(p.payback_date)}<br><span class="sub">${remainingStr(p.payback_date)} · ${basisLabel}</span>`
       : '—';
     const progressCls = p.progress_pct >= 100 ? 'good' : '';
     const b = p.breakdown || {};
     const parts = [];
-    if (b.self_consumption_savings > 0) parts.push(`EV ${fmtChf(b.self_consumption_savings)}`);
-    if (b.export_credit > 0) parts.push(`Einsp. ${fmtChf(b.export_credit)}`);
-    if (b.estimated_other > 0) parts.push(`gesch. ${fmtChf(b.estimated_other)}`);
+    if (b.self_consumption_savings > 0) parts.push(`${T.kpi_breakdown_self || 'SC'} ${fmtChf(b.self_consumption_savings)}`);
+    if (b.export_credit > 0) parts.push(`${T.kpi_breakdown_export || 'Exp.'} ${fmtChf(b.export_credit)}`);
+    if (b.estimated_other > 0) parts.push(`${T.kpi_breakdown_estimated || 'est.'} ${fmtChf(b.estimated_other)}`);
     const revSub = parts.length ? `<br><span class="sub">${parts.join(' · ')}</span>` : '';
     finance.push(
-      { label: 'Investition', value: fmtChf(p.invested) },
-      { label: 'Ertrag bisher', value: `${fmtChf(p.revenue_total)}${revSub}` },
-      { label: 'Fortschritt', value: `${p.progress_pct.toLocaleString('de-CH', {maximumFractionDigits: 1})} %`, cls: progressCls },
-      { label: 'Amortisation', value: paybackVal },
+      { label: T.kpi_investment || 'Investment', value: fmtChf(p.invested) },
+      { label: T.kpi_revenue_total || 'Revenue to date', value: `${fmtChf(p.revenue_total)}${revSub}` },
+      { label: T.kpi_progress || 'Progress', value: `${p.progress_pct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`, cls: progressCls },
+      { label: T.kpi_payback || 'Payback', value: paybackVal },
     );
   }
 
@@ -328,16 +340,16 @@ function renderKpis(data) {
     const scPct = sc.self_consumption_pct ?? 0;
     const pctCls = scPct >= 30 ? 'good' : '';
     energy.push(
-      { label: 'Netto-Stromkosten', value: fmtChf(net) },
-      { label: 'Eigenverbrauch', value: fmtKwh(sc.self_consumed_kwh ?? 0) },
-      { label: 'Eigenverbr.-Quote', value: `${scPct.toLocaleString('de-CH', {maximumFractionDigits: 1})} %`, cls: pctCls },
+      { label: T.kpi_net_cost || 'Net electricity cost', value: fmtChf(net) },
+      { label: T.kpi_self_consumed || 'Self-consumed', value: fmtKwh(sc.self_consumed_kwh ?? 0) },
+      { label: T.kpi_self_ratio || 'Self-cons. rate', value: `${scPct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`, cls: pctCls },
     );
   }
 
   const groups = [
-    { title: 'Produktion', kpis: production },
-    { title: 'Finanzen', kpis: finance },
-    { title: 'Eigenverbrauch & Netz', kpis: energy },
+    { title: T.kpi_group_production || 'Production', kpis: production },
+    { title: T.kpi_group_finance || 'Finances', kpis: finance },
+    { title: T.kpi_group_energy || 'Self-consumption & Grid', kpis: energy },
   ].filter(g => g.kpis.length);
 
   const el = document.getElementById('kpis');
@@ -370,8 +382,8 @@ function renderPayback(data) {
     data: {
       labels,
       datasets: [
-        { label: 'Kumulativer Ertrag (CHF)', data: revenue, borderColor: CHART_COLORS.actualLine, backgroundColor: 'rgba(245,166,35,0.15)', pointRadius: 0, fill: true, tension: 0.1 },
-        { label: 'Investition (CHF)', data: investedLine, borderColor: CHART_COLORS.targetLine, borderDash: [6,4], pointRadius: 0, fill: false },
+        { label: window.T?.chart_cumulative_revenue || 'Revenue (CHF)', data: revenue, borderColor: CHART_COLORS.actualLine, backgroundColor: 'rgba(245,166,35,0.15)', pointRadius: 0, fill: true, tension: 0.1 },
+        { label: window.T?.chart_investment || 'Investment (CHF)', data: investedLine, borderColor: CHART_COLORS.targetLine, borderDash: [6,4], pointRadius: 0, fill: false },
       ],
     },
     options: {
@@ -407,9 +419,9 @@ function renderEnergyFlows(data) {
     data: {
       labels,
       datasets: [
-        { label: 'Eigenverbrauch', data: periods.map(p => p.self_consumed_kwh), backgroundColor: CHART_COLORS.actual, stack: 'pv' },
-        { label: 'Einspeisung', data: periods.map(p => p.exported_kwh), backgroundColor: CHART_COLORS.good, stack: 'pv' },
-        { label: 'Netzbezug', data: periods.map(p => p.imported_kwh), backgroundColor: 'rgba(52,152,219,0.75)', stack: 'grid' },
+        { label: window.T?.chart_self_consumption || 'Self-consumption', data: periods.map(p => p.self_consumed_kwh), backgroundColor: CHART_COLORS.actual, stack: 'pv' },
+        { label: window.T?.chart_export || 'Grid export', data: periods.map(p => p.exported_kwh), backgroundColor: CHART_COLORS.good, stack: 'pv' },
+        { label: window.T?.chart_import || 'Grid import', data: periods.map(p => p.imported_kwh), backgroundColor: 'rgba(52,152,219,0.75)', stack: 'grid' },
       ],
     },
     options: {
@@ -436,7 +448,7 @@ function renderSelfRatio(data) {
     data: {
       labels,
       datasets: [{
-        label: 'Eigenverbrauchsquote', data: values,
+        label: window.T?.chart_self_ratio || 'Self-consumption rate', data: values,
         borderColor: CHART_COLORS.actualLine,
         backgroundColor: 'rgba(245,166,35,0.18)',
         fill: true, tension: 0.25, pointRadius: 4,
@@ -445,7 +457,7 @@ function renderSelfRatio(data) {
     options: {
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: item => `${item.parsed.y.toLocaleString('de-CH', {maximumFractionDigits: 1})} %` } },
+        tooltip: { callbacks: { label: item => `${item.parsed.y.toLocaleString(window.T?.locale || 'de-CH', {maximumFractionDigits: 1})} %` } },
       },
       scales: { y: { beginAtZero: true, suggestedMax: 100, ticks: { callback: v => `${v} %` } } },
     },
@@ -463,9 +475,9 @@ function renderFinanceFlow(data) {
     data: {
       labels,
       datasets: [
-        { label: 'Bezugskosten', data: periods.map(p => -p.import_cost), backgroundColor: 'rgba(231,76,60,0.8)' },
-        { label: 'Eigenverbrauch gespart', data: periods.map(p => p.self_consumption_savings), backgroundColor: CHART_COLORS.actual },
-        { label: 'Einspeisung', data: periods.map(p => p.export_credit), backgroundColor: CHART_COLORS.good },
+        { label: window.T?.chart_import_costs || 'Import costs', data: periods.map(p => -p.import_cost), backgroundColor: 'rgba(231,76,60,0.8)' },
+        { label: window.T?.chart_self_consumption_saved || 'Self-consumption saved', data: periods.map(p => p.self_consumption_savings), backgroundColor: CHART_COLORS.actual },
+        { label: window.T?.chart_export || 'Grid export', data: periods.map(p => p.export_credit), backgroundColor: CHART_COLORS.good },
       ],
     },
     options: {

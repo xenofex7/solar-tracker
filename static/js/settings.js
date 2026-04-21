@@ -37,7 +37,7 @@ document.getElementById('plant-form').addEventListener('submit', async (e) => {
     timezone: e.target.timezone.value,
   };
   const r = await fetch('/api/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  alert(r.ok ? 'Gespeichert.' : 'Fehler beim Speichern.');
+  alert(r.ok ? (window.T?.msg_saved || 'Saved.') : (window.T?.msg_save_error || 'Error saving.'));
 });
 
 document.getElementById('cost-form').addEventListener('submit', async (e) => {
@@ -49,12 +49,13 @@ document.getElementById('cost-form').addEventListener('submit', async (e) => {
   };
   const r = await fetch('/api/costs', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   if (r.ok) location.reload();
-  else { const j = await r.json(); alert('Fehler: ' + (j.error || 'unbekannt')); }
+  else { const j = await r.json(); alert((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?')); }
 });
 
 document.querySelectorAll('#costs-table button.del').forEach(btn => {
   btn.addEventListener('click', async () => {
-    if (!confirm(`Position "${btn.dataset.label}" löschen?`)) return;
+    const tpl = window.T?.confirm_delete_cost || 'Delete "{label}"?';
+    if (!confirm(tpl.replace('{label}', btn.dataset.label))) return;
     await fetch(`/api/costs/${btn.dataset.id}`, {method:'DELETE'});
     location.reload();
   });
@@ -72,12 +73,12 @@ document.getElementById('grid-form').addEventListener('submit', async (e) => {
   };
   const r = await fetch('/api/grid', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   if (r.ok) location.reload();
-  else { const j = await r.json(); alert('Fehler: ' + (j.error || 'unbekannt')); }
+  else { const j = await r.json(); alert((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?')); }
 });
 
 document.querySelectorAll('#imports-table button.del, #exports-table button.del').forEach(btn => {
   btn.addEventListener('click', async () => {
-    if (!confirm('Eintrag löschen?')) return;
+    if (!confirm(window.T?.confirm_delete_grid || 'Delete entry?')) return;
     await fetch(`/api/grid/${btn.dataset.id}`, {method:'DELETE'});
     location.reload();
   });
@@ -90,7 +91,7 @@ document.getElementById('targets-form').addEventListener('submit', async (e) => 
     if (i.value === '') continue;
     await fetch('/api/targets', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({month: Number(i.dataset.month), kwh: Number(i.value), year: null})});
   }
-  alert('Sollwerte gespeichert.');
+  alert(window.T?.msg_targets_saved || 'Targets saved.');
 });
 
 document.getElementById('entry-form').addEventListener('submit', async (e) => {
@@ -99,13 +100,14 @@ document.getElementById('entry-form').addEventListener('submit', async (e) => {
   const body = {date: e.target.date.value, kwh: Number(e.target.kwh.value)};
   const r = await fetch('/api/production', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   const j = await r.json();
-  status.textContent = r.ok ? 'Gespeichert.' : `Fehler: ${j.error}`;
+  status.textContent = r.ok ? (window.T?.msg_saved || 'Saved.') : `${window.T?.msg_error_prefix || 'Error: '}${j.error}`;
   if (r.ok) setTimeout(() => location.reload(), 500);
 });
 
 document.querySelectorAll('#entries-table button.del').forEach(btn => {
   btn.addEventListener('click', async () => {
-    if (!confirm(`Eintrag vom ${btn.dataset.display} löschen?`)) return;
+    const tpl = window.T?.confirm_delete_prod || 'Delete entry from {date}?';
+    if (!confirm(tpl.replace('{date}', btn.dataset.display))) return;
     await fetch(`/api/production/${btn.dataset.date}`, {method:'DELETE'});
     location.reload();
   });
@@ -114,14 +116,18 @@ document.querySelectorAll('#entries-table button.del').forEach(btn => {
 document.getElementById('sync-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const status = document.getElementById('sync-status');
-  status.textContent = 'Synchronisiere…';
+  status.textContent = window.T?.status_syncing || 'Syncing\u2026';
   const body = {from: e.target.from.value, to: e.target.to.value};
   const r = await fetch('/api/sync/ha', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   const j = await r.json();
   if (r.ok) {
-    const t = j.timings ? ` · HA ${j.timings.fetch_s}s + DB ${j.timings.write_s}s` : '';
-    status.textContent = `Fertig: ${j.days} Tage abgeglichen (${j.inserted} neu, ${j.updated} aktualisiert).${t}`;
+    const timing = j.timings ? ` · HA ${j.timings.fetch_s}s + DB ${j.timings.write_s}s` : '';
+    const tpl = window.T?.msg_sync_done || 'Done: {days} days synced ({inserted} new, {updated} updated).';
+    status.textContent = tpl
+      .replace('{days}', j.days)
+      .replace('{inserted}', j.inserted)
+      .replace('{updated}', j.updated) + timing;
   } else {
-    status.textContent = `Fehler: ${j.error}`;
+    status.textContent = (window.T?.msg_error_prefix || 'Error: ') + j.error;
   }
 });

@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import time
@@ -5,9 +6,10 @@ from datetime import date, datetime
 from zoneinfo import available_timezones
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import Flask, jsonify, make_response, redirect, render_template, request, url_for
 
 import db
+import i18n
 import metrics
 from ha_client import DEFAULT_TZ, HAClientError, fetch_daily
 
@@ -28,6 +30,12 @@ except OSError:
 @app.context_processor
 def _inject_version():
     return {"app_version": APP_VERSION}
+
+
+@app.context_processor
+def _inject_i18n():
+    lang = i18n.get_lang(request)
+    return {"lang": lang, "T": i18n.get_translations(lang)}
 
 
 @app.after_request
@@ -125,6 +133,28 @@ def settings_page():
         ha_url=os.environ.get("HA_URL", ""),
         ha_entity=os.environ.get("HA_ENTITY_ID", ""),
     )
+
+
+@app.route("/set-lang")
+def set_lang():
+    lang = request.args.get("lang", i18n.FALLBACK)
+    if lang not in i18n.SUPPORTED:
+        lang = i18n.FALLBACK
+    next_url = request.referrer or url_for("dashboard")
+    resp = make_response(redirect(next_url))
+    resp.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="Lax")
+    return resp
+
+
+@app.route("/i18n.js")
+def i18n_js():
+    lang = i18n.get_lang(request)
+    translations = i18n.get_translations(lang)
+    js = f"window.T={json.dumps(translations, ensure_ascii=False, separators=(',', ':'))};"
+    resp = make_response(js)
+    resp.headers["Content-Type"] = "application/javascript; charset=utf-8"
+    resp.headers["Cache-Control"] = "no-cache, no-store"
+    return resp
 
 
 @app.route("/entry")
@@ -362,7 +392,7 @@ def api_summary():
 
     return jsonify({
         "year": year,
-        "months": metrics.MONTHS_DE,
+        "months": list(range(1, 13)),
         "monthly_actual": [round(v, 2) for v in actual],
         "monthly_target": [round(v, 2) for v in target],
         "deviation_pct": dev,
