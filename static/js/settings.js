@@ -127,6 +127,7 @@ document.getElementById('sync-form').addEventListener('submit', async (e) => {
       .replace('{days}', j.days)
       .replace('{inserted}', j.inserted)
       .replace('{updated}', j.updated) + timing;
+    setTimeout(() => location.reload(), 1500);
   } else {
     status.textContent = (window.T?.msg_error_prefix || 'Error: ') + j.error;
   }
