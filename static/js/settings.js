@@ -34,6 +34,7 @@ document.getElementById('plant-form').addEventListener('submit', async (e) => {
     kwp: e.target.kwp.value,
     price_per_kwh: e.target.price_per_kwh.value,
     start_date: e.target.start_date.value,
+    timezone: e.target.timezone.value,
   };
   const r = await fetch('/api/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   alert(r.ok ? 'Gespeichert.' : 'Fehler beim Speichern.');

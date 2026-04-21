@@ -2,8 +2,12 @@ import json
 import os
 from datetime import UTC, datetime, timedelta
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from websocket import create_connection
+
+
+DEFAULT_TZ = "Europe/Zurich"
 
 
 class HAClientError(Exception):
@@ -65,7 +69,14 @@ def _fetch_statistics(start: datetime, end: datetime):
             pass
 
 
-def _row_day(start_value) -> str | None:
+def _resolve_tz(tz: str | None) -> ZoneInfo:
+    try:
+        return ZoneInfo(tz or DEFAULT_TZ)
+    except ZoneInfoNotFoundError:
+        return ZoneInfo(DEFAULT_TZ)
+
+
+def _row_day(start_value, tz: ZoneInfo) -> str | None:
     if start_value is None:
         return None
     if isinstance(start_value, (int, float)):
@@ -76,19 +87,21 @@ def _row_day(start_value) -> str | None:
             dt = datetime.fromisoformat(str(start_value).replace("Z", "+00:00"))
         except ValueError:
             return None
-    return dt.astimezone().date().isoformat()
+    return dt.astimezone(tz).date().isoformat()
 
 
-def fetch_daily(start_date: str, end_date: str) -> dict[str, float]:
-    start = datetime.fromisoformat(start_date).replace(tzinfo=UTC)
+def fetch_daily(start_date: str, end_date: str, tz: str | None = None) -> dict[str, float]:
+    zone = _resolve_tz(tz)
+    start = datetime.fromisoformat(start_date).replace(tzinfo=zone).astimezone(UTC)
     end = (
-        datetime.fromisoformat(end_date) + timedelta(days=1)
-    ).replace(tzinfo=UTC)
+        datetime.fromisoformat(end_date).replace(tzinfo=zone)
+        + timedelta(days=1)
+    ).astimezone(UTC)
     rows = _fetch_statistics(start, end)
 
     result: dict[str, float] = {}
     for row in rows:
-        day = _row_day(row.get("start"))
+        day = _row_day(row.get("start"), zone)
         change = row.get("change")
         if not day or change is None:
             continue

@@ -25,6 +25,13 @@
       <label>Schätzpreis PV (CHF / kWh, Fallback)
         <input type="number" step="0.001" name="price_per_kwh" value="{{ price_per_kwh }}" title="Wird nur verwendet, wenn für einen Zeitraum keine Rücklieferungs-Rechnung existiert.">
       </label>
+      <label>Zeitzone
+        <select name="timezone" title="Bestimmt, welcher Kalendertag einem HA-Tagesbucket zugeordnet wird.">
+          {% for tz in timezones %}
+            <option value="{{ tz }}" {% if tz == timezone %}selected{% endif %}>{{ tz }}</option>
+          {% endfor %}
+        </select>
+      </label>
       <button type="submit">Speichern</button>
     </form>
   </div>

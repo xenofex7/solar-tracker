@@ -2,13 +2,14 @@ import logging
 import os
 import time
 from datetime import date, datetime
+from zoneinfo import available_timezones
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 
 import db
 import metrics
-from ha_client import HAClientError, fetch_daily
+from ha_client import DEFAULT_TZ, HAClientError, fetch_daily
 
 load_dotenv()
 
@@ -82,6 +83,10 @@ def _price_per_kwh() -> float:
         return 0.0
 
 
+def _timezone() -> str:
+    return (db.get_setting("timezone") or DEFAULT_TZ).strip() or DEFAULT_TZ
+
+
 def _start_date() -> str | None:
     val = (db.get_setting("start_date") or "").strip()
     if not val:
@@ -109,6 +114,8 @@ def settings_page():
         kwp=_kwp(),
         price_per_kwh=_price_per_kwh(),
         start_date=_start_date() or "",
+        timezone=_timezone(),
+        timezones=sorted(available_timezones()),
         costs=db.list_costs(),
         total_invested=db.total_invested(),
         recent=recent,
@@ -183,7 +190,13 @@ def api_targets_post():
 
 @app.route("/api/settings", methods=["POST"])
 def api_settings_post():
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
     payload = request.get_json(force=True)
+    if "timezone" in payload:
+        try:
+            ZoneInfo(str(payload["timezone"]))
+        except ZoneInfoNotFoundError:
+            return jsonify({"error": f"Unbekannte Zeitzone: {payload['timezone']}"}), 400
     for key, value in payload.items():
         db.set_setting(key, str(value))
     return jsonify({"ok": True})
@@ -199,7 +212,7 @@ def api_sync_ha():
 
     t0 = time.perf_counter()
     try:
-        daily = fetch_daily(start, end)
+        daily = fetch_daily(start, end, tz=_timezone())
     except HAClientError as e:
         return jsonify({"error": str(e)}), 502
     except Exception as e:
