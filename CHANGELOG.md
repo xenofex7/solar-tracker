@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- `scripts/release.sh` now runs `ruff check` and `pytest` before bumping/tagging, matching CI so broken releases are caught locally.
 
 ## [1.3.4] - 2026-04-21
 ### Fixed

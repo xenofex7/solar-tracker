@@ -56,6 +56,25 @@ if git rev-parse "v${new}" >/dev/null 2>&1; then
   exit 1
 fi
 
+# Quality gate: run the same checks CI runs, before we bump/tag/push.
+# Prefer .venv binaries so we match the project's pinned toolchain.
+pick() {
+  if [[ -x ".venv/bin/$1" ]]; then echo ".venv/bin/$1"; return; fi
+  if command -v "$1" >/dev/null 2>&1; then command -v "$1"; return; fi
+  echo ""
+}
+ruff_bin=$(pick ruff)
+pytest_bin=$(pick pytest)
+if [[ -z "$ruff_bin" || -z "$pytest_bin" ]]; then
+  echo "ruff and/or pytest not found (.venv/bin or PATH) — install them or run from the project venv" >&2
+  exit 1
+fi
+
+echo "Running ruff check…"
+"$ruff_bin" check .
+echo "Running pytest…"
+"$pytest_bin" -q
+
 today=$(date +%Y-%m-%d)
 
 echo "Releasing v${current} -> v${new} (${today})"
