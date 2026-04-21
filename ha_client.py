@@ -6,7 +6,6 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from websocket import create_connection
 
-
 DEFAULT_TZ = "Europe/Zurich"
 
 
