@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Reload page automatically after successful HA sync (1.5 s delay to show result message).
+- Polish language switcher to always redirect to dashboard and set uniform KPI tile min-height.
+
+### Fixed
+- KPI tile heights are now uniform across all groups by measuring the tallest tile.
+
 ## [1.4.0] - 2026-04-21
 ### Added
 - i18n support with language switching and localized UI labels (de, en, fr, es, it).
