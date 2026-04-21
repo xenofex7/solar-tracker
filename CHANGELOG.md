@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- i18n support with language switching and localized UI labels (de, en, fr, es, it).
+- Tagesqualität donut chart showing daily production split into 6 quality buckets (red → green).
+- Specific Yield chart (kWh/kWp per month) to track panel degradation over time.
+
+### Changed
+- Payback chart redesigned as yearly cumulative bars with forecast until investment is recovered.
+- Year Comparison now highlights the current year in yellow, older years in blue, with correct z-order and lines that stop at data boundaries.
+
+### Removed
+- Bottom 5 Days card — values were always near zero and not useful.
+
 ## [1.3.5] - 2026-04-21
 ### Changed
 - `scripts/release.sh` now runs `ruff check` and `pytest` before bumping/tagging, matching CI so broken releases are caught locally.
