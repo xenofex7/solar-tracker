@@ -620,9 +620,56 @@ function renderFinanceFlow(data) {
   });
 }
 
+function renderSpecificYield(data) {
+  destroy('spec-yield');
+  const ctx = document.getElementById('chart-spec-yield');
+  if (!ctx) return;
+  const cmp = data.specific_yield_comparison;
+  if (!cmp || !Object.keys(cmp).length) { _hideIfEmpty(ctx, false); return; }
+  _hideIfEmpty(ctx, true);
+
+  const sortedYears = Object.keys(cmp).sort();
+  const currentYear = String(new Date().getFullYear());
+  const currentMonth = new Date().getMonth();
+  const ordered = [...sortedYears.filter(y => y !== currentYear), currentYear].filter(y => sortedYears.includes(y));
+
+  const datasets = ordered.map((year, i) => {
+    const isCurrent = year === currentYear;
+    const color = isCurrent ? CHART_COLORS.actualLine : CHART_COLORS.targetLine;
+    const vals = cmp[year];
+    const firstNonZero = vals.findIndex(v => v > 0);
+    const chartData = vals.map((v, mi) => {
+      if (firstNonZero >= 0 && mi < firstNonZero) return null;
+      if (isCurrent && mi > currentMonth) return null;
+      return v || null;
+    });
+    return {
+      label: year,
+      data: chartData,
+      borderColor: color,
+      backgroundColor: color + (isCurrent ? '22' : '18'),
+      borderWidth: isCurrent ? 2.5 : 1.5,
+      tension: 0.25,
+      fill: false,
+      order: isCurrent ? 0 : ordered.length - i,
+    };
+  });
+
+  charts['spec-yield'] = new Chart(ctx, {
+    type: 'line',
+    data: { labels: localizeMonths(data.months), datasets },
+    options: {
+      plugins: {
+        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${item.parsed.y} kWh/kWp` } },
+      },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => `${v} kWh/kWp` } } },
+    },
+  });
+}
+
 window.SolarCharts = {
   renderKpis, renderMonthly, renderDeviation, renderCumulative,
   renderDaily, renderHeatmap, renderDistribution, renderYearComparison,
-  renderTopDays, renderDayQuality,
+  renderTopDays, renderDayQuality, renderSpecificYield,
   renderPayback, renderEnergyFlows, renderSelfRatio, renderFinanceFlow,
 };

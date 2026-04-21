@@ -23,6 +23,7 @@ async function loadYear(year) {
   SolarCharts.renderHeatmap(data);
   SolarCharts.renderDistribution(data);
   SolarCharts.renderYearComparison(data);
+  SolarCharts.renderSpecificYield(data);
   SolarCharts.renderDayQuality(data);
   SolarCharts.renderTopDays(data);
   SolarCharts.renderPayback(data);

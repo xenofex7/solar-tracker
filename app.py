@@ -376,6 +376,10 @@ def api_summary():
     tops = metrics.top_days(records, year, n=5)
     day_qual = metrics.day_quality_distribution(records, year)
     year_cmp = metrics.year_comparison(records)
+    spec_yield_cmp = {
+        y: [round(v / kwp, 2) if kwp > 0 else 0 for v in vals]
+        for y, vals in year_cmp.items()
+    }
     heat = metrics.heatmap_data(records, year)
     summ = metrics.summary(records, targets, year, kwp, start_date=start_date)
     imports = db.list_grid_bills("import")
@@ -405,6 +409,7 @@ def api_summary():
         "top_days": tops,
         "day_quality": day_qual,
         "year_comparison": year_cmp,
+        "specific_yield_comparison": spec_yield_cmp,
         "heatmap": heat,
         "summary": summ,
         "finance": {
