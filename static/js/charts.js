@@ -242,15 +242,31 @@ function renderDistribution(data) {
 function renderYearComparison(data) {
   destroy('yearcomp');
   const ctx = document.getElementById('chart-yearcomp');
-  const palette = ['#f5a623','#3498db','#4caf50','#e74c3c','#9b59b6','#1abc9c'];
-  const datasets = Object.entries(data.year_comparison).map(([year, vals], i) => ({
-    label: year,
-    data: vals,
-    borderColor: palette[i % palette.length],
-    backgroundColor: palette[i % palette.length] + '33',
-    tension: 0.25,
-    fill: false,
-  }));
+  const sortedYears = Object.keys(data.year_comparison).sort();
+  const currentYear = String(new Date().getFullYear());
+  const ordered = [...sortedYears.filter(y => y !== currentYear), currentYear].filter(y => sortedYears.includes(y));
+  const currentMonth = new Date().getMonth(); // 0-based
+  const datasets = ordered.map((year, i) => {
+    const isCurrent = year === currentYear;
+    const color = isCurrent ? CHART_COLORS.actualLine : CHART_COLORS.targetLine;
+    const vals = data.year_comparison[year];
+    const firstNonZero = vals.findIndex(v => v > 0);
+    const chartData = vals.map((v, mi) => {
+      if (firstNonZero >= 0 && mi < firstNonZero) return null;
+      if (isCurrent && mi > currentMonth) return null;
+      return v;
+    });
+    return {
+      label: year,
+      data: chartData,
+      borderColor: color,
+      backgroundColor: color + (isCurrent ? '22' : '18'),
+      borderWidth: isCurrent ? 2.5 : 1.5,
+      tension: 0.25,
+      fill: false,
+      order: isCurrent ? 0 : ordered.length - i,
+    };
+  });
   charts.yearcomp = new Chart(ctx, {
     type: 'line',
     data: { labels: localizeMonths(data.months), datasets },
