@@ -140,7 +140,7 @@ def set_lang():
     lang = request.args.get("lang", i18n.FALLBACK)
     if lang not in i18n.SUPPORTED:
         lang = i18n.FALLBACK
-    next_url = request.referrer or url_for("dashboard")
+    next_url = url_for("dashboard")
     resp = make_response(redirect(next_url))
     resp.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="Lax")
     return resp

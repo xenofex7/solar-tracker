@@ -130,6 +130,7 @@ button.del.icon svg { display: block; }
   font-weight: 600;
 }
 .kpi {
+  min-height: 88px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
