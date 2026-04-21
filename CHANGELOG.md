@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- HA sync now assigns daily buckets to the correct local calendar day via a configurable `timezone` setting (dropdown in Anlagendaten, default `Europe/Zurich`), replacing the host-local `astimezone()` that mis-attributed days in UTC containers.
 
 ## [1.3.2] - 2026-04-20
 ### Changed
