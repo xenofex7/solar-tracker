@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-04-21
 ### Added
 - i18n support with language switching and localized UI labels (de, en, fr, es, it).
 - Tagesqualität donut chart showing daily production split into 6 quality buckets (red → green).
@@ -159,7 +160,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v1.3.5...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v1.4.0...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -173,3 +174,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [1.3.3]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.3.3
 [1.3.4]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.3.4
 [1.3.5]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.3.5
+[1.4.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.4.0
