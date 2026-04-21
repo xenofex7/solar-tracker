@@ -401,7 +401,7 @@ def api_summary():
         "daily": daily,
         "rolling_avg_7d": roll,
         "monthly_distribution": dist,
-        "top_flop": tops,
+        "top_days": tops,
         "year_comparison": year_cmp,
         "heatmap": heat,
         "summary": summ,

@@ -258,16 +258,12 @@ function renderYearComparison(data) {
   });
 }
 
-function renderTopFlop(data) {
+function renderTopDays(data) {
   const top = document.querySelector('#top-table tbody');
-  const flop = document.querySelector('#flop-table tbody');
+  if (!top) return;
   top.innerHTML = '';
-  flop.innerHTML = '';
-  data.top_flop.top.forEach(r => {
+  (data.top_days || []).forEach(r => {
     top.insertAdjacentHTML('beforeend', `<tr><td>${fmtDate(r.date)}</td><td>${fmtKwh(r.kwh)}</td></tr>`);
-  });
-  data.top_flop.flop.forEach(r => {
-    flop.insertAdjacentHTML('beforeend', `<tr><td>${fmtDate(r.date)}</td><td>${fmtKwh(r.kwh)}</td></tr>`);
   });
 }
 
@@ -494,6 +490,6 @@ function renderFinanceFlow(data) {
 
 window.SolarCharts = {
   renderKpis, renderMonthly, renderDeviation, renderCumulative,
-  renderDaily, renderHeatmap, renderDistribution, renderYearComparison, renderTopFlop,
+  renderDaily, renderHeatmap, renderDistribution, renderYearComparison, renderTopDays,
   renderPayback, renderEnergyFlows, renderSelfRatio, renderFinanceFlow,
 };

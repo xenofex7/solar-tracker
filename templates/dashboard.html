@@ -2,9 +2,9 @@
 {% block title %}Dashboard · Solar-Tracker{% endblock %}
 {% block content %}
 <section class="toolbar">
-  <label for="year-select">Jahr</label>
+  <label for="year-select">{{ T.label_year }}</label>
   <select id="year-select">
-    <option value="all">Gesamt</option>
+    <option value="all">{{ T.option_all }}</option>
     {% for y in years %}
       <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
     {% endfor %}
@@ -16,56 +16,52 @@
 
 <section class="grid">
   <div class="card">
-    <h3>Monatsvergleich: Ist vs. Soll</h3>
-    <canvas id="chart-monthly" role="img" aria-label="Monatsvergleich Ist vs. Soll"></canvas>
+    <h3>{{ T.chart_monthly_title }}</h3>
+    <canvas id="chart-monthly" role="img" aria-label="{{ T.chart_monthly_title }}"></canvas>
   </div>
   <div class="card">
-    <h3>Abweichung Ist − Soll (%)</h3>
-    <canvas id="chart-deviation" role="img" aria-label="Abweichung Ist minus Soll in Prozent pro Monat"></canvas>
+    <h3>{{ T.chart_deviation_title }}</h3>
+    <canvas id="chart-deviation" role="img" aria-label="{{ T.chart_deviation_title }}"></canvas>
   </div>
   <div class="card wide">
-    <h3>Kumulativer Jahresertrag</h3>
-    <canvas id="chart-cumulative" role="img" aria-label="Kumulativer Jahresertrag Ist und Soll"></canvas>
+    <h3>{{ T.chart_cumulative_title }}</h3>
+    <canvas id="chart-cumulative" role="img" aria-label="{{ T.chart_cumulative_title }}"></canvas>
   </div>
   <div class="card wide">
-    <h3>Tägliche Produktion (inkl. 7-Tage-Mittel)</h3>
-    <canvas id="chart-daily" role="img" aria-label="Tägliche Produktion und 7-Tage-Mittel"></canvas>
+    <h3>{{ T.chart_daily_title }}</h3>
+    <canvas id="chart-daily" role="img" aria-label="{{ T.chart_daily_title }}"></canvas>
   </div>
   <div class="card wide">
-    <h3>Kalender-Heatmap</h3>
-    <canvas id="chart-heatmap" role="img" aria-label="Kalender-Heatmap der täglichen Produktion"></canvas>
+    <h3>{{ T.chart_heatmap_title }}</h3>
+    <canvas id="chart-heatmap" role="img" aria-label="{{ T.chart_heatmap_title }}"></canvas>
   </div>
   <div class="card wide">
-    <h3>Amortisation: kumulativer Ertrag vs. Investition</h3>
-    <canvas id="chart-payback" role="img" aria-label="Amortisation: kumulativer Ertrag vs. Investition über die Zeit"></canvas>
+    <h3>{{ T.chart_payback_title }}</h3>
+    <canvas id="chart-payback" role="img" aria-label="{{ T.chart_payback_title }}"></canvas>
   </div>
   <div class="card wide">
-    <h3>Energieflüsse pro Abrechnungsperiode</h3>
-    <canvas id="chart-energy-flows" role="img" aria-label="Energieflüsse pro Monat: Eigenverbrauch, Einspeisung, Netzbezug"></canvas>
+    <h3>{{ T.chart_energy_flows_title }}</h3>
+    <canvas id="chart-energy-flows" role="img" aria-label="{{ T.chart_energy_flows_title }}"></canvas>
   </div>
   <div class="card">
-    <h3>Eigenverbrauchsquote pro Periode</h3>
-    <canvas id="chart-self-ratio" role="img" aria-label="Eigenverbrauchsquote pro Periode in Prozent"></canvas>
+    <h3>{{ T.chart_self_ratio_title }}</h3>
+    <canvas id="chart-self-ratio" role="img" aria-label="{{ T.chart_self_ratio_title }}"></canvas>
   </div>
   <div class="card">
-    <h3>Finanzfluss pro Periode</h3>
-    <canvas id="chart-finance-flow" role="img" aria-label="Finanzfluss pro Periode: Bezugskosten, Eigenverbrauchsersparnis, Einspeisung"></canvas>
+    <h3>{{ T.chart_finance_flow_title }}</h3>
+    <canvas id="chart-finance-flow" role="img" aria-label="{{ T.chart_finance_flow_title }}"></canvas>
   </div>
   <div class="card">
-    <h3>Tagesverteilung pro Monat (Min/Median/Max)</h3>
-    <canvas id="chart-distribution" role="img" aria-label="Tagesverteilung pro Monat mit Min, Median und Max"></canvas>
+    <h3>{{ T.chart_distribution_title }}</h3>
+    <canvas id="chart-distribution" role="img" aria-label="{{ T.chart_distribution_title }}"></canvas>
   </div>
   <div class="card">
-    <h3>Jahresvergleich (Monatssummen)</h3>
-    <canvas id="chart-yearcomp" role="img" aria-label="Jahresvergleich der Monatssummen"></canvas>
+    <h3>{{ T.chart_yearcomp_title }}</h3>
+    <canvas id="chart-yearcomp" role="img" aria-label="{{ T.chart_yearcomp_title }}"></canvas>
   </div>
   <div class="card">
-    <h3>Top 5 Tage</h3>
-    <table class="data" id="top-table"><thead><tr><th>Datum</th><th>kWh</th></tr></thead><tbody></tbody></table>
-  </div>
-  <div class="card">
-    <h3>Flop 5 Tage</h3>
-    <table class="data" id="flop-table"><thead><tr><th>Datum</th><th>kWh</th></tr></thead><tbody></tbody></table>
+    <h3>{{ T.chart_top_title }}</h3>
+    <table class="data" id="top-table"><thead><tr><th>{{ T.col_date }}</th><th>kWh</th></tr></thead><tbody></tbody></table>
   </div>
 </section>
 

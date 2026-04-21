@@ -1,14 +1,15 @@
 async function loadYear(year) {
   const status = document.getElementById('status');
-  status.textContent = 'Lade…';
+  status.textContent = window.T?.status_loading || 'Loading\u2026';
   const r = await fetch(`/api/summary?year=${year}`);
-  if (!r.ok) { status.textContent = 'Fehler beim Laden'; return; }
+  if (!r.ok) { status.textContent = window.T?.status_load_error || 'Error loading'; return; }
   const data = await r.json();
 
   const sel = document.getElementById('year-select');
   if (data.available_years.length) {
     const current = sel.value;
-    const opts = ['<option value="all">Gesamt</option>']
+    const allLabel = window.T?.option_all || 'All';
+    const opts = [`<option value="all">${allLabel}</option>`]
       .concat(data.available_years.map(y => `<option value="${y}">${y}</option>`));
     sel.innerHTML = opts.join('');
     sel.value = current || String(data.year);
@@ -22,7 +23,7 @@ async function loadYear(year) {
   SolarCharts.renderHeatmap(data);
   SolarCharts.renderDistribution(data);
   SolarCharts.renderYearComparison(data);
-  SolarCharts.renderTopFlop(data);
+  SolarCharts.renderTopDays(data);
   SolarCharts.renderPayback(data);
   SolarCharts.renderEnergyFlows(data);
   SolarCharts.renderSelfRatio(data);

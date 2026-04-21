@@ -145,11 +145,9 @@ def monthly_distribution(records: list[dict], year) -> list[dict]:
     return result
 
 
-def top_days(records: list[dict], year, n: int = 5) -> dict:
+def top_days(records: list[dict], year, n: int = 5) -> list[dict]:
     pool = list(records) if _is_all(year) else [r for r in records if r["date"].startswith(f"{year}-")]
-    top = sorted(pool, key=lambda r: r["kwh"], reverse=True)[:n]
-    flop = sorted([r for r in pool if r["kwh"] > 0], key=lambda r: r["kwh"])[:n]
-    return {"top": top, "flop": flop}
+    return sorted(pool, key=lambda r: r["kwh"], reverse=True)[:n]
 
 
 def year_comparison(records: list[dict]) -> dict[int, list[float]]:
