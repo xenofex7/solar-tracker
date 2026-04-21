@@ -442,33 +442,71 @@ function renderPayback(data) {
   const invested = fin?.payback?.invested || 0;
   const series = fin?.cumulative_revenue || [];
   if (invested <= 0 || !series.length) {
-    const parent = ctx.closest('.card');
-    if (parent) parent.style.display = 'none';
+    _hideIfEmpty(ctx, false);
     return;
   }
-  const parent = ctx.closest('.card');
-  if (parent) parent.style.display = '';
-  const labels = series.map(r => r.date);
-  const revenue = series.map(r => r.revenue);
-  const investedLine = labels.map(() => invested);
+  _hideIfEmpty(ctx, true);
+
+  // Cumulative revenue per year-end
+  const cumByYear = {};
+  series.forEach(r => { cumByYear[r.date.slice(0, 4)] = r.revenue; });
+  const actualYears = Object.keys(cumByYear).sort();
+  const lastCum = cumByYear[actualYears[actualYears.length - 1]] || 0;
+
+  // Build forecast years: cumulative from last actual until investment recovered
+  const yearlyEst = fin.payback?.yearly_yield_estimate || 0;
+  const forecastByYear = {};
+  if (yearlyEst > 0 && fin.payback?.remaining > 0) {
+    let cum = lastCum;
+    let y = parseInt(actualYears[actualYears.length - 1]) + 1;
+    while (cum < invested && y < 2080) {
+      cum = Math.min(cum + yearlyEst, invested);
+      forecastByYear[String(y)] = cum;
+      y++;
+    }
+  }
+
+  const allYears = [...new Set([...actualYears, ...Object.keys(forecastByYear)])].sort();
+  const actualData   = allYears.map(y => cumByYear[y]     ?? null);
+  const forecastData = allYears.map(y => forecastByYear[y] ?? null);
+  const investedLine = allYears.map(() => invested);
+
   charts.payback = new Chart(ctx, {
-    type: 'line',
+    type: 'bar',
     data: {
-      labels,
+      labels: allYears,
       datasets: [
-        { label: window.T?.chart_cumulative_revenue || 'Revenue (CHF)', data: revenue, borderColor: CHART_COLORS.actualLine, backgroundColor: 'rgba(245,166,35,0.15)', pointRadius: 0, fill: true, tension: 0.1 },
-        { label: window.T?.chart_investment || 'Investment (CHF)', data: investedLine, borderColor: CHART_COLORS.targetLine, borderDash: [6,4], pointRadius: 0, fill: false },
+        {
+          label: window.T?.chart_cumulative_revenue || 'Revenue (CHF)',
+          data: actualData,
+          backgroundColor: CHART_COLORS.actual,
+          order: 2,
+        },
+        {
+          label: 'Forecast (CHF)',
+          data: forecastData,
+          backgroundColor: 'rgba(245,166,35,0.28)',
+          borderColor: CHART_COLORS.actualLine,
+          borderWidth: 1,
+          order: 2,
+        },
+        {
+          type: 'line',
+          label: window.T?.chart_investment || 'Investment (CHF)',
+          data: investedLine,
+          borderColor: CHART_COLORS.targetLine,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          fill: false,
+          order: 1,
+        },
       ],
     },
     options: {
       plugins: {
-        tooltip: { callbacks: {
-          title: items => fmtDate(items[0].label),
-          label: item => `${item.dataset.label}: ${fmtChf(item.parsed.y)}`,
-        } },
+        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtChf(item.parsed.y)}` } },
       },
       scales: {
-        x: { ticks: { maxTicksLimit: 12, callback(v) { return fmtDate(this.getLabelForValue(v)); } } },
         y: { beginAtZero: true, ticks: { callback: v => fmtChf(v) } },
       },
     },
