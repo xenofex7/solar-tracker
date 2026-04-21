@@ -267,6 +267,84 @@ function renderTopDays(data) {
   });
 }
 
+function renderDayQuality(data) {
+  destroy('day-quality');
+  const ctx = document.getElementById('chart-day-quality');
+  if (!ctx) return;
+  const dist = data.day_quality;
+  const buckets = dist?.buckets || [];
+  if (!buckets.length) {
+    _hideIfEmpty(ctx, false);
+    return;
+  }
+  _hideIfEmpty(ctx, true);
+
+  const colors = ['#e74c3c', '#e67e22', '#f39c12', '#2ecc71', '#27ae60', '#1a6b3a'];
+  const labels = buckets.map(b => b.label);
+  const counts = buckets.map(b => b.count);
+  const total = counts.reduce((s, c) => s + c, 0);
+
+  const centerText = {
+    id: 'centerText',
+    beforeDraw(chart) {
+      const { chartArea, ctx: c } = chart;
+      c.save();
+      const cx = (chartArea.left + chartArea.right) / 2;
+      const cy = (chartArea.top + chartArea.bottom) / 2;
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.font = `bold 22px -apple-system, Segoe UI, Roboto, sans-serif`;
+      c.fillStyle = CHART_COLORS.text;
+      c.fillText(total, cx, cy - 10);
+      c.font = `12px -apple-system, Segoe UI, Roboto, sans-serif`;
+      c.fillStyle = CHART_COLORS.muted;
+      c.fillText(window.T?.label_days || 'days', cx, cy + 10);
+      c.restore();
+    },
+  };
+
+  const segmentLabels = {
+    id: 'segmentLabels',
+    afterDatasetsDraw(chart) {
+      const { ctx: c, data: d } = chart;
+      const meta = chart.getDatasetMeta(0);
+      const dataset = d.datasets[0].data;
+      const sum = dataset.reduce((a, b) => a + b, 0);
+      c.save();
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      meta.data.forEach((arc, i) => {
+        const pct = sum > 0 ? dataset[i] / sum : 0;
+        if (pct < 0.04) return;
+        const midAngle = arc.startAngle + (arc.endAngle - arc.startAngle) / 2;
+        const r = (arc.innerRadius + arc.outerRadius) / 2;
+        const x = arc.x + Math.cos(midAngle) * r;
+        const y = arc.y + Math.sin(midAngle) * r;
+        c.font = `bold 11px -apple-system, Segoe UI, Roboto, sans-serif`;
+        c.fillStyle = 'rgba(255,255,255,0.92)';
+        c.fillText(`${Math.round(pct * 100)} %`, x, y);
+      });
+      c.restore();
+    },
+  };
+
+  charts['day-quality'] = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: counts, backgroundColor: colors, borderColor: 'rgba(0,0,0,0.25)', borderWidth: 1 }],
+    },
+    options: {
+      cutout: '52%',
+      plugins: {
+        legend: { position: 'right', labels: { boxWidth: 14, font: { size: 11 } } },
+        tooltip: { callbacks: { label: item => `${item.label}: ${item.parsed} ${window.T?.label_days || 'days'}` } },
+      },
+    },
+    plugins: [centerText, segmentLabels],
+  });
+}
+
 function renderKpis(data) {
   const T = window.T || {};
   const s = data.summary;
@@ -490,6 +568,7 @@ function renderFinanceFlow(data) {
 
 window.SolarCharts = {
   renderKpis, renderMonthly, renderDeviation, renderCumulative,
-  renderDaily, renderHeatmap, renderDistribution, renderYearComparison, renderTopDays,
+  renderDaily, renderHeatmap, renderDistribution, renderYearComparison,
+  renderTopDays, renderDayQuality,
   renderPayback, renderEnergyFlows, renderSelfRatio, renderFinanceFlow,
 };

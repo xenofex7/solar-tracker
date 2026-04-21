@@ -150,6 +150,25 @@ def top_days(records: list[dict], year, n: int = 5) -> list[dict]:
     return sorted(pool, key=lambda r: r["kwh"], reverse=True)[:n]
 
 
+def day_quality_distribution(records: list[dict], year) -> dict:
+    pool = filter_year(records, year)
+    active = [r for r in pool if r["kwh"] > 0]
+    if not active:
+        return {"buckets": []}
+    max_kwh = max(r["kwh"] for r in active)
+    min_kwh = min(r["kwh"] for r in active)
+    if max_kwh == min_kwh:
+        return {"buckets": [{"label": f"{round(max_kwh)} kWh", "count": len(active), "lo": min_kwh, "hi": max_kwh}]}
+    step = (max_kwh - min_kwh) / 6
+    buckets = []
+    for i in range(6):
+        lo = min_kwh + i * step
+        hi = min_kwh + (i + 1) * step
+        count = sum(1 for r in active if (lo <= r["kwh"] < hi) or (i == 5 and lo <= r["kwh"] <= hi))
+        buckets.append({"label": f"{round(lo)}–{round(hi)} kWh", "count": count, "lo": round(lo, 1), "hi": round(hi, 1)})
+    return {"buckets": buckets, "max_kwh": round(max_kwh, 1), "min_kwh": round(min_kwh, 1)}
+
+
 def year_comparison(records: list[dict]) -> dict[int, list[float]]:
     years: dict[int, list[float]] = {}
     for r in records:

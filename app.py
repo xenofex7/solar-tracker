@@ -374,6 +374,7 @@ def api_summary():
     roll = metrics.rolling_avg(daily_vals, window=7)
     dist = metrics.monthly_distribution(records, year)
     tops = metrics.top_days(records, year, n=5)
+    day_qual = metrics.day_quality_distribution(records, year)
     year_cmp = metrics.year_comparison(records)
     heat = metrics.heatmap_data(records, year)
     summ = metrics.summary(records, targets, year, kwp, start_date=start_date)
@@ -402,6 +403,7 @@ def api_summary():
         "rolling_avg_7d": roll,
         "monthly_distribution": dist,
         "top_days": tops,
+        "day_quality": day_qual,
         "year_comparison": year_cmp,
         "heatmap": heat,
         "summary": summ,
