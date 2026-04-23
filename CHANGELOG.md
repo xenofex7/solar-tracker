@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- KPI info popover and Savings vs. no PV chart.
+
+### Changed
+- Make header sticky and move year filter into it.
+- Scope Self-consumption & Grid KPIs to selected year.
+- Normalize dash typography to ASCII hyphens.
 
 ## [1.5.1] - 2026-04-23
 ### Changed
