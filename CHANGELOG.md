@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Inline row editing in Anlagekosten, Stromkosten and Produktion tables.
+- Info popover on Self-consumption rate KPI explaining the calculation.
+
+### Changed
+- Polish scrollbar, form spacing and toast messages.
 
 ## [1.6.0] - 2026-04-23
 ### Added
