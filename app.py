@@ -324,7 +324,7 @@ def api_sync_ha():
     t_write = time.perf_counter() - t1
 
     app.logger.info(
-        "HA sync %s..%s: %d days (ins=%d, upd=%d) — fetch %.2fs, write %.2fs",
+        "HA sync %s..%s: %d days (ins=%d, upd=%d) - fetch %.2fs, write %.2fs",
         start, end, len(items), inserted, updated, t_fetch, t_write,
     )
 

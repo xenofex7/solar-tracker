@@ -1,4 +1,4 @@
-"""Unit tests for metrics.py — the calculation engine that drives KPIs
+"""Unit tests for metrics.py - the calculation engine that drives KPIs
 and charts. Uses synthetic records/bills so tests are deterministic
 and independent of the real SQLite database."""
 
@@ -80,7 +80,7 @@ def test_monthly_targets_full_past_year():
 
 
 def test_monthly_targets_start_date_zeros_earlier_months():
-    # Start on 2020-04-10 — Jan-Mar zero, April prorated
+    # Start on 2020-04-10 - Jan-Mar zero, April prorated
     out = metrics.monthly_targets(GENERIC_TARGETS, 2020, start_date="2020-04-10")
     assert out[0] == 0
     assert out[1] == 0

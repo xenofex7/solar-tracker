@@ -165,7 +165,7 @@ def day_quality_distribution(records: list[dict], year) -> dict:
         lo = min_kwh + i * step
         hi = min_kwh + (i + 1) * step
         count = sum(1 for r in active if (lo <= r["kwh"] < hi) or (i == 5 and lo <= r["kwh"] <= hi))
-        buckets.append({"label": f"{round(lo)}–{round(hi)} kWh", "count": count, "lo": round(lo, 1), "hi": round(hi, 1)})
+        buckets.append({"label": f"{round(lo)}-{round(hi)} kWh", "count": count, "lo": round(lo, 1), "hi": round(hi, 1)})
     return {"buckets": buckets, "max_kwh": round(max_kwh, 1), "min_kwh": round(min_kwh, 1)}
 
 

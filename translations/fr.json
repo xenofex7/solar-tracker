@@ -67,7 +67,7 @@
     "Di"
   ],
   "chart_monthly_title": "Mensuel : Réel vs. Objectif",
-  "chart_deviation_title": "Écart Réel − Objectif (%)",
+  "chart_deviation_title": "Écart Réel - Objectif (%)",
   "chart_cumulative_title": "Production annuelle cumulée",
   "chart_daily_title": "Production quotidienne (moy. 7 j)",
   "chart_heatmap_title": "Carte thermique",
@@ -148,7 +148,7 @@
   "title_timezone": "Détermine quel jour calendaire est attribué à un compartiment journalier HA.",
   "btn_save": "Enregistrer",
   "section_costs": "Coûts d’installation",
-  "desc_costs": "Saisir toutes les positions d’investissement de votre installation PV – ex. installateur, électricien, modules, batterie. Subventions et remboursements (Pronovo, subvention cantonale unique) en montant <strong>négatif</strong> ; ils sont automatiquement déduits du total.",
+  "desc_costs": "Saisir toutes les positions d’investissement de votre installation PV - ex. installateur, électricien, modules, batterie. Subventions et remboursements (Pronovo, subvention cantonale unique) en montant <strong>négatif</strong> ; ils sont automatiquement déduits du total.",
   "label_amount_chf": "Montant (CHF)",
   "placeholder_solar_builder": "Installateur solaire",
   "btn_add_item": "Ajouter une position",

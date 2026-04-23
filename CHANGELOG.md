@@ -46,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Year Comparison now highlights the current year in yellow, older years in blue, with correct z-order and lines that stop at data boundaries.
 
 ### Removed
-- Bottom 5 Days card — values were always near zero and not useful.
+- Bottom 5 Days card - values were always near zero and not useful.
 
 ## [1.3.5] - 2026-04-21
 ### Changed
@@ -80,7 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `requirements.lock.txt` with pinned exact versions; Dockerfile
   installs from the lock for reproducible builds.
 - `pyproject.toml` with ruff config (line-length, select rules).
-- `tests/test_metrics.py` — 21 unit tests covering `monthly_actual`,
+- `tests/test_metrics.py` - 21 unit tests covering `monthly_actual`,
   `monthly_targets`, `deviation_pct`, `self_consumption`,
   `financial_series`, `payback`, `monthly_flows`, `cumulative`,
   `rolling_avg` and `summary`.
@@ -100,7 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 - `renderKpis` now HTML-escapes group titles, labels and class names
-  before building the `innerHTML` string — defense in depth in case
+  before building the `innerHTML` string - defense in depth in case
   any of those ever become user-controlled.
 
 ## [1.2.1] - 2026-04-19

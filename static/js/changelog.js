@@ -19,7 +19,7 @@
           body.scrollTop = 0;
         })
         .catch(function () {
-          body.textContent = '—';
+          body.textContent = '-';
         });
     }
   }

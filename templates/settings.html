@@ -53,7 +53,7 @@
       <tbody>
         {% for c in costs %}
           <tr data-id="{{ c.id }}">
-            <td>{{ (c.date | ddmmyyyy) if c.date else '—' }}</td>
+            <td>{{ (c.date | ddmmyyyy) if c.date else '-' }}</td>
             <td>{{ c.label }}</td>
             <td class="num">{{ c.amount_chf | chf }} CHF</td>
             <td class="action"><button class="del icon" data-id="{{ c.id }}" data-label="{{ c.label }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td>
@@ -97,11 +97,11 @@
       <tbody>
         {% for b in grid_imports %}
           <tr>
-            <td>{{ b.period_start | ddmmyyyy }} – {{ b.period_end | ddmmyyyy }}</td>
+            <td>{{ b.period_start | ddmmyyyy }} - {{ b.period_end | ddmmyyyy }}</td>
             <td class="num">{{ b.kwh | chf }} kWh</td>
             <td class="num">{{ b.amount_chf | chf }} CHF</td>
             <td class="num">{{ "%.3f"|format((b.amount_chf / b.kwh) if b.kwh else 0) }} CHF/kWh</td>
-            <td>{{ b.invoice_no or '—' }}</td>
+            <td>{{ b.invoice_no or '-' }}</td>
             <td class="action"><button class="del icon" data-id="{{ b.id }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td>
           </tr>
         {% endfor %}
@@ -124,11 +124,11 @@
       <tbody>
         {% for b in grid_exports %}
           <tr>
-            <td>{{ b.period_start | ddmmyyyy }} – {{ b.period_end | ddmmyyyy }}</td>
+            <td>{{ b.period_start | ddmmyyyy }} - {{ b.period_end | ddmmyyyy }}</td>
             <td class="num">{{ b.kwh | chf }} kWh</td>
             <td class="num">{{ b.amount_chf | chf }} CHF</td>
             <td class="num">{{ "%.3f"|format((b.amount_chf / b.kwh) if b.kwh else 0) }} CHF/kWh</td>
-            <td>{{ b.invoice_no or '—' }}</td>
+            <td>{{ b.invoice_no or '-' }}</td>
             <td class="action"><button class="del icon" data-id="{{ b.id }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td>
           </tr>
         {% endfor %}
@@ -196,8 +196,8 @@
   <div class="card">
     <h2>{{ T.section_ha }}</h2>
     <p class="muted">
-      URL: <code>{{ ha_url or '—' }}</code><br>
-      Entity: <code>{{ ha_entity or '—' }}</code><br>
+      URL: <code>{{ ha_url or '-' }}</code><br>
+      Entity: <code>{{ ha_entity or '-' }}</code><br>
       {{ T.desc_ha_env | safe }}
     </p>
     <form id="sync-form" class="inline-form">

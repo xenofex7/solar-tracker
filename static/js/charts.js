@@ -387,15 +387,15 @@ function renderKpis(data) {
   const delta = s.delta_kwh ?? 0;
   const pct = s.delta_pct;
   const deltaCls = delta >= 0 ? 'good' : 'bad';
-  const best = s.best_day ? `${fmtDate(s.best_day.date)}<br><span class="sub">${fmtKwh(s.best_day.kwh)}</span>` : '—';
-  const pctStr = pct === null ? '—' : `${pct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`;
-  const spec = s.specific_yield !== null ? `${fmtInt(s.specific_yield)} kWh/kWp` : '—';
+  const best = s.best_day ? `${fmtDate(s.best_day.date)}<br><span class="sub">${fmtKwh(s.best_day.kwh)}</span>` : '-';
+  const pctStr = pct === null ? '-' : `${pct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`;
+  const spec = s.specific_yield !== null ? `${fmtInt(s.specific_yield)} kWh/kWp` : '-';
 
   const scopeLabel = s.year === 'all' ? (T.label_total || 'total') : `YTD ${s.year}`;
   const production = [
     { label: `${T.kpi_actual || 'Actual'} ${scopeLabel}`, value: fmtKwh(s.ytd_actual) },
     { label: `${T.kpi_target || 'Target'} ${scopeLabel}`, value: fmtKwh(s.ytd_target) },
-    { label: T.kpi_delta_abs || 'Δ absolute', value: `${delta >= 0 ? '+' : '−'}${fmtKwh(Math.abs(delta))}`, cls: deltaCls },
+    { label: T.kpi_delta_abs || 'Δ absolute', value: `${delta >= 0 ? '+' : '-'}${fmtKwh(Math.abs(delta))}`, cls: deltaCls },
     { label: T.kpi_delta_pct || 'Δ in %', value: pctStr, cls: deltaCls },
     { label: T.kpi_best_day || 'Best day', value: best },
     { label: T.kpi_specific_yield || 'Spec. yield', value: spec },
@@ -426,7 +426,7 @@ function renderKpis(data) {
       : (T.kpi_basis_history || 'History');
     const paybackVal = p.payback_date
       ? `${fmtDate(p.payback_date)}<br><span class="sub">${remainingStr(p.payback_date)} · ${basisLabel}</span>`
-      : '—';
+      : '-';
     const progressCls = p.progress_pct >= 100 ? 'good' : '';
     const b = p.breakdown || {};
     const parts = [];

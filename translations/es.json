@@ -67,7 +67,7 @@
     "Do"
   ],
   "chart_monthly_title": "Mensual: Real vs. Objetivo",
-  "chart_deviation_title": "Desviación Real − Objetivo (%)",
+  "chart_deviation_title": "Desviación Real - Objetivo (%)",
   "chart_cumulative_title": "Producción anual acumulada",
   "chart_daily_title": "Producción diaria (media 7 días)",
   "chart_heatmap_title": "Mapa de calor",
@@ -148,7 +148,7 @@
   "title_timezone": "Determina a qué día calendario se asigna un bucket diario de HA.",
   "btn_save": "Guardar",
   "section_costs": "Costes de inversión",
-  "desc_costs": "Registrar todas las partidas de inversión de la instalación FV – p. ej. instalador, electricista, módulos, batería. Subvenciones y reembolsos (Pronovo, subvención cantonal única) como importe <strong>negativo</strong>; se deducen automáticamente del total.",
+  "desc_costs": "Registrar todas las partidas de inversión de la instalación FV - p. ej. instalador, electricista, módulos, batería. Subvenciones y reembolsos (Pronovo, subvención cantonal única) como importe <strong>negativo</strong>; se deducen automáticamente del total.",
   "label_amount_chf": "Monto (CHF)",
   "placeholder_solar_builder": "Instalador solar",
   "btn_add_item": "Agregar posición",

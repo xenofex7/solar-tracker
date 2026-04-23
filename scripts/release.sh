@@ -47,7 +47,7 @@ if [[ ! "$new" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 if [[ -n "$(git status --porcelain)" ]]; then
-  echo "working tree is not clean — commit or stash first" >&2
+  echo "working tree is not clean - commit or stash first" >&2
   exit 1
 fi
 
@@ -66,7 +66,7 @@ pick() {
 ruff_bin=$(pick ruff)
 pytest_bin=$(pick pytest)
 if [[ -z "$ruff_bin" || -z "$pytest_bin" ]]; then
-  echo "ruff and/or pytest not found (.venv/bin or PATH) — install them or run from the project venv" >&2
+  echo "ruff and/or pytest not found (.venv/bin or PATH) - install them or run from the project venv" >&2
   exit 1
 fi
 
@@ -87,7 +87,7 @@ unreleased_lines=$(awk '
 ' CHANGELOG.md | grep -cE '^[^[:space:]]' || true)
 
 if [[ "$unreleased_lines" -eq 0 ]]; then
-  echo "CHANGELOG.md has no entries under [Unreleased] — add notes first" >&2
+  echo "CHANGELOG.md has no entries under [Unreleased] - add notes first" >&2
   exit 1
 fi
 

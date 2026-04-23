@@ -34,7 +34,7 @@ The SQLite database lives in `./data` on the host (mounted into the
 container), so stopping or recreating the container preserves all
 data. The container runs gunicorn with two workers.
 
-Available tags: `latest`, `1`, `1.0`, `1.0.0` — see
+Available tags: `latest`, `1`, `1.0`, `1.0.0` - see
 `ghcr.io/xenofex7/solar-tracker`.
 
 If you have the source checked out, `docker compose build` rebuilds
@@ -79,7 +79,7 @@ publishes the image to GHCR.
 The app connects to `HA_URL` via WebSocket and calls
 `recorder/statistics_during_period` with `period: "day"` and
 `types: ["change"]`. Data therefore comes from **Long-Term Statistics**, which
-Home Assistant keeps indefinitely — unlike the recorder history, which is
+Home Assistant keeps indefinitely - unlike the recorder history, which is
 purged after `purge_keep_days`. This lets you back-fill and re-sync multiple
 years at once.
 
@@ -87,7 +87,7 @@ Expected sensor: an energy sensor with `device_class: energy` and
 `state_class: total_increasing` (or `total`), e.g. `sensor.solar_total_energy`.
 
 The sync form on `/settings` defaults to the last six months. Each run
-overwrites existing entries for the selected days — including manual ones —
+overwrites existing entries for the selected days - including manual ones -
 so the database stays in sync with Home Assistant.
 
 ## Configuration

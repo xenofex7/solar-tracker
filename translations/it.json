@@ -67,7 +67,7 @@
     "Do"
   ],
   "chart_monthly_title": "Mensile: Reale vs. Obiettivo",
-  "chart_deviation_title": "Scarto Reale − Obiettivo (%)",
+  "chart_deviation_title": "Scarto Reale - Obiettivo (%)",
   "chart_cumulative_title": "Produzione annuale cumulata",
   "chart_daily_title": "Produzione giornaliera (media 7 gg)",
   "chart_heatmap_title": "Mappa di calore",
@@ -148,7 +148,7 @@
   "title_timezone": "Determina a quale giorno di calendario viene assegnato un bucket giornaliero HA.",
   "btn_save": "Salva",
   "section_costs": "Costi di investimento",
-  "desc_costs": "Inserire tutte le voci di investimento per l’impianto FV – es. installatore, elettricista, moduli, batteria. Sussidi e rimborsi (Pronovo, incentivo cantonale una tantum) come importo <strong>negativo</strong>; vengono automaticamente detratti dal totale.",
+  "desc_costs": "Inserire tutte le voci di investimento per l’impianto FV - es. installatore, elettricista, moduli, batteria. Sussidi e rimborsi (Pronovo, incentivo cantonale una tantum) come importo <strong>negativo</strong>; vengono automaticamente detratti dal totale.",
   "label_amount_chf": "Importo (CHF)",
   "placeholder_solar_builder": "Installatore solare",
   "btn_add_item": "Aggiungi voce",

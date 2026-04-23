@@ -67,7 +67,7 @@
     "Su"
   ],
   "chart_monthly_title": "Monthly: Actual vs. Target",
-  "chart_deviation_title": "Deviation Actual − Target (%)",
+  "chart_deviation_title": "Deviation Actual - Target (%)",
   "chart_cumulative_title": "Cumulative Annual Yield",
   "chart_daily_title": "Daily Production (incl. 7-day avg)",
   "chart_heatmap_title": "Calendar Heatmap",
@@ -148,7 +148,7 @@
   "title_timezone": "Determines which calendar day a HA daily bucket is assigned to.",
   "btn_save": "Save",
   "section_costs": "Investment costs",
-  "desc_costs": "Enter all investment items for your PV system – e.g. installer, electrician, modules, battery. Subsidies and reimbursements (Pronovo, cantonal one-time payments) as a <strong>negative</strong> amount; they are automatically deducted from the total investment.",
+  "desc_costs": "Enter all investment items for your PV system - e.g. installer, electrician, modules, battery. Subsidies and reimbursements (Pronovo, cantonal one-time payments) as a <strong>negative</strong> amount; they are automatically deducted from the total investment.",
   "label_amount_chf": "Amount (CHF)",
   "placeholder_solar_builder": "Solar installer",
   "btn_add_item": "Add item",

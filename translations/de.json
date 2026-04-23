@@ -67,7 +67,7 @@
     "So"
   ],
   "chart_monthly_title": "Monatsvergleich: Ist vs. Soll",
-  "chart_deviation_title": "Abweichung Ist − Soll (%)",
+  "chart_deviation_title": "Abweichung Ist - Soll (%)",
   "chart_cumulative_title": "Kumulativer Jahresertrag",
   "chart_daily_title": "Tägliche Produktion (inkl. 7-Tage-Mittel)",
   "chart_heatmap_title": "Kalender-Heatmap",
@@ -148,7 +148,7 @@
   "title_timezone": "Bestimmt, welcher Kalendertag einem HA-Tagesbucket zugeordnet wird.",
   "btn_save": "Speichern",
   "section_costs": "Anlagekosten",
-  "desc_costs": "Alle Investitionspositionen deiner PV‑Anlage erfassen – z. B. Solar‑Bauer, Elektriker, Module, Speicher. Förderungen und Rückerstattungen (Pronovo, kantonale Einmalvergütung) als <strong>negativen</strong> Betrag eintragen; sie werden automatisch von der Investitionssumme abgezogen.",
+  "desc_costs": "Alle Investitionspositionen deiner PV‑Anlage erfassen - z. B. Solar‑Bauer, Elektriker, Module, Speicher. Förderungen und Rückerstattungen (Pronovo, kantonale Einmalvergütung) als <strong>negativen</strong> Betrag eintragen; sie werden automatisch von der Investitionssumme abgezogen.",
   "label_amount_chf": "Betrag (CHF)",
   "placeholder_solar_builder": "Solar‑Bauer",
   "btn_add_item": "Position hinzufügen",

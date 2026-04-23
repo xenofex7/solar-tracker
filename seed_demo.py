@@ -1,5 +1,5 @@
 """Generate a full demo dataset so the app shows off all features without a
-real Home Assistant connection. Idempotent — safe to run multiple times."""
+real Home Assistant connection. Idempotent - safe to run multiple times."""
 import math
 import random
 from datetime import date, timedelta
