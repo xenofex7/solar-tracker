@@ -463,6 +463,32 @@ def api_summary():
         flows = [f for f in flows if f["period_end"] >= start_date]
     if isinstance(year, int):
         flows = [f for f in flows if f["year"] == year]
+        imp_kwh = sum(f["imported_kwh"] for f in flows)
+        imp_amt = sum(f["import_cost"] for f in flows)
+        exp_kwh = sum(f["exported_kwh"] for f in flows)
+        exp_amt = sum(f["export_credit"] for f in flows)
+        pv_in_flows = sum(f["pv_kwh"] for f in flows)
+        sc_kwh = sum(f["self_consumed_kwh"] for f in flows)
+        grid_tot = {
+            "import": {
+                "kwh": round(imp_kwh, 2),
+                "amount": round(imp_amt, 2),
+                "avg_price": (imp_amt / imp_kwh) if imp_kwh else 0.0,
+            },
+            "export": {
+                "kwh": round(exp_kwh, 2),
+                "amount": round(exp_amt, 2),
+                "avg_price": (exp_amt / exp_kwh) if exp_kwh else 0.0,
+            },
+            "net_cost": round(imp_amt - exp_amt, 2),
+        }
+        sc = {
+            "pv_in_export_periods": round(pv_in_flows, 2),
+            "exported_kwh": round(exp_kwh, 2),
+            "self_consumed_kwh": round(sc_kwh, 2),
+            "self_consumption_pct": round((sc_kwh / pv_in_flows * 100.0) if pv_in_flows > 0 else 0.0, 1),
+        }
+    sc["savings_vs_no_pv"] = round(sc["self_consumed_kwh"] * grid_tot["import"]["avg_price"], 2)
 
     return jsonify({
         "year": year,

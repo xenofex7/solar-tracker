@@ -113,6 +113,7 @@
   "kpi_net_cost": "Netto-Stromkosten",
   "kpi_self_consumed": "Eigenverbrauch",
   "kpi_self_ratio": "Eigenverbr.-Quote",
+  "kpi_savings_vs_no_pv": "Ersparnis ggü. ohne PV",
   "kpi_group_production": "Produktion",
   "kpi_group_finance": "Finanzen",
   "kpi_group_energy": "Eigenverbrauch & Netz",

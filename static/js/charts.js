@@ -456,6 +456,7 @@ function renderKpis(data) {
     const pctCls = scPct >= 30 ? 'good' : '';
     energy.push(
       { label: T.kpi_net_cost || 'Net electricity cost', value: fmtChf(net) },
+      { label: T.kpi_savings_vs_no_pv || 'Savings vs. no PV', value: fmtChf(sc.savings_vs_no_pv ?? 0), cls: (sc.savings_vs_no_pv ?? 0) > 0 ? 'good' : '' },
       { label: T.kpi_self_consumed || 'Self-consumed', value: fmtKwh(sc.self_consumed_kwh ?? 0) },
       { label: T.kpi_self_ratio || 'Self-cons. rate', value: `${scPct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`, cls: pctCls },
     );

@@ -113,6 +113,7 @@
   "kpi_net_cost": "Coût net électricité",
   "kpi_self_consumed": "Autoconsommation",
   "kpi_self_ratio": "Taux autocons.",
+  "kpi_savings_vs_no_pv": "Économie vs. sans PV",
   "kpi_group_production": "Production",
   "kpi_group_finance": "Finances",
   "kpi_group_energy": "Autoconsommation & Réseau",
