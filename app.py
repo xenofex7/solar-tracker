@@ -531,6 +531,9 @@ def api_summary():
             "self_consumption_pct": round((sc_kwh / pv_in_flows * 100.0) if pv_in_flows > 0 else 0.0, 1),
         }
     sc["savings_vs_no_pv"] = round(sc["self_consumed_kwh"] * grid_tot["import"]["avg_price"], 2)
+    consumption = sc["self_consumed_kwh"] + grid_tot["import"]["kwh"]
+    sc["effective_price_per_kwh"] = round(grid_tot["net_cost"] / consumption, 4) if consumption > 0 else 0.0
+    sc["total_consumption_kwh"] = round(consumption, 2)
 
     return jsonify({
         "year": year,

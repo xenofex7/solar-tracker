@@ -192,5 +192,11 @@
   "kpi_self_ratio_info_self": "Autoconsommé:",
   "kpi_self_ratio_info_base": "PV dans les périodes facturées:",
   "kpi_self_ratio_info_formula": "Autocons. / PV dans les périodes facturées × 100",
-  "kpi_self_ratio_info_note": "Seules les périodes avec facture réseau comptent - les jours sans facture (ex. le trimestre en cours) sont exclus pour éviter de gonfler le taux."
+  "kpi_self_ratio_info_note": "Seules les périodes avec facture réseau comptent - les jours sans facture (ex. le trimestre en cours) sont exclus pour éviter de gonfler le taux.",
+  "kpi_effective_price": "Prix effectif électricité",
+  "kpi_effective_price_info_title": "Mode de calcul",
+  "kpi_effective_price_info_net": "Coût net:",
+  "kpi_effective_price_info_cons": "Consommation totale:",
+  "kpi_effective_price_info_formula": "Coût net / (autoconsommation + soutirage)",
+  "kpi_effective_price_info_note": "Sans PV vous paieriez {tariff} CHF/kWh."
 }

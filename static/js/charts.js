@@ -462,9 +462,21 @@ function renderKpis(data) {
       + `<li>${esc(T.kpi_self_ratio_info_formula || 'Self-cons. / PV in billed periods × 100')}</li>`
       + `</ul>`
       + `<p class="muted">${esc(T.kpi_self_ratio_info_note || 'Only periods with a grid bill are counted - days without invoice (e.g. the current quarter) are excluded so the ratio is not inflated.')}</p>`;
+    const effPrice = sc.effective_price_per_kwh ?? 0;
+    const importPrice = grid.totals.import?.avg_price ?? 0;
+    const totalCons = sc.total_consumption_kwh ?? 0;
+    const fmtPrice = (v) => `${v.toLocaleString(T.locale || 'de-CH', {minimumFractionDigits: 3, maximumFractionDigits: 3})} CHF/kWh`;
+    const effPriceInfo = `<h4>${esc(T.kpi_effective_price_info_title || 'How this is calculated')}</h4>`
+      + `<ul>`
+      + `<li>${esc(T.kpi_effective_price_info_net || 'Net cost:')} <strong>${fmtChf(net)}</strong></li>`
+      + `<li>${esc(T.kpi_effective_price_info_cons || 'Total consumption:')} <strong>${fmtKwh(totalCons)}</strong></li>`
+      + `<li>${esc(T.kpi_effective_price_info_formula || 'Net cost / (self-consumed + imported)')}</li>`
+      + `</ul>`
+      + `<p class="muted">${esc((T.kpi_effective_price_info_note || 'Without PV you would pay {tariff} CHF/kWh.').replace('{tariff}', importPrice.toLocaleString(T.locale || 'de-CH', {minimumFractionDigits: 3, maximumFractionDigits: 3})))}</p>`;
     energy.push(
       { label: T.kpi_net_cost || 'Net electricity cost', value: fmtChf(net) },
       { label: T.kpi_savings_vs_no_pv || 'Savings vs. no PV', value: fmtChf(sc.savings_vs_no_pv ?? 0), cls: (sc.savings_vs_no_pv ?? 0) > 0 ? 'good' : '' },
+      { label: T.kpi_effective_price || 'Effective electricity price', value: fmtPrice(effPrice), cls: (effPrice < importPrice && importPrice > 0) ? 'good' : '', info: effPriceInfo },
       { label: T.kpi_self_consumed || 'Self-consumed', value: fmtKwh(sc.self_consumed_kwh ?? 0) },
       { label: T.kpi_self_ratio || 'Self-cons. rate', value: `${scPct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`, cls: pctCls, info: ratioInfo },
     );

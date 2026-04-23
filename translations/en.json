@@ -192,5 +192,11 @@
   "kpi_self_ratio_info_self": "Self-consumed:",
   "kpi_self_ratio_info_base": "PV in billed periods:",
   "kpi_self_ratio_info_formula": "Self-cons. / PV in billed periods × 100",
-  "kpi_self_ratio_info_note": "Only periods with a grid bill count - days without an invoice (e.g. the current quarter) are excluded so the ratio is not inflated."
+  "kpi_self_ratio_info_note": "Only periods with a grid bill count - days without an invoice (e.g. the current quarter) are excluded so the ratio is not inflated.",
+  "kpi_effective_price": "Effective electricity price",
+  "kpi_effective_price_info_title": "How this is calculated",
+  "kpi_effective_price_info_net": "Net cost:",
+  "kpi_effective_price_info_cons": "Total consumption:",
+  "kpi_effective_price_info_formula": "Net cost / (self-consumed + imported)",
+  "kpi_effective_price_info_note": "Without PV you would pay {tariff} CHF/kWh."
 }

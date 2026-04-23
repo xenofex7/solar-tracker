@@ -192,5 +192,11 @@
   "kpi_self_ratio_info_self": "Eigenverbrauch:",
   "kpi_self_ratio_info_base": "PV in Abrechnungsperioden:",
   "kpi_self_ratio_info_formula": "Eigenverbrauch / PV in Abrechnungsperioden × 100",
-  "kpi_self_ratio_info_note": "Nur Perioden mit Netzrechnung zählen - Tage ohne Abrechnung (z.B. das laufende Quartal) werden ausgeklammert, damit die Quote nicht verzerrt wird."
+  "kpi_self_ratio_info_note": "Nur Perioden mit Netzrechnung zählen - Tage ohne Abrechnung (z.B. das laufende Quartal) werden ausgeklammert, damit die Quote nicht verzerrt wird.",
+  "kpi_effective_price": "Effektiver Strompreis",
+  "kpi_effective_price_info_title": "So wird gerechnet",
+  "kpi_effective_price_info_net": "Netto-Stromkosten:",
+  "kpi_effective_price_info_cons": "Gesamtverbrauch:",
+  "kpi_effective_price_info_formula": "Netto-Stromkosten / (Eigenverbrauch + Netzbezug)",
+  "kpi_effective_price_info_note": "Ohne PV würdest du {tariff} CHF/kWh bezahlen."
 }
