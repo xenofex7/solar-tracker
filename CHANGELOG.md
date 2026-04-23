@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Move HA sync status into toast and auto-reload the page on success.
+- Rename Home Assistant tab to Synchronisation to allow additional sync sources.
+- Tint success/error toasts in light green/red and support an optional subtext line.
+- Polish modal close icon to a Lucide SVG X for optical centering.
+- Polish Saved confirmation by dropping the trailing period.
+
+### Fixed
+- Restore missing [1.4.1] changelog header and add a release.sh guard that verifies every tag has a matching entry.
 
 ## [1.5.0] - 2026-04-23
 ### Added
