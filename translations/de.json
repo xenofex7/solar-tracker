@@ -19,7 +19,7 @@
   "label_max": "Max",
   "status_loading": "Lade…",
   "status_load_error": "Fehler beim Laden",
-  "msg_saved": "Gespeichert.",
+  "msg_saved": "Gespeichert",
   "msg_save_error": "Fehler beim Speichern.",
   "msg_error_prefix": "Fehler: ",
   "msg_targets_saved": "Sollwerte gespeichert.",

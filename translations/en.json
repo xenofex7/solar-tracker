@@ -19,7 +19,7 @@
   "label_max": "Max",
   "status_loading": "Loading…",
   "status_load_error": "Error loading data",
-  "msg_saved": "Saved.",
+  "msg_saved": "Saved",
   "msg_save_error": "Error saving.",
   "msg_error_prefix": "Error: ",
   "msg_targets_saved": "Targets saved.",

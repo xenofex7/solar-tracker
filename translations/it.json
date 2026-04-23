@@ -19,7 +19,7 @@
   "label_max": "Max",
   "status_loading": "Caricamento…",
   "status_load_error": "Errore di caricamento",
-  "msg_saved": "Salvato.",
+  "msg_saved": "Salvato",
   "msg_save_error": "Errore durante il salvataggio.",
   "msg_error_prefix": "Errore: ",
   "msg_targets_saved": "Obiettivi salvati.",

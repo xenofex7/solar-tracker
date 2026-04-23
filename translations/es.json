@@ -19,7 +19,7 @@
   "label_max": "Máx",
   "status_loading": "Cargando…",
   "status_load_error": "Error al cargar",
-  "msg_saved": "Guardado.",
+  "msg_saved": "Guardado",
   "msg_save_error": "Error al guardar.",
   "msg_error_prefix": "Error: ",
   "msg_targets_saved": "Objetivos guardados.",

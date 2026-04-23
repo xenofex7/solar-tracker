@@ -19,7 +19,7 @@
   "label_max": "Max",
   "status_loading": "Chargement…",
   "status_load_error": "Erreur de chargement",
-  "msg_saved": "Enregistré.",
+  "msg_saved": "Enregistré",
   "msg_save_error": "Erreur lors de l’enregistrement.",
   "msg_error_prefix": "Erreur : ",
   "msg_targets_saved": "Objectifs enregistrés.",
