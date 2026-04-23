@@ -187,5 +187,10 @@
   "btn_delete": "Supprimer",
   "chart_spec_yield_title": "Rendement spéc. par mois (kWh/kWp)",
   "btn_edit": "Modifier",
-  "btn_cancel": "Annuler"
+  "btn_cancel": "Annuler",
+  "kpi_self_ratio_info_title": "Mode de calcul",
+  "kpi_self_ratio_info_self": "Autoconsommé:",
+  "kpi_self_ratio_info_base": "PV dans les périodes facturées:",
+  "kpi_self_ratio_info_formula": "Autocons. / PV dans les périodes facturées × 100",
+  "kpi_self_ratio_info_note": "Seules les périodes avec facture réseau comptent - les jours sans facture (ex. le trimestre en cours) sont exclus pour éviter de gonfler le taux."
 }

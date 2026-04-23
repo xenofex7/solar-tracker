@@ -454,11 +454,19 @@ function renderKpis(data) {
     const net = grid.totals.net_cost || 0;
     const scPct = sc.self_consumption_pct ?? 0;
     const pctCls = scPct >= 30 ? 'good' : '';
+    const pvBase = sc.pv_in_export_periods ?? 0;
+    const ratioInfo = `<h4>${esc(T.kpi_self_ratio_info_title || 'How this is calculated')}</h4>`
+      + `<ul>`
+      + `<li>${esc(T.kpi_self_ratio_info_self || 'Self-consumed kWh:')} <strong>${fmtKwh(sc.self_consumed_kwh ?? 0)}</strong></li>`
+      + `<li>${esc(T.kpi_self_ratio_info_base || 'PV in billed periods:')} <strong>${fmtKwh(pvBase)}</strong></li>`
+      + `<li>${esc(T.kpi_self_ratio_info_formula || 'Self-cons. / PV in billed periods × 100')}</li>`
+      + `</ul>`
+      + `<p class="muted">${esc(T.kpi_self_ratio_info_note || 'Only periods with a grid bill are counted - days without invoice (e.g. the current quarter) are excluded so the ratio is not inflated.')}</p>`;
     energy.push(
       { label: T.kpi_net_cost || 'Net electricity cost', value: fmtChf(net) },
       { label: T.kpi_savings_vs_no_pv || 'Savings vs. no PV', value: fmtChf(sc.savings_vs_no_pv ?? 0), cls: (sc.savings_vs_no_pv ?? 0) > 0 ? 'good' : '' },
       { label: T.kpi_self_consumed || 'Self-consumed', value: fmtKwh(sc.self_consumed_kwh ?? 0) },
-      { label: T.kpi_self_ratio || 'Self-cons. rate', value: `${scPct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`, cls: pctCls },
+      { label: T.kpi_self_ratio || 'Self-cons. rate', value: `${scPct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`, cls: pctCls, info: ratioInfo },
     );
   }
 

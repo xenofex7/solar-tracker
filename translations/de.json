@@ -187,5 +187,10 @@
   "btn_delete": "Löschen",
   "chart_spec_yield_title": "Spez. Ertrag pro Monat (kWh/kWp)",
   "btn_edit": "Bearbeiten",
-  "btn_cancel": "Abbrechen"
+  "btn_cancel": "Abbrechen",
+  "kpi_self_ratio_info_title": "So wird gerechnet",
+  "kpi_self_ratio_info_self": "Eigenverbrauch:",
+  "kpi_self_ratio_info_base": "PV in Abrechnungsperioden:",
+  "kpi_self_ratio_info_formula": "Eigenverbrauch / PV in Abrechnungsperioden × 100",
+  "kpi_self_ratio_info_note": "Nur Perioden mit Netzrechnung zählen - Tage ohne Abrechnung (z.B. das laufende Quartal) werden ausgeklammert, damit die Quote nicht verzerrt wird."
 }

@@ -187,5 +187,10 @@
   "btn_delete": "Delete",
   "chart_spec_yield_title": "Specific Yield per Month (kWh/kWp)",
   "btn_edit": "Edit",
-  "btn_cancel": "Cancel"
+  "btn_cancel": "Cancel",
+  "kpi_self_ratio_info_title": "How this is calculated",
+  "kpi_self_ratio_info_self": "Self-consumed:",
+  "kpi_self_ratio_info_base": "PV in billed periods:",
+  "kpi_self_ratio_info_formula": "Self-cons. / PV in billed periods × 100",
+  "kpi_self_ratio_info_note": "Only periods with a grid bill count - days without an invoice (e.g. the current quarter) are excluded so the ratio is not inflated."
 }

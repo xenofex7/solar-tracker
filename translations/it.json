@@ -187,5 +187,10 @@
   "btn_delete": "Elimina",
   "chart_spec_yield_title": "Resa spec. per mese (kWh/kWp)",
   "btn_edit": "Modifica",
-  "btn_cancel": "Annulla"
+  "btn_cancel": "Annulla",
+  "kpi_self_ratio_info_title": "Come viene calcolato",
+  "kpi_self_ratio_info_self": "Autoconsumo:",
+  "kpi_self_ratio_info_base": "PV nei periodi fatturati:",
+  "kpi_self_ratio_info_formula": "Autocons. / PV nei periodi fatturati × 100",
+  "kpi_self_ratio_info_note": "Contano solo i periodi con fattura - i giorni senza fattura (es. il trimestre corrente) sono esclusi per non gonfiare il tasso."
 }
