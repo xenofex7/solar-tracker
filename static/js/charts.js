@@ -8,11 +8,31 @@ const CHART_COLORS = {
   grid: 'rgba(255,255,255,0.08)',
   text: '#e4ecf2',
   muted: '#8a9aac',
+  emptyCell: 'rgba(255,255,255,0.04)',
+  heatmapText: 'rgba(255,255,255,0.92)',
 };
 
-Chart.defaults.color = CHART_COLORS.text;
-Chart.defaults.borderColor = CHART_COLORS.grid;
+function refreshChartTheme() {
+  const cs = getComputedStyle(document.documentElement);
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const text = cs.getPropertyValue('--text').trim() || CHART_COLORS.text;
+  const muted = cs.getPropertyValue('--muted').trim() || CHART_COLORS.muted;
+  CHART_COLORS.text = text;
+  CHART_COLORS.muted = muted;
+  CHART_COLORS.grid = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+  CHART_COLORS.emptyCell = isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)';
+  CHART_COLORS.heatmapText = isLight ? 'rgba(26,32,41,0.95)' : 'rgba(255,255,255,0.92)';
+  Chart.defaults.color = CHART_COLORS.text;
+  Chart.defaults.borderColor = CHART_COLORS.grid;
+}
+
+refreshChartTheme();
 Chart.defaults.font.family = '-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
+
+window.addEventListener('themechange', () => {
+  refreshChartTheme();
+  Object.values(charts).forEach(c => { try { c.update(); } catch (e) {} });
+});
 
 const fmtInt = (v) => Math.round(Number(v) || 0).toLocaleString(window.T?.locale || 'de-CH');
 const fmtKwh = (v) => `${fmtInt(v)} kWh`;
@@ -186,7 +206,7 @@ function renderHeatmap(data) {
         data: points,
         backgroundColor(ctx) {
           const v = ctx.dataset.data[ctx.dataIndex].v;
-          if (!v) return 'rgba(255,255,255,0.04)';
+          if (!v) return CHART_COLORS.emptyCell;
           const alpha = 0.15 + 0.85 * (v / maxKwh);
           return `rgba(245, 166, 35, ${alpha})`;
         },
@@ -337,7 +357,7 @@ function renderDayQuality(data) {
         const x = arc.x + Math.cos(midAngle) * r;
         const y = arc.y + Math.sin(midAngle) * r;
         c.font = `bold 11px -apple-system, Segoe UI, Roboto, sans-serif`;
-        c.fillStyle = 'rgba(255,255,255,0.92)';
+        c.fillStyle = CHART_COLORS.heatmapText;
         c.fillText(`${Math.round(pct * 100)} %`, x, y);
       });
       c.restore();

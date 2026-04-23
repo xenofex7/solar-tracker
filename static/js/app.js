@@ -48,4 +48,8 @@ window.addEventListener('resize', () => {
   }, 300);
 });
 
+window.addEventListener('themechange', () => {
+  loadYear(document.getElementById('year-select').value);
+});
+
 loadYear(document.getElementById('year-select').value);

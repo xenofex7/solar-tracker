@@ -8,6 +8,22 @@
   --good: #4caf50;
   --bad: #e74c3c;
   --blue: #3498db;
+  --lang-active-bg: rgba(245, 166, 35, 0.08);
+  --date-picker-filter: invert(1);
+}
+
+[data-theme="light"] {
+  --bg: #f4f6f9;
+  --panel: #ffffff;
+  --border: #d9dfe6;
+  --text: #1a2029;
+  --muted: #5c6b7a;
+  --accent: #e09300;
+  --good: #2e7d32;
+  --bad: #c0392b;
+  --blue: #2476b8;
+  --lang-active-bg: rgba(224, 147, 0, 0.1);
+  --date-picker-filter: none;
 }
 
 * { box-sizing: border-box; }
@@ -50,14 +66,36 @@ header {
   gap: 10px;
 }
 .brand img { display: block; }
+header nav { display: flex; align-items: center; gap: 16px; }
 nav a {
   color: var(--text);
   text-decoration: none;
-  margin-left: 16px;
   padding: 6px 10px;
   border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
 }
 nav a:hover { background: var(--border); }
+
+.theme-toggle {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  font-weight: 500;
+}
+.theme-toggle:hover { background: var(--border); filter: none; }
+.theme-toggle svg { display: block; }
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+[data-theme="light"] .theme-toggle .icon-sun { display: block; }
+[data-theme="light"] .theme-toggle .icon-moon { display: none; }
 
 main { padding: 20px 24px; max-width: 1400px; width: 100%; margin: 0 auto; }
 
@@ -84,7 +122,7 @@ h2, h3 { margin-top: 0; }
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
+  filter: var(--date-picker-filter);
   opacity: 0.7;
   cursor: pointer;
 }
@@ -249,7 +287,7 @@ code { background: var(--border); padding: 2px 6px; border-radius: 4px; font-siz
   transition: border-color 0.15s, color 0.15s;
 }
 .lang-option:hover { border-color: var(--accent); color: var(--text); }
-.lang-option.active { border-color: var(--accent); color: var(--accent); background: rgba(245,166,35,0.08); }
+.lang-option.active { border-color: var(--accent); color: var(--accent); background: var(--lang-active-bg); }
 .lang-option .lang-code { font-weight: 700; font-size: 16px; letter-spacing: 0.05em; }
 .lang-option .lang-name { font-size: 12px; }
 
