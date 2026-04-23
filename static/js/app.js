@@ -37,16 +37,6 @@ document.getElementById('year-select').addEventListener('change', (e) => {
   loadYear(e.target.value);
 });
 
-let resizeTimer;
-let lastWidth = window.innerWidth;
-window.addEventListener('resize', () => {
-  if (window.innerWidth === lastWidth) return;
-  lastWidth = window.innerWidth;
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    loadYear(document.getElementById('year-select').value);
-  }, 300);
-});
 
 window.addEventListener('themechange', () => {
   loadYear(document.getElementById('year-select').value);

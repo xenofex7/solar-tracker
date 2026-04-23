@@ -37,7 +37,8 @@ document.getElementById('plant-form').addEventListener('submit', async (e) => {
     timezone: e.target.timezone.value,
   };
   const r = await fetch('/api/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  alert(r.ok ? (window.T?.msg_saved || 'Saved.') : (window.T?.msg_save_error || 'Error saving.'));
+  if (r.ok) window.showToast(window.T?.msg_saved || 'Saved.', 'success');
+  else window.showToast(window.T?.msg_save_error || 'Error saving.', 'error');
 });
 
 document.getElementById('cost-form').addEventListener('submit', async (e) => {
@@ -48,8 +49,13 @@ document.getElementById('cost-form').addEventListener('submit', async (e) => {
     date: e.target.date.value || null,
   };
   const r = await fetch('/api/costs', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  if (r.ok) location.reload();
-  else { const j = await r.json(); alert((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?')); }
+  if (r.ok) {
+    window.queueToast(window.T?.msg_saved || 'Saved.', 'success');
+    location.reload();
+  } else {
+    const j = await r.json();
+    window.showToast((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?'), 'error');
+  }
 });
 
 document.querySelectorAll('#costs-table button.del').forEach(btn => {
@@ -72,8 +78,13 @@ document.getElementById('grid-form').addEventListener('submit', async (e) => {
     invoice_no: e.target.invoice_no.value || null,
   };
   const r = await fetch('/api/grid', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  if (r.ok) location.reload();
-  else { const j = await r.json(); alert((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?')); }
+  if (r.ok) {
+    window.queueToast(window.T?.msg_saved || 'Saved.', 'success');
+    location.reload();
+  } else {
+    const j = await r.json();
+    window.showToast((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?'), 'error');
+  }
 });
 
 document.querySelectorAll('#imports-table button.del, #exports-table button.del').forEach(btn => {
@@ -91,17 +102,20 @@ document.getElementById('targets-form').addEventListener('submit', async (e) => 
     if (i.value === '') continue;
     await fetch('/api/targets', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({month: Number(i.dataset.month), kwh: Number(i.value), year: null})});
   }
-  alert(window.T?.msg_targets_saved || 'Targets saved.');
+  window.showToast(window.T?.msg_targets_saved || 'Targets saved.', 'success');
 });
 
 document.getElementById('entry-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const status = document.getElementById('entry-status');
   const body = {date: e.target.date.value, kwh: Number(e.target.kwh.value)};
   const r = await fetch('/api/production', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   const j = await r.json();
-  status.textContent = r.ok ? (window.T?.msg_saved || 'Saved.') : `${window.T?.msg_error_prefix || 'Error: '}${j.error}`;
-  if (r.ok) setTimeout(() => location.reload(), 500);
+  if (r.ok) {
+    window.queueToast(window.T?.msg_saved || 'Saved.', 'success');
+    setTimeout(() => location.reload(), 400);
+  } else {
+    window.showToast((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?'), 'error');
+  }
 });
 
 document.querySelectorAll('#entries-table button.del').forEach(btn => {
