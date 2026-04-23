@@ -20,12 +20,22 @@
 
   function showToast(message, type = 'info', duration = 3500) {
     if (!message) return;
+    let title = message;
+    let sub = '';
+    if (typeof message === 'object') {
+      title = message.title || '';
+      sub = message.sub || '';
+    }
+    if (!title) return;
     const container = ensureContainer();
     const el = document.createElement('div');
     el.className = `toast ${type}`;
     const icon = ICONS[type] || ICONS.info;
-    el.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-msg"></span><button type="button" class="toast-close" aria-label="Close">&times;</button>`;
-    el.querySelector('.toast-msg').textContent = message;
+    el.innerHTML = `<span class="toast-icon">${icon}</span><div class="toast-body"><div class="toast-msg"></div><div class="toast-sub"></div></div><button type="button" class="toast-close" aria-label="Close">&times;</button>`;
+    el.querySelector('.toast-msg').textContent = title;
+    const subEl = el.querySelector('.toast-sub');
+    if (sub) subEl.textContent = sub;
+    else subEl.remove();
     container.appendChild(el);
     requestAnimationFrame(() => el.classList.add('show'));
 
