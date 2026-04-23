@@ -226,6 +226,15 @@ def list_costs() -> list[dict]:
     return [dict(r) for r in rows]
 
 
+def update_cost(cost_id: int, label: str, amount_chf: float, date: str | None = None) -> bool:
+    with connect() as conn:
+        cur = conn.execute(
+            "UPDATE plant_costs SET label = ?, amount_chf = ?, date = ? WHERE id = ?",
+            (label, amount_chf, date or None, cost_id),
+        )
+        return cur.rowcount > 0
+
+
 def delete_cost(cost_id: int):
     with connect() as conn:
         conn.execute("DELETE FROM plant_costs WHERE id = ?", (cost_id,))
@@ -260,6 +269,26 @@ def upsert_grid_bill(
             (kind, period_start, period_end, kwh, amount_chf, invoice_no),
         )
         return cur.lastrowid
+
+
+def update_grid_bill(
+    bill_id: int,
+    period_start: str,
+    period_end: str,
+    kwh: float,
+    amount_chf: float,
+    invoice_no: str | None = None,
+) -> bool:
+    with connect() as conn:
+        cur = conn.execute(
+            """
+            UPDATE grid_billing
+               SET period_start = ?, period_end = ?, kwh = ?, amount_chf = ?, invoice_no = ?
+             WHERE id = ?
+            """,
+            (period_start, period_end, kwh, amount_chf, invoice_no, bill_id),
+        )
+        return cur.rowcount > 0
 
 
 def list_grid_bills(kind: str | None = None) -> list[dict]:

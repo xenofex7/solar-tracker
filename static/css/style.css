@@ -284,6 +284,23 @@ button:hover { filter: brightness(1.08); }
 button.del { background: var(--bad); color: white; padding: 4px 8px; }
 button.del.icon { padding: 6px 8px; display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
 button.del.icon svg { display: block; }
+button.edit.icon, button.save.icon, button.cancel.icon { padding: 6px 8px; display: inline-flex; align-items: center; justify-content: center; line-height: 0; background: var(--panel); color: var(--muted); border: 1px solid var(--border); }
+button.edit.icon:hover, button.cancel.icon:hover { color: var(--text); border-color: var(--muted); }
+button.save.icon { background: var(--good); color: white; border-color: transparent; }
+button.edit.icon svg, button.save.icon svg, button.cancel.icon svg { display: block; }
+tr.editing td input { box-sizing: border-box; padding: 4px 6px; font: inherit; }
+tr.editing td input.num { width: 90px; text-align: right; }
+tr.editing td input.edit-invoice { width: 110px; }
+tr.editing td input.edit-start, tr.editing td input.edit-end, tr.editing td input.edit-date { width: auto; }
+tr.editing td input.edit-label { width: 100%; }
+
+#costs-table th:first-child, #costs-table td:first-child,
+#entries-table th:first-child, #entries-table td:first-child { width: 90px; }
+
+#entries-table th:nth-child(2), #entries-table td:nth-child(2) { width: 160px; }
+
+#imports-table th:first-child, #imports-table td:first-child,
+#exports-table th:first-child, #exports-table td:first-child { width: 210px; }
 
 .muted { color: var(--muted); font-size: 14px; }
 #entry-status:not(:empty) { margin-top: 10px; }

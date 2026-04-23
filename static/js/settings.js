@@ -67,6 +67,39 @@ document.querySelectorAll('#costs-table button.del').forEach(btn => {
   });
 });
 
+document.querySelectorAll('#costs-table button.edit').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tr = btn.closest('tr');
+    if (tr.classList.contains('editing')) return;
+    tr.classList.add('editing');
+    const { id, date, label, amount } = tr.dataset;
+    const cells = tr.cells;
+    cells[0].innerHTML = `<input type="date" class="edit-date" value="${date}">`;
+    cells[1].innerHTML = `<input type="text" class="edit-label" value="${label.replace(/"/g, '&quot;')}">`;
+    cells[2].innerHTML = `<input type="number" class="edit-amount num" step="0.01" value="${amount}">`;
+    cells[3].innerHTML = `
+      <button class="save icon" type="button" aria-label="${window.T?.btn_save || 'Save'}" title="${window.T?.btn_save || 'Save'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+      <button class="cancel icon" type="button" aria-label="${window.T?.btn_cancel || 'Cancel'}" title="${window.T?.btn_cancel || 'Cancel'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    `;
+    cells[3].querySelector('button.cancel').addEventListener('click', () => location.reload());
+    cells[3].querySelector('button.save').addEventListener('click', async () => {
+      const body = {
+        date: tr.querySelector('.edit-date').value || null,
+        label: tr.querySelector('.edit-label').value,
+        amount_chf: Number(tr.querySelector('.edit-amount').value),
+      };
+      const r = await fetch(`/api/costs/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+      if (r.ok) {
+        window.queueToast(window.T?.msg_saved || 'Saved.', 'success');
+        location.reload();
+      } else {
+        const j = await r.json().catch(() => ({}));
+        window.showToast((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?'), 'error');
+      }
+    });
+  });
+});
+
 document.getElementById('grid-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const body = {
@@ -92,6 +125,43 @@ document.querySelectorAll('#imports-table button.del, #exports-table button.del'
     if (!confirm(window.T?.confirm_delete_grid || 'Delete entry?')) return;
     await fetch(`/api/grid/${btn.dataset.id}`, {method:'DELETE'});
     location.reload();
+  });
+});
+
+document.querySelectorAll('#imports-table button.edit, #exports-table button.edit').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tr = btn.closest('tr');
+    if (tr.classList.contains('editing')) return;
+    tr.classList.add('editing');
+    const { id, periodStart, periodEnd, kwh, amount, invoice } = tr.dataset;
+    const cells = tr.cells;
+    cells[0].innerHTML = `<input type="date" class="edit-start" value="${periodStart}"> <input type="date" class="edit-end" value="${periodEnd}">`;
+    cells[1].innerHTML = `<input type="number" class="edit-kwh num" step="0.01" min="0" value="${kwh}">`;
+    cells[2].innerHTML = `<input type="number" class="edit-amount num" step="0.01" min="0" value="${amount}">`;
+    cells[3].textContent = '';
+    cells[4].innerHTML = `<input type="text" class="edit-invoice" value="${invoice.replace(/"/g, '&quot;')}">`;
+    cells[5].innerHTML = `
+      <button class="save icon" type="button" aria-label="${window.T?.btn_save || 'Save'}" title="${window.T?.btn_save || 'Save'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+      <button class="cancel icon" type="button" aria-label="${window.T?.btn_cancel || 'Cancel'}" title="${window.T?.btn_cancel || 'Cancel'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    `;
+    cells[5].querySelector('button.cancel').addEventListener('click', () => location.reload());
+    cells[5].querySelector('button.save').addEventListener('click', async () => {
+      const body = {
+        period_start: tr.querySelector('.edit-start').value,
+        period_end: tr.querySelector('.edit-end').value,
+        kwh: Number(tr.querySelector('.edit-kwh').value),
+        amount_chf: Number(tr.querySelector('.edit-amount').value),
+        invoice_no: tr.querySelector('.edit-invoice').value || null,
+      };
+      const r = await fetch(`/api/grid/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+      if (r.ok) {
+        window.queueToast(window.T?.msg_saved || 'Saved.', 'success');
+        location.reload();
+      } else {
+        const j = await r.json().catch(() => ({}));
+        window.showToast((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?'), 'error');
+      }
+    });
   });
 });
 
@@ -124,6 +194,33 @@ document.querySelectorAll('#entries-table button.del').forEach(btn => {
     if (!confirm(tpl.replace('{date}', btn.dataset.display))) return;
     await fetch(`/api/production/${btn.dataset.date}`, {method:'DELETE'});
     location.reload();
+  });
+});
+
+document.querySelectorAll('#entries-table button.edit').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tr = btn.closest('tr');
+    if (tr.classList.contains('editing')) return;
+    tr.classList.add('editing');
+    const { date, kwh } = tr.dataset;
+    const cells = tr.cells;
+    cells[1].innerHTML = `<input type="number" class="edit-kwh num" step="0.01" min="0" value="${kwh}">`;
+    cells[3].innerHTML = `
+      <button class="save icon" type="button" aria-label="${window.T?.btn_save || 'Save'}" title="${window.T?.btn_save || 'Save'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+      <button class="cancel icon" type="button" aria-label="${window.T?.btn_cancel || 'Cancel'}" title="${window.T?.btn_cancel || 'Cancel'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    `;
+    cells[3].querySelector('button.cancel').addEventListener('click', () => location.reload());
+    cells[3].querySelector('button.save').addEventListener('click', async () => {
+      const body = { date, kwh: Number(tr.querySelector('.edit-kwh').value) };
+      const r = await fetch('/api/production', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+      if (r.ok) {
+        window.queueToast(window.T?.msg_saved || 'Saved.', 'success');
+        location.reload();
+      } else {
+        const j = await r.json().catch(() => ({}));
+        window.showToast((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?'), 'error');
+      }
+    });
   });
 });
 

@@ -366,6 +366,28 @@ def api_costs_post():
     return jsonify({"ok": True, "id": new_id})
 
 
+@app.route("/api/costs/<int:cost_id>", methods=["PUT"])
+def api_costs_put(cost_id):
+    payload = request.get_json(force=True)
+    label = (payload.get("label") or "").strip()
+    amount = payload.get("amount_chf")
+    cdate = payload.get("date") or None
+    if not label or amount is None:
+        return jsonify({"error": "label und amount_chf erforderlich"}), 400
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        return jsonify({"error": "ungültiger Betrag"}), 400
+    if cdate:
+        try:
+            datetime.fromisoformat(cdate)
+        except ValueError:
+            return jsonify({"error": "ungültiges Datum"}), 400
+    if not db.update_cost(cost_id, label, amount, cdate):
+        return jsonify({"error": "nicht gefunden"}), 404
+    return jsonify({"ok": True})
+
+
 @app.route("/api/costs/<int:cost_id>", methods=["DELETE"])
 def api_costs_delete(cost_id):
     db.delete_cost(cost_id)
@@ -401,6 +423,26 @@ def api_grid_post():
         return jsonify({"error": "ungültige Werte"}), 400
     new_id = db.upsert_grid_bill(kind, period_start, period_end, kwh, amount, invoice_no)
     return jsonify({"ok": True, "id": new_id})
+
+
+@app.route("/api/grid/<int:bill_id>", methods=["PUT"])
+def api_grid_put(bill_id):
+    payload = request.get_json(force=True)
+    period_start = (payload.get("period_start") or "").strip()
+    period_end = (payload.get("period_end") or "").strip()
+    invoice_no = (payload.get("invoice_no") or "").strip() or None
+    try:
+        datetime.fromisoformat(period_start)
+        datetime.fromisoformat(period_end)
+        kwh = float(payload.get("kwh"))
+        amount = float(payload.get("amount_chf"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "ungültige Werte"}), 400
+    if period_end < period_start or kwh < 0 or amount < 0:
+        return jsonify({"error": "ungültige Werte"}), 400
+    if not db.update_grid_bill(bill_id, period_start, period_end, kwh, amount, invoice_no):
+        return jsonify({"error": "nicht gefunden"}), 404
+    return jsonify({"ok": True})
 
 
 @app.route("/api/grid/<int:bill_id>", methods=["DELETE"])

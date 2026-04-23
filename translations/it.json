@@ -185,5 +185,7 @@
   "desc_ha_env": "(Modifiche tramite il file <code>.env</code>.)",
   "btn_ha_sync": "Sincronizza ora",
   "btn_delete": "Elimina",
-  "chart_spec_yield_title": "Resa spec. per mese (kWh/kWp)"
+  "chart_spec_yield_title": "Resa spec. per mese (kWh/kWp)",
+  "btn_edit": "Modifica",
+  "btn_cancel": "Annulla"
 }
