@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Dashboard · Solar-Tracker{% endblock %}
-{% block content %}
-<section class="toolbar">
+{% block header_extra %}
+<div class="header-filter">
   <label for="year-select">{{ T.label_year }}</label>
   <select id="year-select">
     <option value="all">{{ T.option_all }}</option>
@@ -10,8 +10,9 @@
     {% endfor %}
   </select>
   <span class="muted" id="status"></span>
-</section>
-
+</div>
+{% endblock %}
+{% block content %}
 <section class="kpis" id="kpis"></section>
 
 <section class="grid">
