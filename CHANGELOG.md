@@ -5,8 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- System theme mode as default, cycling system/light/dark.
+- Toast notifications replacing alert() in settings.
+- Changelog modal and mobile hamburger nav menu.
+- Light/dark theme toggle with persistence.
 
-## [1.4.1] - 2026-04-21
+### Fixed
+- Chart resize via `min-width: 0` on cards, removing full-reload resize handler.
+
+
 ### Changed
 - Reload page automatically after successful HA sync (1.5 s delay to show result message).
 - Polish language switcher to always redirect to dashboard and set uniform KPI tile min-height.
