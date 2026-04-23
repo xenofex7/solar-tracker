@@ -30,6 +30,7 @@ async function loadYear(year) {
   SolarCharts.renderEnergyFlows(data);
   SolarCharts.renderSelfRatio(data);
   SolarCharts.renderFinanceFlow(data);
+  SolarCharts.renderSavingsVsNoPv(data);
   status.textContent = '';
 }
 
@@ -40,6 +41,38 @@ document.getElementById('year-select').addEventListener('change', (e) => {
 
 window.addEventListener('themechange', () => {
   loadYear(document.getElementById('year-select').value);
+});
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.kpi-info');
+  document.querySelectorAll('.kpi-popover[data-open]').forEach(pop => {
+    if (btn && pop.parentElement.contains(btn)) return;
+    pop.removeAttribute('data-open');
+    pop.parentElement.querySelector('.kpi-info')?.setAttribute('aria-expanded', 'false');
+  });
+  if (!btn) return;
+  const pop = btn.parentElement.querySelector('.kpi-popover');
+  if (!pop) return;
+  const isOpen = pop.hasAttribute('data-open');
+  if (isOpen) {
+    pop.removeAttribute('data-open');
+    pop.classList.remove('flip-left');
+    btn.setAttribute('aria-expanded', 'false');
+  } else {
+    pop.setAttribute('data-open', '');
+    btn.setAttribute('aria-expanded', 'true');
+    pop.classList.remove('flip-left');
+    const r = pop.getBoundingClientRect();
+    if (r.right > window.innerWidth - 8) pop.classList.add('flip-left');
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.kpi-popover[data-open]').forEach(pop => {
+      pop.removeAttribute('data-open');
+      pop.parentElement.querySelector('.kpi-info')?.setAttribute('aria-expanded', 'false');
+    });
+  }
 });
 
 loadYear(document.getElementById('year-select').value);

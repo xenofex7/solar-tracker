@@ -434,9 +434,14 @@ function renderKpis(data) {
     if (b.export_credit > 0) parts.push(`${T.kpi_breakdown_export || 'Exp.'} ${fmtChf(b.export_credit)}`);
     if (b.estimated_other > 0) parts.push(`${T.kpi_breakdown_estimated || 'est.'} ${fmtChf(b.estimated_other)}`);
     const revSub = parts.length ? `<br><span class="sub">${parts.join(' · ')}</span>` : '';
+    const revInfo = `<h4>${esc(T.kpi_revenue_info_title || 'Composition')}</h4><ul>`
+      + `<li><strong>${esc(T.kpi_breakdown_self || 'SC')}</strong> - ${esc(T.kpi_revenue_info_self || 'Self-consumed kWh valued at the import tariff.')}</li>`
+      + `<li><strong>${esc(T.kpi_breakdown_export || 'Exp.')}</strong> - ${esc(T.kpi_revenue_info_export || 'Surplus exported to the grid per utility invoice.')}</li>`
+      + `<li><strong>${esc(T.kpi_breakdown_estimated || 'est.')}</strong> - ${esc(T.kpi_revenue_info_estimated || 'Periods without invoice modelled at the configured PV price × production.')}</li>`
+      + `</ul>`;
     finance.push(
       { label: T.kpi_investment || 'Investment', value: fmtChf(p.invested) },
-      { label: T.kpi_revenue_total || 'Revenue to date', value: `${fmtChf(p.revenue_total)}${revSub}` },
+      { label: T.kpi_revenue_total || 'Revenue to date', value: `${fmtChf(p.revenue_total)}${revSub}`, info: revInfo },
       { label: T.kpi_progress || 'Progress', value: `${p.progress_pct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`, cls: progressCls },
       { label: T.kpi_payback || 'Payback', value: paybackVal },
     );
@@ -463,9 +468,10 @@ function renderKpis(data) {
   ].filter(g => g.kpis.length);
 
   const el = document.getElementById('kpis');
+  const infoBtn = `<button type="button" class="kpi-info" aria-label="${esc(T.kpi_info_aria || 'Details')}" aria-expanded="false">i</button>`;
   el.innerHTML = groups.map(g =>
     `<div class="kpi-group"><h3>${esc(g.title)}</h3><div class="kpis">${g.kpis.map(k =>
-      `<div class="kpi"><div class="label">${esc(k.label)}</div><div class="value ${esc(k.cls || '')}">${k.value}</div></div>`
+      `<div class="kpi">${k.info ? infoBtn : ''}<div class="label">${esc(k.label)}</div><div class="value ${esc(k.cls || '')}">${k.value}</div>${k.info ? `<div class="kpi-popover" role="tooltip">${k.info}</div>` : ''}</div>`
     ).join('')}</div></div>`
   ).join('');
 }
@@ -640,6 +646,35 @@ function renderFinanceFlow(data) {
   });
 }
 
+function renderSavingsVsNoPv(data) {
+  destroy('savings-vs-nopv');
+  const ctx = document.getElementById('chart-savings-vs-nopv');
+  if (!ctx) return;
+  const periods = data.grid?.periods || [];
+  if (!_hideIfEmpty(ctx, periods.length > 0)) return;
+  const labels = periods.map(p => p.label);
+  const withoutPv = periods.map(p => p.import_cost + p.self_consumption_savings);
+  const withPvNet = periods.map(p => Math.max(0, p.import_cost - p.export_credit));
+  const savings = periods.map(p => p.self_consumption_savings + p.export_credit);
+  charts['savings-vs-nopv'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: window.T?.chart_without_pv || 'Without PV', data: withoutPv, backgroundColor: 'rgba(231,76,60,0.75)' },
+        { label: window.T?.chart_with_pv_net || 'With PV (net)', data: withPvNet, backgroundColor: CHART_COLORS.actual },
+        { label: window.T?.chart_savings || 'Savings', data: savings, backgroundColor: CHART_COLORS.good },
+      ],
+    },
+    options: {
+      plugins: {
+        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtChf(item.parsed.y)}` } },
+      },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => fmtChf(v) } } },
+    },
+  });
+}
+
 function renderSpecificYield(data) {
   destroy('spec-yield');
   const ctx = document.getElementById('chart-spec-yield');
@@ -692,4 +727,5 @@ window.SolarCharts = {
   renderDaily, renderHeatmap, renderDistribution, renderYearComparison,
   renderTopDays, renderDayQuality, renderSpecificYield,
   renderPayback, renderEnergyFlows, renderSelfRatio, renderFinanceFlow,
+  renderSavingsVsNoPv,
 };
