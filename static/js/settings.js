@@ -129,20 +129,18 @@ document.querySelectorAll('#entries-table button.del').forEach(btn => {
 
 document.getElementById('sync-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const status = document.getElementById('sync-status');
-  status.textContent = window.T?.status_syncing || 'Syncing\u2026';
   const body = {from: e.target.from.value, to: e.target.to.value};
   const r = await fetch('/api/sync/ha', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   const j = await r.json();
   if (r.ok) {
-    const timing = j.timings ? ` · HA ${j.timings.fetch_s}s + DB ${j.timings.write_s}s` : '';
-    const tpl = window.T?.msg_sync_done || 'Done: {days} days synced ({inserted} new, {updated} updated).';
-    status.textContent = tpl
+    const tpl = window.T?.msg_sync_done || '{days} days synced · {inserted} new · {updated} updated';
+    const sub = tpl
       .replace('{days}', j.days)
       .replace('{inserted}', j.inserted)
-      .replace('{updated}', j.updated) + timing;
-    setTimeout(() => location.reload(), 1500);
+      .replace('{updated}', j.updated);
+    window.queueToast({ title: window.T?.msg_sync_done_title || 'Done', sub }, 'success');
+    location.reload();
   } else {
-    status.textContent = (window.T?.msg_error_prefix || 'Error: ') + j.error;
+    window.showToast((window.T?.msg_error_prefix || 'Error: ') + j.error, 'error');
   }
 });

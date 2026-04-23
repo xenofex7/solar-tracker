@@ -274,7 +274,7 @@ button.del.icon { padding: 6px 8px; display: inline-flex; align-items: center; j
 button.del.icon svg { display: block; }
 
 .muted { color: var(--muted); font-size: 14px; }
-#sync-status:not(:empty), #entry-status:not(:empty) { margin-top: 10px; }
+#entry-status:not(:empty) { margin-top: 10px; }
 
 .kpis {
   display: grid;
