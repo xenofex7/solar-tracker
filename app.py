@@ -1,6 +1,8 @@
+import html
 import json
 import logging
 import os
+import re
 import time
 from datetime import date, datetime
 from zoneinfo import available_timezones
@@ -144,6 +146,73 @@ def set_lang():
     resp = make_response(redirect(next_url))
     resp.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="Lax")
     return resp
+
+
+def _render_changelog_md(md: str) -> str:
+    def inline(text: str) -> str:
+        text = html.escape(text)
+        text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', text)
+        text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
+        text = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
+        return text
+
+    out: list[str] = []
+    in_list = False
+    in_para: list[str] = []
+
+    def flush_para() -> None:
+        if in_para:
+            out.append(f"<p>{' '.join(in_para)}</p>")
+            in_para.clear()
+
+    def close_list() -> None:
+        nonlocal in_list
+        if in_list:
+            out.append("</ul>")
+            in_list = False
+
+    for raw_line in md.splitlines():
+        line = raw_line.rstrip()
+        if not line:
+            flush_para()
+            close_list()
+            continue
+        if line.startswith("# "):
+            flush_para()
+            close_list()
+            out.append(f"<h1>{inline(line[2:])}</h1>")
+        elif line.startswith("## "):
+            flush_para()
+            close_list()
+            out.append(f"<h2>{inline(line[3:])}</h2>")
+        elif line.startswith("### "):
+            flush_para()
+            close_list()
+            out.append(f"<h3>{inline(line[4:])}</h3>")
+        elif line.startswith("- "):
+            flush_para()
+            if not in_list:
+                out.append("<ul>")
+                in_list = True
+            out.append(f"<li>{inline(line[2:])}</li>")
+        else:
+            close_list()
+            in_para.append(inline(line))
+
+    flush_para()
+    close_list()
+    return "\n".join(out)
+
+
+@app.route("/api/changelog")
+def api_changelog():
+    path = os.path.join(os.path.dirname(__file__), "CHANGELOG.md")
+    try:
+        with open(path, encoding="utf-8") as f:
+            md = f.read()
+    except OSError:
+        return jsonify({"html": ""})
+    return jsonify({"html": _render_changelog_md(md)})
 
 
 @app.route("/i18n.js")
