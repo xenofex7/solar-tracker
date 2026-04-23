@@ -136,7 +136,7 @@
   "tab_electricity": "Stromkosten",
   "tab_targets": "Sollwerte",
   "tab_entry": "Produktion",
-  "tab_ha": "Home Assistant",
+  "tab_ha": "Synchronisation",
   "section_plant": "Anlagendaten",
   "label_kwp": "Anlagenleistung (kWp)",
   "label_start_date": "Inbetriebnahme",

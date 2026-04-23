@@ -136,7 +136,7 @@
   "tab_electricity": "Electricity costs",
   "tab_targets": "Targets",
   "tab_entry": "Production",
-  "tab_ha": "Home Assistant",
+  "tab_ha": "Sync",
   "section_plant": "Plant data",
   "label_kwp": "Plant capacity (kWp)",
   "label_start_date": "Commissioning date",

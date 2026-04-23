@@ -136,7 +136,7 @@
   "tab_electricity": "Costes electricidad",
   "tab_targets": "Objetivos",
   "tab_entry": "Producción",
-  "tab_ha": "Home Assistant",
+  "tab_ha": "Sincronización",
   "section_plant": "Datos de la instalación",
   "label_kwp": "Potencia instalación (kWp)",
   "label_start_date": "Fecha de puesta en marcha",
