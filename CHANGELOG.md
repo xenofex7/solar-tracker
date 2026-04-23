@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [1.5.0] - 2026-04-23
 ### Added
 - System theme mode as default, cycling system/light/dark.
 - Toast notifications replacing alert() in settings.
@@ -176,7 +178,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v1.4.1...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v1.5.0...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -192,3 +194,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [1.3.5]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.3.5
 [1.4.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.4.0
 [1.4.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.4.1
+[1.5.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.5.0
