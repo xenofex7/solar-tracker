@@ -180,12 +180,17 @@ footer .version-btn:hover { background: transparent; color: var(--text); filter:
   background: transparent;
   color: var(--muted);
   border: none;
-  padding: 4px 10px;
+  padding: 0;
+  width: 32px;
+  height: 32px;
   font-size: 22px;
-  cursor: pointer;
   line-height: 1;
+  cursor: pointer;
   border-radius: 6px;
   font-weight: 400;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .modal-close:hover { background: var(--border); color: var(--text); filter: none; }
 .modal-body {
