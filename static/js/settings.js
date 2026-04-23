@@ -37,8 +37,8 @@ document.getElementById('plant-form').addEventListener('submit', async (e) => {
     timezone: e.target.timezone.value,
   };
   const r = await fetch('/api/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  if (r.ok) window.showToast(window.T?.msg_saved || 'Saved.', 'success');
-  else window.showToast(window.T?.msg_save_error || 'Error saving.', 'error');
+  if (r.ok) window.showToast(window.T?.msg_saved || 'Saved', 'success');
+  else window.showToast(window.T?.msg_save_error || 'Error saving', 'error');
 });
 
 document.getElementById('cost-form').addEventListener('submit', async (e) => {
@@ -50,7 +50,7 @@ document.getElementById('cost-form').addEventListener('submit', async (e) => {
   };
   const r = await fetch('/api/costs', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   if (r.ok) {
-    window.queueToast(window.T?.msg_saved || 'Saved.', 'success');
+    window.queueToast(window.T?.msg_saved || 'Saved', 'success');
     location.reload();
   } else {
     const j = await r.json();
@@ -90,7 +90,7 @@ document.querySelectorAll('#costs-table button.edit').forEach(btn => {
       };
       const r = await fetch(`/api/costs/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
       if (r.ok) {
-        window.queueToast(window.T?.msg_saved || 'Saved.', 'success');
+        window.queueToast(window.T?.msg_saved || 'Saved', 'success');
         location.reload();
       } else {
         const j = await r.json().catch(() => ({}));
@@ -112,7 +112,7 @@ document.getElementById('grid-form').addEventListener('submit', async (e) => {
   };
   const r = await fetch('/api/grid', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   if (r.ok) {
-    window.queueToast(window.T?.msg_saved || 'Saved.', 'success');
+    window.queueToast(window.T?.msg_saved || 'Saved', 'success');
     location.reload();
   } else {
     const j = await r.json();
@@ -155,7 +155,7 @@ document.querySelectorAll('#imports-table button.edit, #exports-table button.edi
       };
       const r = await fetch(`/api/grid/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
       if (r.ok) {
-        window.queueToast(window.T?.msg_saved || 'Saved.', 'success');
+        window.queueToast(window.T?.msg_saved || 'Saved', 'success');
         location.reload();
       } else {
         const j = await r.json().catch(() => ({}));
@@ -172,7 +172,7 @@ document.getElementById('targets-form').addEventListener('submit', async (e) => 
     if (i.value === '') continue;
     await fetch('/api/targets', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({month: Number(i.dataset.month), kwh: Number(i.value), year: null})});
   }
-  window.showToast(window.T?.msg_targets_saved || 'Targets saved.', 'success');
+  window.showToast(window.T?.msg_targets_saved || 'Targets saved', 'success');
 });
 
 document.getElementById('entry-form').addEventListener('submit', async (e) => {
@@ -181,7 +181,7 @@ document.getElementById('entry-form').addEventListener('submit', async (e) => {
   const r = await fetch('/api/production', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   const j = await r.json();
   if (r.ok) {
-    window.queueToast(window.T?.msg_saved || 'Saved.', 'success');
+    window.queueToast(window.T?.msg_saved || 'Saved', 'success');
     setTimeout(() => location.reload(), 400);
   } else {
     window.showToast((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?'), 'error');
@@ -214,7 +214,7 @@ document.querySelectorAll('#entries-table button.edit').forEach(btn => {
       const body = { date, kwh: Number(tr.querySelector('.edit-kwh').value) };
       const r = await fetch('/api/production', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
       if (r.ok) {
-        window.queueToast(window.T?.msg_saved || 'Saved.', 'success');
+        window.queueToast(window.T?.msg_saved || 'Saved', 'success');
         location.reload();
       } else {
         const j = await r.json().catch(() => ({}));
