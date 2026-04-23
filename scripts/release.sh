@@ -91,6 +91,20 @@ if [[ "$unreleased_lines" -eq 0 ]]; then
   exit 1
 fi
 
+# Sanity: every existing vX.Y.Z git tag should have a matching changelog header,
+# otherwise an earlier edit silently dropped a section.
+missing=""
+while IFS= read -r tag; do
+  ver="${tag#v}"
+  if ! grep -qE "^## \[${ver}\]" CHANGELOG.md; then
+    missing+=" ${tag}"
+  fi
+done < <(git tag --list 'v[0-9]*.[0-9]*.[0-9]*')
+if [[ -n "$missing" ]]; then
+  echo "CHANGELOG.md is missing headers for released tags:${missing}" >&2
+  exit 1
+fi
+
 # VERSION
 echo "$new" > VERSION
 

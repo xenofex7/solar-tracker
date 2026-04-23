@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 - Chart resize via `min-width: 0` on cards, removing full-reload resize handler.
 
-
+## [1.4.1] - 2026-04-21
 ### Changed
 - Reload page automatically after successful HA sync (1.5 s delay to show result message).
 - Polish language switcher to always redirect to dashboard and set uniform KPI tile min-height.
