@@ -198,5 +198,12 @@
   "kpi_effective_price_info_net": "Costo netto:",
   "kpi_effective_price_info_cons": "Consumo totale:",
   "kpi_effective_price_info_formula": "Costo netto / (autoconsumo + prelievo)",
-  "kpi_effective_price_info_note": "Senza PV pagheresti {tariff} CHF/kWh."
+  "kpi_effective_price_info_note": "Senza PV pagheresti {tariff} CHF/kWh.",
+  "kpi_payback_info_title": "Durata totale",
+  "kpi_payback_info_start": "Messa in servizio:",
+  "kpi_payback_info_end": "Data di ammortamento:",
+  "kpi_payback_info_total": "Durata totale:",
+  "kpi_payback_total_months": "{m} m.",
+  "kpi_payback_total_years": "{y} a.",
+  "kpi_payback_total_years_months": "{y}a {m}m"
 }

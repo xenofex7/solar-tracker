@@ -427,6 +427,29 @@ function renderKpis(data) {
     const paybackVal = p.payback_date
       ? `${fmtDate(p.payback_date)}<br><span class="sub">${remainingStr(p.payback_date)} · ${basisLabel}</span>`
       : '-';
+    const totalDurationStr = (startIso, endIso) => {
+      if (!startIso || !endIso) return '';
+      const s = new Date(startIso);
+      const e = new Date(endIso);
+      let months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+      if (e.getDate() < s.getDate()) months -= 1;
+      if (months < 0) months = 0;
+      const y = Math.floor(months / 12);
+      const m = months % 12;
+      const fmt = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+      if (y === 0) return fmt(T.kpi_payback_total_months || '{m} mo.', { m });
+      if (m === 0) return fmt(T.kpi_payback_total_years || '{y} yr.', { y });
+      return fmt(T.kpi_payback_total_years_months || '{y} yr. {m} mo.', { y, m });
+    };
+    let paybackInfo = null;
+    if (p.payback_date && p.start_date) {
+      paybackInfo = `<h4>${esc(T.kpi_payback_info_title || 'Total runtime')}</h4>`
+        + `<ul>`
+        + `<li>${esc(T.kpi_payback_info_start || 'Commissioning:')} <strong>${esc(fmtDate(p.start_date))}</strong></li>`
+        + `<li>${esc(T.kpi_payback_info_end || 'Payback date:')} <strong>${esc(fmtDate(p.payback_date))}</strong></li>`
+        + `<li>${esc(T.kpi_payback_info_total || 'Total runtime:')} <strong>${esc(totalDurationStr(p.start_date, p.payback_date))}</strong></li>`
+        + `</ul>`;
+    }
     const progressCls = p.progress_pct >= 100 ? 'good' : '';
     const b = p.breakdown || {};
     const parts = [];
@@ -443,7 +466,7 @@ function renderKpis(data) {
       { label: T.kpi_investment || 'Investment', value: fmtChf(p.invested) },
       { label: T.kpi_revenue_total || 'Revenue to date', value: `${fmtChf(p.revenue_total)}${revSub}`, info: revInfo },
       { label: T.kpi_progress || 'Progress', value: `${p.progress_pct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`, cls: progressCls },
-      { label: T.kpi_payback || 'Payback', value: paybackVal },
+      { label: T.kpi_payback || 'Payback', value: paybackVal, info: paybackInfo },
     );
   }
 

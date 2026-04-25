@@ -497,6 +497,8 @@ def api_summary():
     exports = db.list_grid_bills("export")
     cum_rev = metrics.cumulative_revenue(records, imports, exports, price)
     pay = metrics.payback(records, invested, imports, exports, price, targets=targets)
+    if start_date:
+        pay["start_date"] = start_date
     sc = metrics.self_consumption(records, exports)
     grid_tot = db.grid_totals()
     avg_import_price = grid_tot.get("import", {}).get("avg_price") or price
