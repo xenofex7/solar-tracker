@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- GitHub Pages landing site under `docs/` with DE/EN toggle, light/dark theme, screenshot slider, llms.txt, robots.txt, sitemap.xml, manifest.webmanifest, 404 page and SoftwareApplication JSON-LD.
+- README badges, logo and screenshot showcase.
+- Dashboard and settings screenshots (12 PNG + 12 WebP variants).
+
+### Changed
+- Convert slider screenshots to WebP for a 79% smaller payload (6.6 MB to 1.4 MB) with PNG fallback.
+- Harden the changelog markdown link parser against `javascript:` URLs and rebuild settings edit-row inputs without unescaped `innerHTML`; document the missing authentication explicitly in the README.
+- Refresh README to v1.8.0 feature set: 14 charts, three KPI groups, realistic Docker tag examples, `FLASK_HOST` documented, project page link, Help section.
+- Switch the commit-activity badge to yearly granularity.
+
+### Removed
+- Maintainer-only "Releasing a new version" section from the README.
 
 ## [1.8.0] - 2026-04-25
 ### Added
