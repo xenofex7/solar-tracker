@@ -1,7 +1,7 @@
-# Solar Tracker
+# Solar-Tracker
 
 <p align="center">
-  <img src="docs/logo.svg" alt="Solar Tracker Logo" width="128">
+  <img src="docs/logo.svg" alt="Solar-Tracker logo" width="128">
 </p>
 
 <p align="center">
@@ -13,6 +13,10 @@
   <a href="https://github.com/xenofex7/solar-tracker/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/xenofex7/solar-tracker/ci.yml?branch=main&label=ci" alt="ci"></a>
   <img src="https://img.shields.io/github/last-commit/xenofex7/solar-tracker" alt="last commit">
   <img src="https://img.shields.io/github/commit-activity/y/xenofex7/solar-tracker" alt="commit activity">
+</p>
+
+<p align="center">
+  <a href="https://xenofex7.github.io/solar-tracker/"><strong>xenofex7.github.io/solar-tracker</strong></a>
 </p>
 
 A small, locally-hosted web app that compares **actual** vs. **target** solar
@@ -77,29 +81,44 @@ The SQLite database lives in `./data` on the host (mounted into the
 container), so stopping or recreating the container preserves all
 data. The container runs gunicorn with two workers.
 
-Available tags: `latest`, `1`, `1.0`, `1.0.0` - see
-`ghcr.io/xenofex7/solar-tracker`.
+Available tags: `latest`, plus pinned major / minor / patch tags
+(e.g. `1`, `1.8`, `1.8.0`). See
+[ghcr.io/xenofex7/solar-tracker](https://github.com/xenofex7/solar-tracker/pkgs/container/solar-tracker).
 
 If you have the source checked out, `docker compose build` rebuilds
 the image locally (the compose file keeps `build: .` as a fallback).
 
 ## Features
 
-- Dashboard with nine visualisations:
-  1. Monthly actual vs. target (bars)
-  2. Deviation in % per month
-  3. Cumulative yearly yield vs. target line
-  4. Daily production + 7-day rolling average
-  5. Calendar heatmap (every day of the year)
-  6. Daily distribution per month (min/median/max)
-  7. Year-over-year comparison
-  8. Top / bottom 5 days
-  9. KPI tiles (YTD actual/target, Δ, best day, specific yield)
-- Manual daily entry (`/entry`)
-- Monthly targets + Home Assistant sync (`/settings`)
-- Dates as `dd.mm.yyyy`, Swiss thousands (`1'234 kWh`)
-- "Today" marker on daily and cumulative charts (current year only)
-- YTD target is pro-rated to today for the current year
+### Dashboard
+
+- 14 charts including monthly actual vs. target, deviation in %,
+  cumulative yearly yield, daily production with 7-day rolling average,
+  calendar heatmap, daily distribution per month (min/median/max),
+  year-on-year comparison, top 5 days, specific yield (kWh/kWp) and
+  day quality donut.
+- Payback chart with cumulative revenue vs. investment and forecast.
+- Energy and finance flow charts per billing period (import, export,
+  self-consumption, savings vs. no PV).
+- KPI tiles in three groups:
+  - **Production:** YTD actual / target, Δ absolute / %, best day,
+    specific yield, days recorded.
+  - **Finances:** investment, revenue to date, progress, payback date.
+  - **Self-consumption & grid:** net cost, savings vs. no PV, effective
+    electricity price, self-consumed, self-consumption rate.
+
+### Data sources
+
+- Home Assistant (Long-Term Statistics via WebSocket).
+- Manual daily entry on `/entry`.
+- Quarterly grid bills (import + export) on `/settings`.
+
+### Other
+
+- 5 languages (DE, EN, FR, IT, ES), light + dark mode.
+- Dates as `dd.mm.yyyy`, Swiss thousands (`1'234 kWh`).
+- "Today" marker on daily and cumulative charts (current year only).
+- YTD target is pro-rated to today for the current year.
 
 ## Home Assistant
 
@@ -127,7 +146,13 @@ so the database stays in sync with Home Assistant.
 | `HA_TOKEN`      | Long-Lived Access Token                                    |
 | `HA_ENTITY_ID`  | Statistic entity (e.g. `sensor.solar_total_energy`)        |
 | `PLANT_KWP`     | Installed peak power, used for specific yield (kWh/kWp)    |
+| `FLASK_HOST`    | Bind address (default `127.0.0.1`, set `0.0.0.0` in Docker) |
 | `FLASK_PORT`    | HTTP port (default `5000`)                                 |
 | `FLASK_DEBUG`   | `true` enables Flask debug mode                            |
 
 The plant size can also be set on `/settings`, which overrides `PLANT_KWP`.
+
+## Help
+
+Bug reports and feature requests are welcome on
+[GitHub Issues](https://github.com/xenofex7/solar-tracker/issues).
