@@ -12,7 +12,7 @@
   <a href="https://github.com/xenofex7/solar-tracker/actions/workflows/docker.yml"><img src="https://img.shields.io/github/actions/workflow/status/xenofex7/solar-tracker/docker.yml?branch=main&label=docker%20build" alt="docker build"></a>
   <a href="https://github.com/xenofex7/solar-tracker/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/xenofex7/solar-tracker/ci.yml?branch=main&label=ci" alt="ci"></a>
   <img src="https://img.shields.io/github/last-commit/xenofex7/solar-tracker" alt="last commit">
-  <img src="https://img.shields.io/github/commit-activity/m/xenofex7/solar-tracker" alt="commit activity">
+  <img src="https://img.shields.io/github/commit-activity/y/xenofex7/solar-tracker" alt="commit activity">
 </p>
 
 A small, locally-hosted web app that compares **actual** vs. **target** solar
