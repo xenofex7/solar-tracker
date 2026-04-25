@@ -1,9 +1,41 @@
 # Solar Tracker
 
+<p align="center">
+  <img src="docs/logo.svg" alt="Solar Tracker Logo" width="128">
+</p>
+
+<p align="center">
+  <a href="https://github.com/xenofex7/solar-tracker/releases"><img src="https://img.shields.io/github/v/release/xenofex7/solar-tracker?display_name=tag&sort=semver" alt="latest release"></a>
+  <a href="https://github.com/xenofex7/solar-tracker/blob/main/LICENSE"><img src="https://img.shields.io/github/license/xenofex7/solar-tracker" alt="license"></a>
+  <img src="https://img.shields.io/badge/python-3.12-blue" alt="python 3.12">
+  <a href="https://github.com/xenofex7/solar-tracker/pkgs/container/solar-tracker"><img src="https://img.shields.io/badge/docker-ghcr.io-2496ed?logo=docker&logoColor=white" alt="docker image"></a>
+  <a href="https://github.com/xenofex7/solar-tracker/actions/workflows/docker.yml"><img src="https://img.shields.io/github/actions/workflow/status/xenofex7/solar-tracker/docker.yml?branch=main&label=docker%20build" alt="docker build"></a>
+  <a href="https://github.com/xenofex7/solar-tracker/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/xenofex7/solar-tracker/ci.yml?branch=main&label=ci" alt="ci"></a>
+  <img src="https://img.shields.io/github/last-commit/xenofex7/solar-tracker" alt="last commit">
+  <img src="https://img.shields.io/github/commit-activity/m/xenofex7/solar-tracker" alt="commit activity">
+</p>
+
 A small, locally-hosted web app that compares **actual** vs. **target** solar
 yield. Actuals come from **Home Assistant** (Long-Term Statistics via
 WebSocket) or **manual entry**. Targets are monthly kWh goals from the plant
 planning.
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/dashboard-overview-light.png" alt="Dashboard overview" width="800">
+</p>
+<p align="center">
+  <img src="docs/screenshots/dashboard-charts-light.png" alt="Dashboard charts" width="800">
+</p>
+<p align="center">
+  <img src="docs/screenshots/settings-targets-light.png" alt="Monthly targets" width="400">
+  <img src="docs/screenshots/settings-production-light.png" alt="Production sync" width="400">
+</p>
+<p align="center">
+  <img src="docs/screenshots/settings-electricity-light.png" alt="Electricity prices" width="400">
+  <img src="docs/screenshots/settings-investment-light.png" alt="Investment settings" width="400">
+</p>
 
 ## Quick start
 
