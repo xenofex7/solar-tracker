@@ -148,10 +148,24 @@ def set_lang():
     return resp
 
 
+_SAFE_LINK_SCHEMES = ("http://", "https://", "mailto:", "/", "#")
+
+
+def _safe_link(label: str, href: str) -> str:
+    h = href.strip()
+    if not any(h.lower().startswith(s) for s in _SAFE_LINK_SCHEMES):
+        return f"[{label}]({href})"
+    return f'<a href="{h}" target="_blank" rel="noopener">{label}</a>'
+
+
 def _render_changelog_md(md: str) -> str:
     def inline(text: str) -> str:
         text = html.escape(text)
-        text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', text)
+        text = re.sub(
+            r"\[([^\]]+)\]\(([^)]+)\)",
+            lambda m: _safe_link(m.group(1), m.group(2)),
+            text,
+        )
         text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
         text = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
         return text

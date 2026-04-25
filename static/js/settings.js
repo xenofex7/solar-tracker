@@ -75,7 +75,8 @@ document.querySelectorAll('#costs-table button.edit').forEach(btn => {
     const { id, date, label, amount } = tr.dataset;
     const cells = tr.cells;
     cells[0].innerHTML = `<input type="date" class="edit-date" value="${date}">`;
-    cells[1].innerHTML = `<input type="text" class="edit-label" value="${label.replace(/"/g, '&quot;')}">`;
+    cells[1].innerHTML = `<input type="text" class="edit-label">`;
+    cells[1].querySelector('.edit-label').value = label;
     cells[2].innerHTML = `<input type="number" class="edit-amount num" step="0.01" value="${amount}">`;
     cells[3].innerHTML = `
       <button class="save icon" type="button" aria-label="${window.T?.btn_save || 'Save'}" title="${window.T?.btn_save || 'Save'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
@@ -139,7 +140,8 @@ document.querySelectorAll('#imports-table button.edit, #exports-table button.edi
     cells[1].innerHTML = `<input type="number" class="edit-kwh num" step="0.01" min="0" value="${kwh}">`;
     cells[2].innerHTML = `<input type="number" class="edit-amount num" step="0.01" min="0" value="${amount}">`;
     cells[3].textContent = '';
-    cells[4].innerHTML = `<input type="text" class="edit-invoice" value="${invoice.replace(/"/g, '&quot;')}">`;
+    cells[4].innerHTML = `<input type="text" class="edit-invoice">`;
+    cells[4].querySelector('.edit-invoice').value = invoice;
     cells[5].innerHTML = `
       <button class="save icon" type="button" aria-label="${window.T?.btn_save || 'Save'}" title="${window.T?.btn_save || 'Save'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
       <button class="cancel icon" type="button" aria-label="${window.T?.btn_cancel || 'Cancel'}" title="${window.T?.btn_cancel || 'Cancel'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>

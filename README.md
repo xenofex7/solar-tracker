@@ -48,6 +48,17 @@ python seed_demo.py       # optional: demo data so the charts render
 python app.py             # opens http://localhost:5000
 ```
 
+## Security
+
+Solar-Tracker has **no built-in authentication or authorisation**. Anyone who
+can reach the HTTP port can read all data and change settings (targets,
+electricity prices, investment costs) and trigger Home Assistant syncs.
+
+Only run it on `localhost` or inside a trusted private network. Do **not**
+expose the port directly to the internet. If remote access is needed, put it
+behind a reverse proxy that enforces authentication (e.g. Caddy/nginx with
+basic auth, Authelia, Tailscale, or a VPN).
+
 ## Docker
 
 The published image is hosted on GitHub Container Registry and
