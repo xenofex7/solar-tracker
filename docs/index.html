@@ -8,15 +8,42 @@
   <meta name="theme-color" content="#0f1419" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)">
   <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <link rel="apple-touch-icon" href="logo.svg">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="canonical" href="https://xenofex7.github.io/solar-tracker/">
   <meta property="og:title" content="Solar-Tracker">
   <meta property="og:description" content="Self-hosted dashboard comparing actual vs. target solar yield.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://xenofex7.github.io/solar-tracker/">
-  <meta property="og:image" content="https://xenofex7.github.io/solar-tracker/screenshot.png">
+  <meta property="og:image" content="https://xenofex7.github.io/solar-tracker/screenshots/dashboard-overview-dark.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="alternate" type="text/markdown" href="llms.txt" title="llms.txt">
   <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Solar-Tracker",
+    "description": "Self-hosted dashboard that compares actual vs. target solar yield. Pulls daily PV production from Home Assistant or accepts manual entry. Tracks investment, revenue, payback date, self-consumption rate and effective electricity price.",
+    "url": "https://xenofex7.github.io/solar-tracker/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Linux, macOS, Windows (Docker)",
+    "softwareRequirements": "Docker, Home Assistant (optional)",
+    "license": "https://github.com/xenofex7/solar-tracker/blob/main/LICENSE",
+    "codeRepository": "https://github.com/xenofex7/solar-tracker",
+    "programmingLanguage": ["Python", "JavaScript"],
+    "image": "https://xenofex7.github.io/solar-tracker/screenshots/dashboard-overview-dark.png",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Pascal Christen"
+    }
+  }
+  </script>
 </head>
 <body>
   <header>
@@ -127,7 +154,7 @@
         <button type="button" class="slider-btn slider-next" data-slider-next aria-label="Next">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <div class="slider-dots" data-slider-dots aria-hidden="true"></div>
+        <div class="slider-dots" data-slider-dots role="tablist" aria-label="Screenshot slides"></div>
       </div>
     </section>
 
@@ -259,11 +286,21 @@
       var dotsWrap = slider.querySelector('[data-slider-dots]');
       var index = 0;
 
-      items.forEach(function (_, i) {
+      items.forEach(function (slide, i) {
+        var panelId = 'slide-panel-' + i;
+        var tabId = 'slide-tab-' + i;
+        slide.id = panelId;
+        slide.setAttribute('role', 'tabpanel');
+        slide.setAttribute('aria-labelledby', tabId);
         var d = document.createElement('button');
         d.type = 'button';
+        d.id = tabId;
         d.className = 'slider-dot';
+        d.setAttribute('role', 'tab');
+        d.setAttribute('aria-controls', panelId);
+        d.setAttribute('aria-selected', 'false');
         d.setAttribute('aria-label', 'Slide ' + (i + 1));
+        d.tabIndex = i === 0 ? 0 : -1;
         d.addEventListener('click', function () { go(i); });
         dotsWrap.appendChild(d);
       });
@@ -294,7 +331,10 @@
       function update(i) {
         index = i;
         dotsWrap.querySelectorAll('.slider-dot').forEach(function (d, k) {
-          d.classList.toggle('active', k === i);
+          var active = k === i;
+          d.classList.toggle('active', active);
+          d.setAttribute('aria-selected', active ? 'true' : 'false');
+          d.tabIndex = active ? 0 : -1;
         });
       }
     })();
