@@ -1,0 +1,27 @@
+# Solar-Tracker
+
+> Self-hosted web app that compares actual vs. target solar yield. Pulls daily PV production from Home Assistant (Long-Term Statistics via WebSocket) or accepts manual entry. Tracks investment, revenue, payback date, self-consumption rate and effective electricity price using quarterly grid bills (import + export). Stack: Python + Flask + SQLite, vanilla JS + Chart.js, packaged as a Docker image on GHCR.
+
+## Project
+
+- [GitHub repository](https://github.com/xenofex7/solar-tracker): source code, issues, releases.
+- [README](https://github.com/xenofex7/solar-tracker/blob/main/README.md): install instructions, configuration, Home Assistant setup.
+- [CHANGELOG](https://github.com/xenofex7/solar-tracker/blob/main/CHANGELOG.md): versioned change history.
+- [LICENSE](https://github.com/xenofex7/solar-tracker/blob/main/LICENSE): MIT.
+
+## Install
+
+- Docker image: `ghcr.io/xenofex7/solar-tracker:latest` (semver tags also published).
+- Compose file: https://raw.githubusercontent.com/xenofex7/solar-tracker/main/docker-compose.yml
+- Env example: https://raw.githubusercontent.com/xenofex7/solar-tracker/main/.env.example
+- Required env: `HA_URL`, `HA_TOKEN`, `HA_ENTITY_ID`.
+
+## Features
+
+- Monthly actual vs. target dashboard with deviation, cumulative line and YTD KPIs.
+- Calendar heatmap, daily series with 7-day rolling average, year-on-year comparison, specific yield (kWh/kWp).
+- Financial KPIs: investment, revenue to date, progress, payback date, effective electricity price, self-consumption rate, savings vs. no PV.
+- Quarterly grid billing capture (import and export), prorated across months.
+- Home Assistant sync via WebSocket using `recorder/statistics_during_period` (period `day`, types `change`).
+- UI in DE, EN, FR, IT, ES; light and dark mode.
+
