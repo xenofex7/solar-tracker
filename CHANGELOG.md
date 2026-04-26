@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- User-configurable currency setting.
+
+### Changed
+- Replace SVG logo with new square PNG branding.
+- Format amounts per currency and numbers per language.
+- Rename `amount_chf` column to `amount` for currency-agnostic storage.
 
 ## [1.8.1] - 2026-04-26
 ### Added
