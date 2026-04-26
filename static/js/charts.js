@@ -36,7 +36,8 @@ window.addEventListener('themechange', () => {
 
 const fmtInt = (v) => Math.round(Number(v) || 0).toLocaleString(window.T?.locale || 'de-CH');
 const fmtKwh = (v) => `${fmtInt(v)} kWh`;
-const fmtChf = (v) => `${fmtInt(v)} CHF`;
+const CUR = () => window.CURRENCY || 'CHF';
+const fmtMoney = (v) => `${fmtInt(v)} ${CUR()}`;
 const fmtDate = (iso) => {
   if (!iso) return '';
   const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -453,9 +454,9 @@ function renderKpis(data) {
     const progressCls = p.progress_pct >= 100 ? 'good' : '';
     const b = p.breakdown || {};
     const parts = [];
-    if (b.self_consumption_savings > 0) parts.push(`${T.kpi_breakdown_self || 'SC'} ${fmtChf(b.self_consumption_savings)}`);
-    if (b.export_credit > 0) parts.push(`${T.kpi_breakdown_export || 'Exp.'} ${fmtChf(b.export_credit)}`);
-    if (b.estimated_other > 0) parts.push(`${T.kpi_breakdown_estimated || 'est.'} ${fmtChf(b.estimated_other)}`);
+    if (b.self_consumption_savings > 0) parts.push(`${T.kpi_breakdown_self || 'SC'} ${fmtMoney(b.self_consumption_savings)}`);
+    if (b.export_credit > 0) parts.push(`${T.kpi_breakdown_export || 'Exp.'} ${fmtMoney(b.export_credit)}`);
+    if (b.estimated_other > 0) parts.push(`${T.kpi_breakdown_estimated || 'est.'} ${fmtMoney(b.estimated_other)}`);
     const revSub = parts.length ? `<br><span class="sub">${parts.join(' · ')}</span>` : '';
     const revInfo = `<h4>${esc(T.kpi_revenue_info_title || 'Composition')}</h4><ul>`
       + `<li><strong>${esc(T.kpi_breakdown_self || 'SC')}</strong> - ${esc(T.kpi_revenue_info_self || 'Self-consumed kWh valued at the import tariff.')}</li>`
@@ -463,8 +464,8 @@ function renderKpis(data) {
       + `<li><strong>${esc(T.kpi_breakdown_estimated || 'est.')}</strong> - ${esc(T.kpi_revenue_info_estimated || 'Periods without invoice modelled at the configured PV price × production.')}</li>`
       + `</ul>`;
     finance.push(
-      { label: T.kpi_investment || 'Investment', value: fmtChf(p.invested) },
-      { label: T.kpi_revenue_total || 'Revenue to date', value: `${fmtChf(p.revenue_total)}${revSub}`, info: revInfo },
+      { label: T.kpi_investment || 'Investment', value: fmtMoney(p.invested) },
+      { label: T.kpi_revenue_total || 'Revenue to date', value: `${fmtMoney(p.revenue_total)}${revSub}`, info: revInfo },
       { label: T.kpi_progress || 'Progress', value: `${p.progress_pct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`, cls: progressCls },
       { label: T.kpi_payback || 'Payback', value: paybackVal, info: paybackInfo },
     );
@@ -488,17 +489,17 @@ function renderKpis(data) {
     const effPrice = sc.effective_price_per_kwh ?? 0;
     const importPrice = grid.totals.import?.avg_price ?? 0;
     const totalCons = sc.total_consumption_kwh ?? 0;
-    const fmtPrice = (v) => `${v.toLocaleString(T.locale || 'de-CH', {minimumFractionDigits: 3, maximumFractionDigits: 3})} CHF/kWh`;
+    const fmtPrice = (v) => `${v.toLocaleString(T.locale || 'de-CH', {minimumFractionDigits: 3, maximumFractionDigits: 3})} ${CUR()}/kWh`;
     const effPriceInfo = `<h4>${esc(T.kpi_effective_price_info_title || 'How this is calculated')}</h4>`
       + `<ul>`
-      + `<li>${esc(T.kpi_effective_price_info_net || 'Net cost:')} <strong>${fmtChf(net)}</strong></li>`
+      + `<li>${esc(T.kpi_effective_price_info_net || 'Net cost:')} <strong>${fmtMoney(net)}</strong></li>`
       + `<li>${esc(T.kpi_effective_price_info_cons || 'Total consumption:')} <strong>${fmtKwh(totalCons)}</strong></li>`
       + `<li>${esc(T.kpi_effective_price_info_formula || 'Net cost / (self-consumed + imported)')}</li>`
       + `</ul>`
-      + `<p class="muted">${esc((T.kpi_effective_price_info_note || 'Without PV you would pay {tariff} CHF/kWh.').replace('{tariff}', importPrice.toLocaleString(T.locale || 'de-CH', {minimumFractionDigits: 3, maximumFractionDigits: 3})))}</p>`;
+      + `<p class="muted">${esc((T.kpi_effective_price_info_note || 'Without PV you would pay {tariff} {currency}/kWh.').replace('{tariff}', importPrice.toLocaleString(T.locale || 'de-CH', {minimumFractionDigits: 3, maximumFractionDigits: 3})).replace('{currency}', CUR()))}</p>`;
     energy.push(
-      { label: T.kpi_net_cost || 'Net electricity cost', value: fmtChf(net) },
-      { label: T.kpi_savings_vs_no_pv || 'Savings vs. no PV', value: fmtChf(sc.savings_vs_no_pv ?? 0), cls: (sc.savings_vs_no_pv ?? 0) > 0 ? 'good' : '' },
+      { label: T.kpi_net_cost || 'Net electricity cost', value: fmtMoney(net) },
+      { label: T.kpi_savings_vs_no_pv || 'Savings vs. no PV', value: fmtMoney(sc.savings_vs_no_pv ?? 0), cls: (sc.savings_vs_no_pv ?? 0) > 0 ? 'good' : '' },
       { label: T.kpi_effective_price || 'Effective electricity price', value: fmtPrice(effPrice), cls: (effPrice < importPrice && importPrice > 0) ? 'good' : '', info: effPriceInfo },
       { label: T.kpi_self_consumed || 'Self-consumed', value: fmtKwh(sc.self_consumed_kwh ?? 0) },
       { label: T.kpi_self_ratio || 'Self-cons. rate', value: `${scPct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`, cls: pctCls, info: ratioInfo },
@@ -563,13 +564,13 @@ function renderPayback(data) {
       labels: allYears,
       datasets: [
         {
-          label: window.T?.chart_cumulative_revenue || 'Revenue (CHF)',
+          label: (window.T?.chart_cumulative_revenue || 'Revenue ({currency})').replace('{currency}', CUR()),
           data: actualData,
           backgroundColor: CHART_COLORS.actual,
           order: 2,
         },
         {
-          label: 'Forecast (CHF)',
+          label: (window.T?.chart_forecast || 'Forecast ({currency})').replace('{currency}', CUR()),
           data: forecastData,
           backgroundColor: 'rgba(245,166,35,0.28)',
           borderColor: CHART_COLORS.actualLine,
@@ -578,7 +579,7 @@ function renderPayback(data) {
         },
         {
           type: 'line',
-          label: window.T?.chart_investment || 'Investment (CHF)',
+          label: (window.T?.chart_investment || 'Investment ({currency})').replace('{currency}', CUR()),
           data: investedLine,
           borderColor: CHART_COLORS.targetLine,
           borderDash: [6, 4],
@@ -590,10 +591,10 @@ function renderPayback(data) {
     },
     options: {
       plugins: {
-        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtChf(item.parsed.y)}` } },
+        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtMoney(item.parsed.y)}` } },
       },
       scales: {
-        y: { beginAtZero: true, ticks: { callback: v => fmtChf(v) } },
+        y: { beginAtZero: true, ticks: { callback: v => fmtMoney(v) } },
       },
     },
   });
@@ -680,11 +681,11 @@ function renderFinanceFlow(data) {
     },
     options: {
       plugins: {
-        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtChf(Math.abs(item.parsed.y))}` } },
+        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtMoney(Math.abs(item.parsed.y))}` } },
       },
       scales: {
         x: { stacked: true },
-        y: { stacked: true, ticks: { callback: v => fmtChf(v) } },
+        y: { stacked: true, ticks: { callback: v => fmtMoney(v) } },
       },
     },
   });
@@ -712,9 +713,9 @@ function renderSavingsVsNoPv(data) {
     },
     options: {
       plugins: {
-        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtChf(item.parsed.y)}` } },
+        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtMoney(item.parsed.y)}` } },
       },
-      scales: { y: { beginAtZero: true, ticks: { callback: v => fmtChf(v) } } },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => fmtMoney(v) } } },
     },
   });
 }

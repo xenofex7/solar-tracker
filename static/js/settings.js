@@ -33,12 +33,18 @@ document.getElementById('plant-form').addEventListener('submit', async (e) => {
   const body = {
     kwp: e.target.kwp.value,
     price_per_kwh: e.target.price_per_kwh.value,
+    currency: e.target.currency.value,
     start_date: e.target.start_date.value,
     timezone: e.target.timezone.value,
   };
   const r = await fetch('/api/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  if (r.ok) window.showToast(window.T?.msg_saved || 'Saved', 'success');
-  else window.showToast(window.T?.msg_save_error || 'Error saving', 'error');
+  if (r.ok) {
+    window.queueToast(window.T?.msg_saved || 'Saved', 'success');
+    location.reload();
+  } else {
+    const j = await r.json().catch(() => ({}));
+    window.showToast((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?'), 'error');
+  }
 });
 
 document.getElementById('cost-form').addEventListener('submit', async (e) => {

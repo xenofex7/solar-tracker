@@ -44,6 +44,7 @@ def main():
     db.set_setting("kwp", str(PLANT_KWP))
     db.set_setting("price_per_kwh", str(PRICE_PER_KWH))
     db.set_setting("start_date", COMMISSIONING.isoformat())
+    db.set_setting("currency", "CHF")
 
     for m, kwh in MONTHLY_TARGETS.items():
         db.set_target(m, kwh, year=None)

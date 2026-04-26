@@ -37,7 +37,7 @@ def _inject_version():
 @app.context_processor
 def _inject_i18n():
     lang = i18n.get_lang(request)
-    return {"lang": lang, "T": i18n.get_translations(lang)}
+    return {"lang": lang, "T": i18n.get_translations(lang), "currency": _currency()}
 
 
 @app.after_request
@@ -69,8 +69,8 @@ def _fmt_ddmmyyyy(value):
     return s
 
 
-@app.template_filter("chf")
-def _fmt_chf(value):
+@app.template_filter("money")
+def _fmt_money(value):
     try:
         return f"{float(value):,.0f}".replace(",", "'")
     except (TypeError, ValueError):
@@ -91,6 +91,11 @@ def _price_per_kwh() -> float:
         return float(val)
     except ValueError:
         return 0.0
+
+
+def _currency() -> str:
+    val = (db.get_setting("currency") or "CHF").strip()
+    return val or "CHF"
 
 
 def _timezone() -> str:
@@ -123,6 +128,7 @@ def settings_page():
         targets=targets,
         kwp=_kwp(),
         price_per_kwh=_price_per_kwh(),
+        currency_setting=_currency(),
         start_date=_start_date() or "",
         timezone=_timezone(),
         timezones=sorted(available_timezones()),
@@ -233,7 +239,11 @@ def api_changelog():
 def i18n_js():
     lang = i18n.get_lang(request)
     translations = i18n.get_translations(lang)
-    js = f"window.T={json.dumps(translations, ensure_ascii=False, separators=(',', ':'))};"
+    cur = _currency()
+    js = (
+        f"window.T={json.dumps(translations, ensure_ascii=False, separators=(',', ':'))};"
+        f"window.CURRENCY={json.dumps(cur)};"
+    )
     resp = make_response(js)
     resp.headers["Content-Type"] = "application/javascript; charset=utf-8"
     resp.headers["Cache-Control"] = "no-cache, no-store"
@@ -310,6 +320,11 @@ def api_settings_post():
             ZoneInfo(str(payload["timezone"]))
         except ZoneInfoNotFoundError:
             return jsonify({"error": f"Unbekannte Zeitzone: {payload['timezone']}"}), 400
+    if "currency" in payload:
+        cur = str(payload["currency"]).strip()
+        if not cur or len(cur) > 8:
+            return jsonify({"error": "Währung muss 1-8 Zeichen lang sein"}), 400
+        payload["currency"] = cur
     for key, value in payload.items():
         db.set_setting(key, str(value))
     return jsonify({"ok": True})
