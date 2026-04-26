@@ -34,10 +34,61 @@ def _inject_version():
     return {"app_version": APP_VERSION}
 
 
+_CURRENCY_LOCALE_FMT = {
+    "CHF": ("'", "."),
+    "EUR": (".", ","),
+    "USD": (",", "."),
+    "GBP": (",", "."),
+    "JPY": (",", "."),
+    "CNY": (",", "."),
+    "AUD": (",", "."),
+    "CAD": (",", "."),
+    "SEK": (" ", ","),
+    "NOK": (" ", ","),
+    "DKK": (".", ","),
+    "PLN": (" ", ","),
+    "CZK": (" ", ","),
+}
+
+_LANG_LOCALE_FMT = {
+    "en": (",", "."),
+    "de": ("'", "."),
+    "fr": (" ", ","),
+    "es": (".", ","),
+    "it": (".", ","),
+}
+
+
+def _format_with_seps(value, sep_t, sep_d, decimals):
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return value
+    s = f"{v:,.{decimals}f}"
+    return s.replace(",", "\x00").replace(".", sep_d).replace("\x00", sep_t)
+
+
+def _fmt_money_value(value, currency, decimals=0):
+    sep_t, sep_d = _CURRENCY_LOCALE_FMT.get((currency or "").upper(), ("'", "."))
+    return _format_with_seps(value, sep_t, sep_d, decimals)
+
+
+def _fmt_num_value(value, lang, decimals=0):
+    sep_t, sep_d = _LANG_LOCALE_FMT.get(lang, ("'", "."))
+    return _format_with_seps(value, sep_t, sep_d, decimals)
+
+
 @app.context_processor
 def _inject_i18n():
     lang = i18n.get_lang(request)
-    return {"lang": lang, "T": i18n.get_translations(lang), "currency": _currency()}
+    cur = _currency()
+    return {
+        "lang": lang,
+        "T": i18n.get_translations(lang),
+        "currency": cur,
+        "fmt_money": lambda v, decimals=0: _fmt_money_value(v, cur, decimals),
+        "fmt_num": lambda v, decimals=0: _fmt_num_value(v, lang, decimals),
+    }
 
 
 @app.after_request
@@ -67,14 +118,6 @@ def _fmt_ddmmyyyy(value):
     if len(s) >= 10 and s[4] == "-" and s[7] == "-":
         return f"{s[8:10]}.{s[5:7]}.{s[0:4]}"
     return s
-
-
-@app.template_filter("money")
-def _fmt_money(value):
-    try:
-        return f"{float(value):,.0f}".replace(",", "'")
-    except (TypeError, ValueError):
-        return value
 
 
 def _kwp() -> float:

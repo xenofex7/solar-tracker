@@ -73,7 +73,7 @@
           <tr data-id="{{ c.id }}" data-date="{{ c.date or '' }}" data-label="{{ c.label }}" data-amount="{{ c.amount }}">
             <td>{{ (c.date | ddmmyyyy) if c.date else '-' }}</td>
             <td>{{ c.label }}</td>
-            <td class="num">{{ c.amount | money }} {{ currency }}</td>
+            <td class="num">{{ fmt_money(c.amount) }} {{ currency }}</td>
             <td class="action">
               <button class="edit icon" data-id="{{ c.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
               <button class="del icon" data-id="{{ c.id }}" data-label="{{ c.label }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
@@ -83,7 +83,7 @@
         <tr class="total">
           <td></td>
           <td><strong>{{ T.total_investment }}</strong></td>
-          <td class="num" id="cost-total"><strong>{{ total_invested | money }} {{ currency }}</strong></td>
+          <td class="num" id="cost-total"><strong>{{ fmt_money(total_invested) }} {{ currency }}</strong></td>
           <td class="action"></td>
         </tr>
       </tbody>
@@ -119,9 +119,9 @@
         {% for b in grid_imports %}
           <tr data-id="{{ b.id }}" data-period-start="{{ b.period_start }}" data-period-end="{{ b.period_end }}" data-kwh="{{ b.kwh }}" data-amount="{{ b.amount }}" data-invoice="{{ b.invoice_no or '' }}">
             <td>{{ b.period_start | ddmmyyyy }} - {{ b.period_end | ddmmyyyy }}</td>
-            <td class="num">{{ b.kwh | money }} kWh</td>
-            <td class="num">{{ b.amount | money }} {{ currency }}</td>
-            <td class="num">{{ "%.3f"|format((b.amount / b.kwh) if b.kwh else 0) }} {{ currency }}/kWh</td>
+            <td class="num">{{ fmt_num(b.kwh) }} kWh</td>
+            <td class="num">{{ fmt_money(b.amount) }} {{ currency }}</td>
+            <td class="num">{{ fmt_money((b.amount / b.kwh) if b.kwh else 0, 3) }} {{ currency }}/kWh</td>
             <td>{{ b.invoice_no or '-' }}</td>
             <td class="action">
               <button class="edit icon" data-id="{{ b.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
@@ -131,9 +131,9 @@
         {% endfor %}
         <tr class="total">
           <td><strong>{{ T.total }}</strong></td>
-          <td class="num"><strong>{{ grid_totals['import'].kwh | money }} kWh</strong></td>
-          <td class="num"><strong>{{ grid_totals['import'].amount | money }} {{ currency }}</strong></td>
-          <td class="num"><strong>{{ "%.3f"|format(grid_totals['import'].avg_price) }} {{ currency }}/kWh</strong></td>
+          <td class="num"><strong>{{ fmt_num(grid_totals['import'].kwh) }} kWh</strong></td>
+          <td class="num"><strong>{{ fmt_money(grid_totals['import'].amount) }} {{ currency }}</strong></td>
+          <td class="num"><strong>{{ fmt_money(grid_totals['import'].avg_price, 3) }} {{ currency }}/kWh</strong></td>
           <td></td>
           <td class="action"></td>
         </tr>
@@ -149,9 +149,9 @@
         {% for b in grid_exports %}
           <tr data-id="{{ b.id }}" data-period-start="{{ b.period_start }}" data-period-end="{{ b.period_end }}" data-kwh="{{ b.kwh }}" data-amount="{{ b.amount }}" data-invoice="{{ b.invoice_no or '' }}">
             <td>{{ b.period_start | ddmmyyyy }} - {{ b.period_end | ddmmyyyy }}</td>
-            <td class="num">{{ b.kwh | money }} kWh</td>
-            <td class="num">{{ b.amount | money }} {{ currency }}</td>
-            <td class="num">{{ "%.3f"|format((b.amount / b.kwh) if b.kwh else 0) }} {{ currency }}/kWh</td>
+            <td class="num">{{ fmt_num(b.kwh) }} kWh</td>
+            <td class="num">{{ fmt_money(b.amount) }} {{ currency }}</td>
+            <td class="num">{{ fmt_money((b.amount / b.kwh) if b.kwh else 0, 3) }} {{ currency }}/kWh</td>
             <td>{{ b.invoice_no or '-' }}</td>
             <td class="action">
               <button class="edit icon" data-id="{{ b.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
@@ -161,9 +161,9 @@
         {% endfor %}
         <tr class="total">
           <td><strong>{{ T.total }}</strong></td>
-          <td class="num"><strong>{{ grid_totals['export'].kwh | money }} kWh</strong></td>
-          <td class="num"><strong>{{ grid_totals['export'].amount | money }} {{ currency }}</strong></td>
-          <td class="num"><strong>{{ "%.3f"|format(grid_totals['export'].avg_price) }} {{ currency }}/kWh</strong></td>
+          <td class="num"><strong>{{ fmt_num(grid_totals['export'].kwh) }} kWh</strong></td>
+          <td class="num"><strong>{{ fmt_money(grid_totals['export'].amount) }} {{ currency }}</strong></td>
+          <td class="num"><strong>{{ fmt_money(grid_totals['export'].avg_price, 3) }} {{ currency }}/kWh</strong></td>
           <td></td>
           <td class="action"></td>
         </tr>
@@ -209,7 +209,7 @@
         {% for r in recent %}
           <tr data-date="{{ r.date }}" data-kwh="{{ r.kwh }}">
             <td>{{ r.date | ddmmyyyy }}</td>
-            <td class="num">{{ r.kwh | money }} kWh</td>
+            <td class="num">{{ fmt_num(r.kwh) }} kWh</td>
             <td>{{ r.source }}</td>
             <td class="action">
               <button class="edit icon" data-date="{{ r.date }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>

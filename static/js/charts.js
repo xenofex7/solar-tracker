@@ -34,10 +34,17 @@ window.addEventListener('themechange', () => {
   Object.values(charts).forEach(c => { try { c.update(); } catch (e) {} });
 });
 
-const fmtInt = (v) => Math.round(Number(v) || 0).toLocaleString(window.T?.locale || 'de-CH');
-const fmtKwh = (v) => `${fmtInt(v)} kWh`;
 const CUR = () => window.CURRENCY || 'CHF';
-const fmtMoney = (v) => `${fmtInt(v)} ${CUR()}`;
+const LANG_LOC = () => window.T?.locale || 'de-CH';
+const CURRENCY_LOCALES = {
+  CHF: 'de-CH', EUR: 'de-DE', USD: 'en-US', GBP: 'en-GB',
+  JPY: 'ja-JP', CNY: 'zh-CN', AUD: 'en-AU', CAD: 'en-CA',
+  SEK: 'sv-SE', NOK: 'nb-NO', DKK: 'da-DK', PLN: 'pl-PL', CZK: 'cs-CZ',
+};
+const MONEY_LOC = () => CURRENCY_LOCALES[CUR()] || LANG_LOC();
+const fmtInt = (v) => Math.round(Number(v) || 0).toLocaleString(LANG_LOC());
+const fmtKwh = (v) => `${fmtInt(v)} kWh`;
+const fmtMoney = (v) => `${Math.round(Number(v) || 0).toLocaleString(MONEY_LOC())} ${CUR()}`;
 const fmtDate = (iso) => {
   if (!iso) return '';
   const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -489,14 +496,14 @@ function renderKpis(data) {
     const effPrice = sc.effective_price_per_kwh ?? 0;
     const importPrice = grid.totals.import?.avg_price ?? 0;
     const totalCons = sc.total_consumption_kwh ?? 0;
-    const fmtPrice = (v) => `${v.toLocaleString(T.locale || 'de-CH', {minimumFractionDigits: 3, maximumFractionDigits: 3})} ${CUR()}/kWh`;
+    const fmtPrice = (v) => `${(Number(v) || 0).toLocaleString(MONEY_LOC(), {minimumFractionDigits: 3, maximumFractionDigits: 3})} ${CUR()}/kWh`;
     const effPriceInfo = `<h4>${esc(T.kpi_effective_price_info_title || 'How this is calculated')}</h4>`
       + `<ul>`
       + `<li>${esc(T.kpi_effective_price_info_net || 'Net cost:')} <strong>${fmtMoney(net)}</strong></li>`
       + `<li>${esc(T.kpi_effective_price_info_cons || 'Total consumption:')} <strong>${fmtKwh(totalCons)}</strong></li>`
       + `<li>${esc(T.kpi_effective_price_info_formula || 'Net cost / (self-consumed + imported)')}</li>`
       + `</ul>`
-      + `<p class="muted">${esc((T.kpi_effective_price_info_note || 'Without PV you would pay {tariff} {currency}/kWh.').replace('{tariff}', importPrice.toLocaleString(T.locale || 'de-CH', {minimumFractionDigits: 3, maximumFractionDigits: 3})).replace('{currency}', CUR()))}</p>`;
+      + `<p class="muted">${esc((T.kpi_effective_price_info_note || 'Without PV you would pay {tariff} {currency}/kWh.').replace('{tariff}', importPrice.toLocaleString(MONEY_LOC(), {minimumFractionDigits: 3, maximumFractionDigits: 3})).replace('{currency}', CUR()))}</p>`;
     energy.push(
       { label: T.kpi_net_cost || 'Net electricity cost', value: fmtMoney(net) },
       { label: T.kpi_savings_vs_no_pv || 'Savings vs. no PV', value: fmtMoney(sc.savings_vs_no_pv ?? 0), cls: (sc.savings_vs_no_pv ?? 0) > 0 ? 'good' : '' },
