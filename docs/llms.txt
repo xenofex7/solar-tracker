@@ -23,5 +23,5 @@
 - Financial KPIs: investment, revenue to date, progress, payback date, effective electricity price, self-consumption rate, savings vs. no PV.
 - Quarterly grid billing capture (import and export), prorated across months.
 - Home Assistant sync via WebSocket using `recorder/statistics_during_period` (period `day`, types `change`).
-- UI in DE, EN, FR, IT, ES; light and dark mode.
+- UI in DE, EN, FR, IT, ES; configurable currency and locale-aware number formatting; light and dark mode.
 
