@@ -135,7 +135,7 @@ def test_self_consumption_computes_pv_minus_export():
         "period_start": "2025-08-01",
         "period_end": "2025-08-05",
         "kwh": 200,
-        "amount_chf": 22,
+        "amount": 22,
     }]
     out = metrics.self_consumption(records, export_bills)
     assert out["exported_kwh"] == 200
@@ -162,11 +162,11 @@ def test_financial_series_splits_covered_vs_uncovered():
     records = _daily("2025-08-01", "2025-08-03", 100)
     import_bills = [{
         "period_start": "2025-08-01", "period_end": "2025-08-02",
-        "kwh": 10, "amount_chf": 3.0,  # avg 0.30 CHF/kWh
+        "kwh": 10, "amount": 3.0,  # avg 0.30 CHF/kWh
     }]
     export_bills = [{
         "period_start": "2025-08-01", "period_end": "2025-08-02",
-        "kwh": 50, "amount_chf": 5.5,
+        "kwh": 50, "amount": 5.5,
     }]
     _, breakdown = metrics.financial_series(records, import_bills, export_bills, fallback_price=0.1)
     # PV in period = 200, exported 50, self_consumed 150
@@ -209,11 +209,11 @@ def test_monthly_flows_splits_quarterly_bill_into_months():
     records = _daily("2025-08-01", "2025-09-30", 10)
     export_bills = [{
         "period_start": "2025-08-01", "period_end": "2025-09-30",
-        "kwh": 600, "amount_chf": 66,
+        "kwh": 600, "amount": 66,
     }]
     import_bills = [{
         "period_start": "2025-08-01", "period_end": "2025-09-30",
-        "kwh": 400, "amount_chf": 100,
+        "kwh": 400, "amount": 100,
     }]
     flows = metrics.monthly_flows(records, import_bills, export_bills, avg_import_price=0.25)
     assert len(flows) == 2

@@ -45,7 +45,7 @@ document.getElementById('cost-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const body = {
     label: e.target.label.value,
-    amount_chf: Number(e.target.amount_chf.value),
+    amount: Number(e.target.amount.value),
     date: e.target.date.value || null,
   };
   const r = await fetch('/api/costs', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
@@ -87,7 +87,7 @@ document.querySelectorAll('#costs-table button.edit').forEach(btn => {
       const body = {
         date: tr.querySelector('.edit-date').value || null,
         label: tr.querySelector('.edit-label').value,
-        amount_chf: Number(tr.querySelector('.edit-amount').value),
+        amount: Number(tr.querySelector('.edit-amount').value),
       };
       const r = await fetch(`/api/costs/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
       if (r.ok) {
@@ -108,7 +108,7 @@ document.getElementById('grid-form').addEventListener('submit', async (e) => {
     period_start: e.target.period_start.value,
     period_end: e.target.period_end.value,
     kwh: Number(e.target.kwh.value),
-    amount_chf: Number(e.target.amount_chf.value),
+    amount: Number(e.target.amount.value),
     invoice_no: e.target.invoice_no.value || null,
   };
   const r = await fetch('/api/grid', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
@@ -152,7 +152,7 @@ document.querySelectorAll('#imports-table button.edit, #exports-table button.edi
         period_start: tr.querySelector('.edit-start').value,
         period_end: tr.querySelector('.edit-end').value,
         kwh: Number(tr.querySelector('.edit-kwh').value),
-        amount_chf: Number(tr.querySelector('.edit-amount').value),
+        amount: Number(tr.querySelector('.edit-amount').value),
         invoice_no: tr.querySelector('.edit-invoice').value || null,
       };
       const r = await fetch(`/api/grid/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});

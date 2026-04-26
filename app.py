@@ -363,10 +363,10 @@ def api_costs_get():
 def api_costs_post():
     payload = request.get_json(force=True)
     label = (payload.get("label") or "").strip()
-    amount = payload.get("amount_chf")
+    amount = payload.get("amount")
     cdate = payload.get("date") or None
     if not label or amount is None:
-        return jsonify({"error": "label und amount_chf erforderlich"}), 400
+        return jsonify({"error": "label und amount erforderlich"}), 400
     try:
         amount = float(amount)
     except (TypeError, ValueError):
@@ -384,10 +384,10 @@ def api_costs_post():
 def api_costs_put(cost_id):
     payload = request.get_json(force=True)
     label = (payload.get("label") or "").strip()
-    amount = payload.get("amount_chf")
+    amount = payload.get("amount")
     cdate = payload.get("date") or None
     if not label or amount is None:
-        return jsonify({"error": "label und amount_chf erforderlich"}), 400
+        return jsonify({"error": "label und amount erforderlich"}), 400
     try:
         amount = float(amount)
     except (TypeError, ValueError):
@@ -430,7 +430,7 @@ def api_grid_post():
         datetime.fromisoformat(period_start)
         datetime.fromisoformat(period_end)
         kwh = float(payload.get("kwh"))
-        amount = float(payload.get("amount_chf"))
+        amount = float(payload.get("amount"))
     except (TypeError, ValueError):
         return jsonify({"error": "ungültige Werte"}), 400
     if period_end < period_start or kwh < 0 or amount < 0:
@@ -449,7 +449,7 @@ def api_grid_put(bill_id):
         datetime.fromisoformat(period_start)
         datetime.fromisoformat(period_end)
         kwh = float(payload.get("kwh"))
-        amount = float(payload.get("amount_chf"))
+        amount = float(payload.get("amount"))
     except (TypeError, ValueError):
         return jsonify({"error": "ungültige Werte"}), 400
     if period_end < period_start or kwh < 0 or amount < 0:

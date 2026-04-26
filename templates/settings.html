@@ -45,17 +45,17 @@
     <form id="cost-form" class="inline-form">
       <label>{{ T.col_date }} <input type="date" name="date"></label>
       <label>{{ T.col_label }} <input type="text" name="label" required placeholder="{{ T.placeholder_solar_builder }}"></label>
-      <label>{{ T.label_amount_chf }} <input type="number" step="0.01" name="amount_chf" required></label>
+      <label>{{ T.label_amount_chf }} <input type="number" step="0.01" name="amount" required></label>
       <button type="submit">{{ T.btn_add_item }}</button>
     </form>
     <table class="data" id="costs-table">
       <thead><tr><th>{{ T.col_date }}</th><th>{{ T.col_label }}</th><th class="num">{{ T.col_amount }}</th><th class="action"></th></tr></thead>
       <tbody>
         {% for c in costs %}
-          <tr data-id="{{ c.id }}" data-date="{{ c.date or '' }}" data-label="{{ c.label }}" data-amount="{{ c.amount_chf }}">
+          <tr data-id="{{ c.id }}" data-date="{{ c.date or '' }}" data-label="{{ c.label }}" data-amount="{{ c.amount }}">
             <td>{{ (c.date | ddmmyyyy) if c.date else '-' }}</td>
             <td>{{ c.label }}</td>
-            <td class="num">{{ c.amount_chf | chf }} CHF</td>
+            <td class="num">{{ c.amount | chf }} CHF</td>
             <td class="action">
               <button class="edit icon" data-id="{{ c.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
               <button class="del icon" data-id="{{ c.id }}" data-label="{{ c.label }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
@@ -87,7 +87,7 @@
       <label>{{ T.label_from }} <input type="date" name="period_start" required></label>
       <label>{{ T.label_to }} <input type="date" name="period_end" required></label>
       <label>kWh <input type="number" step="0.01" min="0" name="kwh" required></label>
-      <label>{{ T.label_amount_chf }} <input type="number" step="0.01" min="0" name="amount_chf" required></label>
+      <label>{{ T.label_amount_chf }} <input type="number" step="0.01" min="0" name="amount" required></label>
       <label>{{ T.label_invoice_no }} <input type="text" name="invoice_no" placeholder="{{ T.placeholder_invoice_no }}"></label>
       <button type="submit">{{ T.btn_save }}</button>
     </form>
@@ -99,11 +99,11 @@
       <thead><tr><th>{{ T.col_period }}</th><th class="num">kWh</th><th class="num">{{ T.col_costs }}</th><th class="num">{{ T.col_avg_price }}</th><th>{{ T.col_invoice }}</th><th class="action"></th></tr></thead>
       <tbody>
         {% for b in grid_imports %}
-          <tr data-id="{{ b.id }}" data-period-start="{{ b.period_start }}" data-period-end="{{ b.period_end }}" data-kwh="{{ b.kwh }}" data-amount="{{ b.amount_chf }}" data-invoice="{{ b.invoice_no or '' }}">
+          <tr data-id="{{ b.id }}" data-period-start="{{ b.period_start }}" data-period-end="{{ b.period_end }}" data-kwh="{{ b.kwh }}" data-amount="{{ b.amount }}" data-invoice="{{ b.invoice_no or '' }}">
             <td>{{ b.period_start | ddmmyyyy }} - {{ b.period_end | ddmmyyyy }}</td>
             <td class="num">{{ b.kwh | chf }} kWh</td>
-            <td class="num">{{ b.amount_chf | chf }} CHF</td>
-            <td class="num">{{ "%.3f"|format((b.amount_chf / b.kwh) if b.kwh else 0) }} CHF/kWh</td>
+            <td class="num">{{ b.amount | chf }} CHF</td>
+            <td class="num">{{ "%.3f"|format((b.amount / b.kwh) if b.kwh else 0) }} CHF/kWh</td>
             <td>{{ b.invoice_no or '-' }}</td>
             <td class="action">
               <button class="edit icon" data-id="{{ b.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
@@ -115,6 +115,7 @@
           <td><strong>{{ T.total }}</strong></td>
           <td class="num"><strong>{{ grid_totals['import'].kwh | chf }} kWh</strong></td>
           <td class="num"><strong>{{ grid_totals['import'].amount | chf }} CHF</strong></td>
+
           <td class="num"><strong>{{ "%.3f"|format(grid_totals['import'].avg_price) }} CHF/kWh</strong></td>
           <td></td>
           <td class="action"></td>
@@ -129,11 +130,11 @@
       <thead><tr><th>{{ T.col_period }}</th><th class="num">kWh</th><th class="num">{{ T.col_credit }}</th><th class="num">{{ T.col_avg_price }}</th><th>{{ T.col_invoice }}</th><th class="action"></th></tr></thead>
       <tbody>
         {% for b in grid_exports %}
-          <tr data-id="{{ b.id }}" data-period-start="{{ b.period_start }}" data-period-end="{{ b.period_end }}" data-kwh="{{ b.kwh }}" data-amount="{{ b.amount_chf }}" data-invoice="{{ b.invoice_no or '' }}">
+          <tr data-id="{{ b.id }}" data-period-start="{{ b.period_start }}" data-period-end="{{ b.period_end }}" data-kwh="{{ b.kwh }}" data-amount="{{ b.amount }}" data-invoice="{{ b.invoice_no or '' }}">
             <td>{{ b.period_start | ddmmyyyy }} - {{ b.period_end | ddmmyyyy }}</td>
             <td class="num">{{ b.kwh | chf }} kWh</td>
-            <td class="num">{{ b.amount_chf | chf }} CHF</td>
-            <td class="num">{{ "%.3f"|format((b.amount_chf / b.kwh) if b.kwh else 0) }} CHF/kWh</td>
+            <td class="num">{{ b.amount | chf }} CHF</td>
+            <td class="num">{{ "%.3f"|format((b.amount / b.kwh) if b.kwh else 0) }} CHF/kWh</td>
             <td>{{ b.invoice_no or '-' }}</td>
             <td class="action">
               <button class="edit icon" data-id="{{ b.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>

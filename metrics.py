@@ -259,7 +259,7 @@ def monthly_flows(
                 total_days = (ex_end - ex_start).days + 1
                 share = _overlap_days(mfirst, mlast, ex_start, ex_end) / total_days if total_days else 0
             exported += ex["kwh"] * share
-            export_credit += ex["amount_chf"] * share
+            export_credit += ex["amount"] * share
 
         imported = 0.0
         import_cost = 0.0
@@ -272,7 +272,7 @@ def monthly_flows(
             total_days = (imp_end - imp_start).days + 1
             share = overlap / total_days if total_days else 0
             imported += imp["kwh"] * share
-            import_cost += imp["amount_chf"] * share
+            import_cost += imp["amount"] * share
 
         self_kwh = max(0.0, pv_kwh - exported)
         self_pct = (self_kwh / pv_kwh * 100.0) if pv_kwh > 0 else 0.0
@@ -329,7 +329,7 @@ def financial_series(
     rows = sorted(records, key=lambda r: r["date"])
 
     total_imp_kwh = sum(b["kwh"] for b in import_bills)
-    total_imp_amount = sum(b["amount_chf"] for b in import_bills)
+    total_imp_amount = sum(b["amount"] for b in import_bills)
     avg_import_price = (total_imp_amount / total_imp_kwh) if total_imp_kwh > 0 else fallback_price
 
     period_rates = []
@@ -339,7 +339,7 @@ def financial_series(
         pv_in_period = sum(r["kwh"] for r in rows if start <= r["date"] <= end)
         total_pv_in_export += pv_in_period
         export_kwh = bill["kwh"]
-        export_amount = bill["amount_chf"]
+        export_amount = bill["amount"]
         self_kwh = max(0.0, pv_in_period - export_kwh)
         savings = self_kwh * avg_import_price
         rate = ((export_amount + savings) / pv_in_period) if pv_in_period > 0 else fallback_price
@@ -357,7 +357,7 @@ def financial_series(
         cum.append({"date": r["date"], "revenue": round(s, 2)})
 
     total_exported_kwh = sum(b["kwh"] for b in export_bills)
-    total_export_credit = sum(b["amount_chf"] for b in export_bills)
+    total_export_credit = sum(b["amount"] for b in export_bills)
     self_consumed_kwh = max(0.0, total_pv_in_export - total_exported_kwh)
     self_consumption_savings = self_consumed_kwh * avg_import_price
     all_pv = sum(r["kwh"] for r in rows)

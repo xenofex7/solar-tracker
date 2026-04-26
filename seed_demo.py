@@ -22,7 +22,7 @@ PLANT_COSTS = [
 ]
 
 GRID_BILLS = [
-    # (kind, period_start, period_end, kwh, amount_chf, invoice_no)
+    # (kind, period_start, period_end, kwh, amount, invoice_no)
     ("import", date(COMMISSIONING.year, 7, 1), date(COMMISSIONING.year, 9, 30), 1826, 487.90, "DEMO-Q3-I"),
     ("export", date(COMMISSIONING.year, 8, 1), date(COMMISSIONING.year, 9, 30), 1434, 157.75, "DEMO-Q3-E"),
     ("import", date(COMMISSIONING.year, 10, 1), date(COMMISSIONING.year, 12, 31), 2631, 696.00, "DEMO-Q4-I"),

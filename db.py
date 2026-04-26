@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS settings (
 CREATE TABLE IF NOT EXISTS plant_costs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT NOT NULL,
-    amount_chf REAL NOT NULL,
+    amount REAL NOT NULL,
     date TEXT
 );
 
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS grid_billing (
     period_start TEXT NOT NULL,
     period_end TEXT NOT NULL,
     kwh REAL NOT NULL,
-    amount_chf REAL NOT NULL,
+    amount REAL NOT NULL,
     invoice_no TEXT,
     UNIQUE(kind, period_start, period_end)
 );
@@ -64,6 +64,15 @@ def connect():
 def init_db():
     with connect() as conn:
         conn.executescript(SCHEMA)
+        _migrate_amount_columns(conn)
+
+
+def _migrate_amount_columns(conn):
+    """Rename legacy `amount_chf` columns to `amount` for currency-agnostic storage."""
+    for table in ("plant_costs", "grid_billing"):
+        cols = [r[1] for r in conn.execute(f"PRAGMA table_info({table})").fetchall()]
+        if "amount_chf" in cols and "amount" not in cols:
+            conn.execute(f"ALTER TABLE {table} RENAME COLUMN amount_chf TO amount")
 
 
 def upsert_production(date: str, kwh: float, source: str) -> str:
@@ -209,11 +218,11 @@ def get_setting(key: str, default=None):
         return row["value"] if row else default
 
 
-def add_cost(label: str, amount_chf: float, date: str | None = None) -> int:
+def add_cost(label: str, amount: float, date: str | None = None) -> int:
     with connect() as conn:
         cur = conn.execute(
-            "INSERT INTO plant_costs (label, amount_chf, date) VALUES (?, ?, ?)",
-            (label, amount_chf, date or None),
+            "INSERT INTO plant_costs (label, amount, date) VALUES (?, ?, ?)",
+            (label, amount, date or None),
         )
         return cur.lastrowid
 
@@ -221,16 +230,16 @@ def add_cost(label: str, amount_chf: float, date: str | None = None) -> int:
 def list_costs() -> list[dict]:
     with connect() as conn:
         rows = conn.execute(
-            "SELECT id, label, amount_chf, date FROM plant_costs ORDER BY date IS NULL, date, id"
+            "SELECT id, label, amount, date FROM plant_costs ORDER BY date IS NULL, date, id"
         ).fetchall()
     return [dict(r) for r in rows]
 
 
-def update_cost(cost_id: int, label: str, amount_chf: float, date: str | None = None) -> bool:
+def update_cost(cost_id: int, label: str, amount: float, date: str | None = None) -> bool:
     with connect() as conn:
         cur = conn.execute(
-            "UPDATE plant_costs SET label = ?, amount_chf = ?, date = ? WHERE id = ?",
-            (label, amount_chf, date or None, cost_id),
+            "UPDATE plant_costs SET label = ?, amount = ?, date = ? WHERE id = ?",
+            (label, amount, date or None, cost_id),
         )
         return cur.rowcount > 0
 
@@ -243,7 +252,7 @@ def delete_cost(cost_id: int):
 def total_invested() -> float:
     with connect() as conn:
         row = conn.execute(
-            "SELECT COALESCE(SUM(amount_chf), 0) AS t FROM plant_costs"
+            "SELECT COALESCE(SUM(amount), 0) AS t FROM plant_costs"
         ).fetchone()
     return float(row["t"])
 
@@ -253,20 +262,20 @@ def upsert_grid_bill(
     period_start: str,
     period_end: str,
     kwh: float,
-    amount_chf: float,
+    amount: float,
     invoice_no: str | None = None,
 ) -> int:
     with connect() as conn:
         cur = conn.execute(
             """
-            INSERT INTO grid_billing (kind, period_start, period_end, kwh, amount_chf, invoice_no)
+            INSERT INTO grid_billing (kind, period_start, period_end, kwh, amount, invoice_no)
             VALUES (?, ?, ?, ?, ?, ?)
             ON CONFLICT(kind, period_start, period_end) DO UPDATE SET
                 kwh = excluded.kwh,
-                amount_chf = excluded.amount_chf,
+                amount = excluded.amount,
                 invoice_no = excluded.invoice_no
             """,
-            (kind, period_start, period_end, kwh, amount_chf, invoice_no),
+            (kind, period_start, period_end, kwh, amount, invoice_no),
         )
         return cur.lastrowid
 
@@ -276,23 +285,23 @@ def update_grid_bill(
     period_start: str,
     period_end: str,
     kwh: float,
-    amount_chf: float,
+    amount: float,
     invoice_no: str | None = None,
 ) -> bool:
     with connect() as conn:
         cur = conn.execute(
             """
             UPDATE grid_billing
-               SET period_start = ?, period_end = ?, kwh = ?, amount_chf = ?, invoice_no = ?
+               SET period_start = ?, period_end = ?, kwh = ?, amount = ?, invoice_no = ?
              WHERE id = ?
             """,
-            (period_start, period_end, kwh, amount_chf, invoice_no, bill_id),
+            (period_start, period_end, kwh, amount, invoice_no, bill_id),
         )
         return cur.rowcount > 0
 
 
 def list_grid_bills(kind: str | None = None) -> list[dict]:
-    query = "SELECT id, kind, period_start, period_end, kwh, amount_chf, invoice_no FROM grid_billing"
+    query = "SELECT id, kind, period_start, period_end, kwh, amount, invoice_no FROM grid_billing"
     params: tuple = ()
     if kind:
         query += " WHERE kind = ?"
@@ -314,7 +323,7 @@ def grid_totals() -> dict:
             """
             SELECT kind,
                    COALESCE(SUM(kwh), 0) AS kwh,
-                   COALESCE(SUM(amount_chf), 0) AS amount
+                   COALESCE(SUM(amount), 0) AS amount
             FROM grid_billing GROUP BY kind
             """
         ).fetchall()
