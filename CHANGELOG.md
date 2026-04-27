@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.0.1] - 2026-04-27
 ### Added
 - Bright and dark logo variants with theme-based swap and centered hero logo on the docs site.
 - Logo source files (Pixelmator documents and PNG masters) under `assets/`.
@@ -245,7 +247,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.0.1...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -268,3 +270,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [1.8.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.8.0
 [1.8.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.8.1
 [2.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.0.0
+[2.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.0.1
