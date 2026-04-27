@@ -14,7 +14,8 @@
 <body>
   <header>
     <a class="brand" href="{{ url_for('dashboard') }}">
-      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="" width="24" height="24">
+      <img class="brand-logo brand-logo-light" src="{{ url_for('static', filename='img/logo.png') }}" alt="" width="24" height="24">
+      <img class="brand-logo brand-logo-dark" src="{{ url_for('static', filename='img/logo-dark.png') }}" alt="" width="24" height="24">
       <span>Solar-Tracker</span>
     </a>
     {% block header_extra %}{% endblock %}

@@ -49,7 +49,10 @@
   <header>
     <div class="nav">
       <a class="brand" href="#top">
-        <img src="logo.png" alt="">
+        <picture>
+          <source srcset="logo-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="logo.png" alt="">
+        </picture>
         Solar-Tracker
       </a>
       <div class="nav-links">
@@ -66,6 +69,10 @@
 
   <main id="top">
     <section class="hero" style="border-top: 0;">
+      <picture>
+        <source srcset="logo-dark.png" media="(prefers-color-scheme: dark)">
+        <img class="hero-logo" src="logo.png" alt="" width="260" height="260">
+      </picture>
       <h1>
         <span data-de>Soll vs. Ist für deine PV-Anlage</span>
         <span data-en>Actual vs. target for your solar plant</span>
