@@ -224,6 +224,22 @@
 
 <section class="tab-panel" data-tab="ha">
   <div class="card">
+    <h2>{{ T.section_general }}</h2>
+    <form id="general-sync-form" class="stacked-form">
+      <label class="toggle-row">
+        <span class="toggle-label">
+          <span>{{ T.label_auto_sync_on_open }}</span>
+          <span class="muted small">{{ T.desc_auto_sync_on_open }}</span>
+        </span>
+        <span class="switch">
+          <input type="checkbox" name="auto_sync_on_open" {% if auto_sync_on_open %}checked{% endif %}>
+          <span class="switch-slider"></span>
+        </span>
+      </label>
+    </form>
+  </div>
+
+  <div class="card">
     <h2>{{ T.section_ha }}</h2>
     <p class="muted">
       URL: <code>{{ ha_url or '-' }}</code><br>

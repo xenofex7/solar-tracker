@@ -162,7 +162,13 @@ def _start_date() -> str | None:
 @app.route("/")
 def dashboard():
     years = db.available_years() or [date.today().year]
-    return render_template("dashboard.html", years=years, current_year=years[-1])
+    auto_sync = db.get_setting("auto_sync_on_open", "0") == "1"
+    return render_template(
+        "dashboard.html",
+        years=years,
+        current_year=years[-1],
+        auto_sync_on_open=auto_sync,
+    )
 
 
 @app.route("/settings")
@@ -186,6 +192,7 @@ def settings_page():
         grid_totals=db.grid_totals(),
         ha_url=os.environ.get("HA_URL", ""),
         ha_entity=os.environ.get("HA_ENTITY_ID", ""),
+        auto_sync_on_open=db.get_setting("auto_sync_on_open", "0") == "1",
     )
 
 

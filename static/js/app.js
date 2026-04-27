@@ -76,3 +76,36 @@ document.addEventListener('keydown', (e) => {
 });
 
 loadYear(document.getElementById('year-select').value);
+
+if (document.getElementById('year-select')?.dataset.autoSync === '1') {
+  (async () => {
+    const today = new Date();
+    const from = new Date(today);
+    from.setMonth(from.getMonth() - 3);
+    const iso = (d) => {
+      const tz = d.getTimezoneOffset() * 60000;
+      return new Date(d - tz).toISOString().slice(0, 10);
+    };
+    const status = document.getElementById('status');
+    const syncingMsg = window.T?.status_auto_syncing || 'Syncing...';
+    const prev = status.textContent;
+    status.textContent = syncingMsg;
+    try {
+      const r = await fetch('/api/sync/ha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: iso(from), to: iso(today) }),
+      });
+      if (r.ok) {
+        const j = await r.json();
+        if ((j.inserted || 0) + (j.updated || 0) > 0) {
+          await loadYear(document.getElementById('year-select').value);
+        }
+      }
+    } catch (_) {
+      // silent
+    } finally {
+      if (status.textContent === syncingMsg) status.textContent = prev;
+    }
+  })();
+}

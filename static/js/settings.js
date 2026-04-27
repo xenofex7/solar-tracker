@@ -19,13 +19,33 @@
   const form = document.getElementById('sync-form');
   const today = new Date();
   const from = new Date(today);
-  from.setMonth(from.getMonth() - 6);
+  from.setMonth(from.getMonth() - 3);
   const iso = (d) => {
     const tz = d.getTimezoneOffset() * 60000;
     return new Date(d - tz).toISOString().slice(0, 10);
   };
   form.from.value = iso(from);
   form.to.value = iso(today);
+})();
+
+(() => {
+  const form = document.getElementById('general-sync-form');
+  if (!form) return;
+  const cb = form.auto_sync_on_open;
+  cb.addEventListener('change', async () => {
+    const r = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ auto_sync_on_open: cb.checked ? '1' : '0' }),
+    });
+    if (r.ok) {
+      window.showToast(window.T?.msg_saved || 'Saved', 'success');
+    } else {
+      cb.checked = !cb.checked;
+      const j = await r.json().catch(() => ({}));
+      window.showToast((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?'), 'error');
+    }
+  });
 })();
 
 document.getElementById('plant-form').addEventListener('submit', async (e) => {
