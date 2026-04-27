@@ -24,4 +24,5 @@
 - Quarterly grid billing capture (import and export), prorated across months.
 - Home Assistant sync via WebSocket using `recorder/statistics_during_period` (period `day`, types `change`).
 - UI in DE, EN, FR, IT, ES; configurable currency and locale-aware number formatting; light and dark mode.
+- Anonymous instance telemetry (daily heartbeat with version and a random instance ID) on by default; opt out with `TELEMETRY_ENABLED=false`.
 
