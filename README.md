@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/xenofex7/solar-tracker/releases"><img src="https://img.shields.io/github/v/release/xenofex7/solar-tracker?display_name=tag&sort=semver" alt="latest release"></a>
+  <a href="https://github.com/xenofex7/solar-tracker/tags"><img src="https://img.shields.io/github/v/tag/xenofex7/solar-tracker?sort=semver&label=version" alt="latest tag"></a>
   <a href="https://github.com/xenofex7/solar-tracker/blob/main/LICENSE"><img src="https://img.shields.io/github/license/xenofex7/solar-tracker" alt="license"></a>
   <img src="https://img.shields.io/badge/python-3.12-blue" alt="python 3.12">
   <a href="https://github.com/xenofex7/solar-tracker/pkgs/container/solar-tracker"><img src="https://img.shields.io/badge/docker-ghcr.io-2496ed?logo=docker&logoColor=white" alt="docker image"></a>
