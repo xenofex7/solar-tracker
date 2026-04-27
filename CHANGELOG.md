@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Bright and dark logo variants with theme-based swap and centered hero logo on the docs site.
+- Logo source files (Pixelmator documents and PNG masters) under `assets/`.
+
+### Changed
+- Make logo background transparent and switch the docs site header to solid white in light mode for a seamless logo blend.
+- Update dark logo variant.
+
+### Fixed
+- Theme-based brand logo swap in the app header (raise selector specificity so only one variant renders).
 
 ## [2.0.0] - 2026-04-26
 ### Added
