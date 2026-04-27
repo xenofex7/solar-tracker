@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Optional auto-sync of the last 3 months when opening the dashboard, toggled in the new "General" card under Sync settings.
+
+### Changed
+- Reduce default sync window in the manual Home Assistant sync form from 6 to 3 months.
 
 ## [2.0.2] - 2026-04-27
 ### Added
