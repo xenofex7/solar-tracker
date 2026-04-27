@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Anonymous instance telemetry (daily heartbeat with version and a random instance ID, opt out with `TELEMETRY_ENABLED=false`) and PostHog analytics on the docs site.
+
+### Changed
+- Switch README version badge from releases to latest tag.
 
 ## [2.0.1] - 2026-04-27
 ### Added
