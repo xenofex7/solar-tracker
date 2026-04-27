@@ -96,9 +96,9 @@ header.nav-open .nav-toggle .icon-menu { display: none; }
 header.nav-open .nav-toggle .icon-close { display: block; }
 .theme-toggle-label { display: none; }
 .brand img { display: block; }
-.brand-logo-dark { display: none; }
-[data-theme="dark"] .brand-logo-light { display: none; }
-[data-theme="dark"] .brand-logo-dark { display: block; }
+.brand img.brand-logo-dark { display: none; }
+[data-theme="dark"] .brand img.brand-logo-light { display: none; }
+[data-theme="dark"] .brand img.brand-logo-dark { display: block; }
 header nav { display: flex; align-items: center; gap: 16px; }
 nav a {
   color: var(--text);
