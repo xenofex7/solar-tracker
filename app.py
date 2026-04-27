@@ -13,6 +13,7 @@ from flask import Flask, jsonify, make_response, redirect, render_template, requ
 import db
 import i18n
 import metrics
+import telemetry
 from ha_client import DEFAULT_TZ, HAClientError, fetch_daily
 
 load_dotenv()
@@ -27,6 +28,8 @@ try:
         APP_VERSION = _vf.read().strip()
 except OSError:
     APP_VERSION = "dev"
+
+telemetry.init(APP_VERSION)
 
 
 @app.context_processor

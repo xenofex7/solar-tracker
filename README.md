@@ -149,8 +149,22 @@ so the database stays in sync with Home Assistant.
 | `FLASK_HOST`    | Bind address (default `127.0.0.1`, set `0.0.0.0` in Docker) |
 | `FLASK_PORT`    | HTTP port (default `5000`)                                 |
 | `FLASK_DEBUG`   | `true` enables Flask debug mode                            |
+| `TELEMETRY_ENABLED` | `false` opts out of anonymous instance telemetry      |
 
 The plant size can also be set on `/settings`, which overrides `PLANT_KWP`.
+
+## Telemetry
+
+Solar-Tracker sends one anonymous heartbeat per day so I can see how many
+instances are running and which versions are in the wild. The payload is:
+
+- a random `instance_id` (UUID generated on first start, persisted in `data/telemetry.json`)
+- the app `version`
+- the Python version
+
+No user data, no IP, no Home Assistant values, no request tracking. Events are
+sent to PostHog Cloud EU (Frankfurt). To opt out, set `TELEMETRY_ENABLED=false`
+in your `.env`.
 
 ## Help
 
