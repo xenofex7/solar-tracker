@@ -11,5 +11,5 @@ docker-compose.yml
 .claude
 .DS_Store
 data
-README.md
 *.md
+!CHANGELOG.md
