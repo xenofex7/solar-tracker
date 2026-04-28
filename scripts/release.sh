@@ -148,7 +148,41 @@ text = re.sub(
 path.write_text(text)
 PY
 
-git add VERSION CHANGELOG.md README.md
+# docs/index.html: bump softwareVersion in the SoftwareApplication JSON-LD
+python3 - "$new" <<'PY'
+import re, sys, pathlib
+new = sys.argv[1]
+path = pathlib.Path("docs/index.html")
+text = path.read_text()
+new_text, count = re.subn(
+    r'("softwareVersion"\s*:\s*")[^"]+(")',
+    rf'\g<1>{new}\g<2>',
+    text,
+    count=1,
+)
+if count != 1:
+    print("warning: softwareVersion not found in docs/index.html", file=sys.stderr)
+path.write_text(new_text)
+PY
+
+# docs/sitemap.xml: refresh lastmod to today
+python3 - "$today" <<'PY'
+import re, sys, pathlib
+today = sys.argv[1]
+path = pathlib.Path("docs/sitemap.xml")
+text = path.read_text()
+new_text, count = re.subn(
+    r"<lastmod>[^<]*</lastmod>",
+    f"<lastmod>{today}</lastmod>",
+    text,
+    count=1,
+)
+if count != 1:
+    print("warning: <lastmod> not found in docs/sitemap.xml", file=sys.stderr)
+path.write_text(new_text)
+PY
+
+git add VERSION CHANGELOG.md README.md docs/index.html docs/sitemap.xml
 git commit -m "Release v${new}"
 git tag -a "v${new}" -m "Solar-Tracker v${new}"
 

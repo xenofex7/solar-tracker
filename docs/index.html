@@ -8,15 +8,23 @@
   <meta name="theme-color" content="#0f1419" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)">
   <link rel="icon" type="image/png" href="logo.png">
-  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="canonical" href="https://xenofex7.github.io/solar-tracker/">
-  <meta property="og:title" content="Solar-Tracker">
-  <meta property="og:description" content="Self-hosted dashboard comparing actual vs. target solar yield.">
+  <meta property="og:site_name" content="Solar-Tracker">
+  <meta property="og:title" content="Solar-Tracker - Actual vs. target for your solar plant">
+  <meta property="og:description" content="Self-hosted dashboard comparing actual vs. target solar yield. Pulls daily PV data from Home Assistant or accepts manual entry.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://xenofex7.github.io/solar-tracker/">
   <meta property="og:image" content="https://xenofex7.github.io/solar-tracker/screenshots/dashboard-overview-dark.png">
+  <meta property="og:image:alt" content="Solar-Tracker dashboard - KPIs and monthly comparison">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="de_DE">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Solar-Tracker - Actual vs. target for your solar plant">
+  <meta name="twitter:description" content="Self-hosted dashboard comparing actual vs. target solar yield. Pulls daily PV data from Home Assistant or accepts manual entry.">
+  <meta name="twitter:image" content="https://xenofex7.github.io/solar-tracker/screenshots/dashboard-overview-dark.png">
+  <meta name="twitter:image:alt" content="Solar-Tracker dashboard - KPIs and monthly comparison">
   <link rel="alternate" type="text/markdown" href="llms.txt" title="llms.txt">
   <link rel="stylesheet" href="style.css">
   <script>
@@ -34,6 +42,7 @@
     "name": "Solar-Tracker",
     "description": "Self-hosted dashboard that compares actual vs. target solar yield. Pulls daily PV production from Home Assistant or accepts manual entry. Tracks investment, revenue, payback date, self-consumption rate and effective electricity price.",
     "url": "https://xenofex7.github.io/solar-tracker/",
+    "softwareVersion": "2.0.4",
     "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "Linux, macOS, Windows (Docker)",
     "softwareRequirements": "Docker, Home Assistant (optional)",
