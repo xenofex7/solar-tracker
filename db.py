@@ -44,6 +44,15 @@ CREATE TABLE IF NOT EXISTS grid_billing (
     UNIQUE(kind, period_start, period_end)
 );
 
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    role TEXT NOT NULL,
+    password_hash TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
 DROP TABLE IF EXISTS electricity_costs;
 """
 
@@ -337,6 +346,118 @@ def grid_totals() -> dict:
         "export": {**totals["export"], "avg_price": avg_export},
         "net_cost": totals["import"]["amount"] - totals["export"]["amount"],
     }
+
+
+def count_users() -> int:
+    with connect() as conn:
+        row = conn.execute("SELECT COUNT(*) AS c FROM users").fetchone()
+    return int(row["c"])
+
+
+def list_users() -> list[dict]:
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT id, username, role, password_hash, created_at, updated_at "
+            "FROM users ORDER BY id"
+        ).fetchall()
+    return [
+        {
+            "id": r["id"],
+            "username": r["username"],
+            "role": r["role"],
+            "has_password": bool(r["password_hash"]),
+            "created_at": r["created_at"],
+            "updated_at": r["updated_at"],
+        }
+        for r in rows
+    ]
+
+
+def _user_row_to_dict(row) -> dict | None:
+    if row is None:
+        return None
+    return {
+        "id": row["id"],
+        "username": row["username"],
+        "role": row["role"],
+        "password_hash": row["password_hash"],
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+    }
+
+
+def get_user_by_id(user_id: int) -> dict | None:
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT id, username, role, password_hash, created_at, updated_at "
+            "FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+    return _user_row_to_dict(row)
+
+
+def get_user_by_name(username: str) -> dict | None:
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT id, username, role, password_hash, created_at, updated_at "
+            "FROM users WHERE username = ?",
+            (username,),
+        ).fetchone()
+    return _user_row_to_dict(row)
+
+
+def create_user(username: str, role: str, password_hash: str | None) -> int:
+    now = datetime.utcnow().isoformat(timespec="seconds")
+    with connect() as conn:
+        cur = conn.execute(
+            "INSERT INTO users (username, role, password_hash, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (username, role, password_hash, now, now),
+        )
+        return cur.lastrowid
+
+
+def update_user(
+    user_id: int,
+    *,
+    role: str | None = None,
+    password_hash: str | None = None,
+    clear_password: bool = False,
+) -> bool:
+    sets: list[str] = []
+    params: list = []
+    if role is not None:
+        sets.append("role = ?")
+        params.append(role)
+    if clear_password:
+        sets.append("password_hash = NULL")
+    elif password_hash is not None:
+        sets.append("password_hash = ?")
+        params.append(password_hash)
+    if not sets:
+        return False
+    sets.append("updated_at = ?")
+    params.append(datetime.utcnow().isoformat(timespec="seconds"))
+    params.append(user_id)
+    with connect() as conn:
+        cur = conn.execute(
+            f"UPDATE users SET {', '.join(sets)} WHERE id = ?", params
+        )
+        return cur.rowcount > 0
+
+
+def delete_user(user_id: int) -> bool:
+    with connect() as conn:
+        cur = conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        return cur.rowcount > 0
+
+
+def count_admins() -> int:
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT COUNT(*) AS c FROM users WHERE role = 'admin'"
+        ).fetchone()
+    return int(row["c"])
 
 
 def available_years() -> list[int]:
