@@ -54,14 +54,46 @@ python app.py             # opens http://localhost:5000
 
 ## Security
 
-Solar-Tracker has **no built-in authentication or authorisation**. Anyone who
-can reach the HTTP port can read all data and change settings (targets,
-electricity prices, investment costs) and trigger Home Assistant syncs.
+Solar-Tracker ships with a built-in account system (since v2.1) but stays
+zero-config: a fresh install seeds a single `admin` user without a password
+and auto-logs in just like the old behavior. As soon as you set a password
+on `admin` (or add a second user) under **Settings -> Users**, the login
+screen kicks in and auto-login is disabled.
 
-Only run it on `localhost` or inside a trusted private network. Do **not**
-expose the port directly to the internet. If remote access is needed, put it
-behind a reverse proxy that enforces authentication (e.g. Caddy/nginx with
-basic auth, Authelia, Tailscale, or a VPN).
+Two roles are supported:
+
+- **admin** - full access to the dashboard, settings, and write APIs.
+- **readonly** - dashboard and `GET /api/*` only; no settings, no writes.
+
+Read-only users can also call the JSON API via HTTP Basic Auth, e.g.
+`curl -u viewer:pw https://solar.example/api/summary?year=2025`.
+
+Passwords are hashed with PBKDF2-HMAC-SHA256 (200k iterations) and the
+session secret is read from `FLASK_SECRET_KEY` or auto-generated on first
+run. Set `SESSION_COOKIE_SECURE=true` when serving over HTTPS.
+
+If you expose the port to the internet, still put it behind a TLS-terminating
+reverse proxy (Caddy/nginx, Tailscale, or a VPN). Defense in depth.
+
+### Recovery / lockout
+
+If you forget the admin password, use the bundled CLI from the project root:
+
+```bash
+.venv/bin/python -m scripts.manage_users list
+.venv/bin/python -m scripts.manage_users set-password admin           # prompts
+.venv/bin/python -m scripts.manage_users reset-admin                  # nuke + reseed passwordless admin (auto-login)
+.venv/bin/python -m scripts.manage_users reset-admin --password hunter2
+```
+
+Inside Docker, exec into the container:
+
+```bash
+docker compose exec solar-tracker python -m scripts.manage_users list
+```
+
+More recipes (backup, upgrade, telemetry, logs, factory reset) live in
+[`docs/COOKBOOK.md`](docs/COOKBOOK.md).
 
 ## Docker
 
