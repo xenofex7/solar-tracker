@@ -5,6 +5,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- User accounts with two roles: `admin` (full access) and `readonly` (dashboard + GET APIs only). Read-only users have no access to the Settings page.
+- Login screen and session-based auth with signed cookies; 30-day sliding window (each authenticated request re-issues the cookie, so active users never get logged out within the window; 30 days of inactivity expires the cookie). HTTP Basic Auth is honored on `/api/*` for scripted read-only access.
+- "Users" tab in Settings (admin-only) to create, edit, and delete accounts.
+- Zero-config behavior preserved: a fresh install seeds a single `admin` user without a password and auto-logs in like before. Setting any password (or adding a second user) switches the platform to normal login.
+
+- `scripts/manage_users.py` CLI for offline user management and lockout recovery (`list`, `add`, `set-password`, `clear-password`, `set-role`, `delete`, `reset-admin`).
+- `docs/COOKBOOK.md` with copy-pasteable recipes for user management, lockout recovery, backups, upgrades, telemetry, logs, and factory reset.
+
+### Security
+- Passwords hashed with PBKDF2-HMAC-SHA256 (200k iterations, stdlib only). Session secret read from `FLASK_SECRET_KEY` or auto-generated and stored in the settings table.
+- Last admin cannot be demoted or deleted; users cannot delete their own account.
+- `POST /api/users` requires a non-empty password. Creating a passwordless user via the web would have been a guaranteed lockout (a second passwordless user disables auto-login while no one can sign in). The CLI keeps the passwordless option for legitimate recovery.
+- Lockout guard 2: while the calling admin still has no password (zero-config auto-login state), creating users is blocked - otherwise a second user would disable auto-login and the admin would be unreachable. The Users tab shows a warning banner nudging the admin to set their own password first.
+- Lockout guard 3: a passwordless admin is only allowed as the sole user (zero-config auto-login mode). `PUT /api/users/<id>` refuses to clear an admin's password while other users exist, and refuses to promote a passwordless user to admin without supplying a password in the same call. The Users tab now exposes a "Remove password" toggle on the edit row so a sole admin who set a password by mistake can revert to the auto-login state.
+- Self-edit confirmations: when an admin removes their own password or demotes their own admin role, a confirm dialog spells out the consequence (auto-login required next session / loss of settings access on next reload).
+- Password confirmation field on user creation and edit: the request is only sent when both fields match, otherwise the form shows a localized "Passwords do not match" toast and does nothing.
+- Users tab: the table is constrained to a tighter width so the four columns no longer sprawl across the page on wide screens.
+- Backend error responses for `/api/users` switched to machine-readable codes (`invalid_username`, `password_required`, `username_taken`, `cannot_delete_last_admin`, `would_lock_platform`, ...) which the frontend translates per locale, so error toasts no longer leak German into other languages.
 
 ## [2.0.4] - 2026-04-28
 ### Fixed
