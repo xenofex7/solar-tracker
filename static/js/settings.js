@@ -269,3 +269,138 @@ document.getElementById('sync-form').addEventListener('submit', async (e) => {
     window.showToast((window.T?.msg_error_prefix || 'Error: ') + j.error, 'error');
   }
 });
+
+/* ---- Users tab (v2.1) ---- */
+function userErrorMessage(code) {
+  // Backend returns machine-readable codes; we resolve them to translated text.
+  const T = window.T || {};
+  const map = {
+    set_own_password_first: T.warn_set_own_password,
+    invalid_username: T.err_invalid_username,
+    invalid_role: T.err_invalid_role,
+    password_required: T.err_password_required,
+    username_taken: T.err_username_taken,
+    not_found: T.err_not_found,
+    no_change: T.err_no_change,
+    cannot_demote_last_admin: T.err_cannot_demote_last_admin,
+    cannot_delete_last_admin: T.err_cannot_delete_last_admin,
+    cannot_delete_self: T.err_cannot_delete_self,
+    would_lock_platform: T.err_would_lock_platform,
+  };
+  return map[code] || ((T.msg_error_prefix || 'Error: ') + (code || '?'));
+}
+
+const userForm = document.getElementById('user-form');
+if (userForm) {
+  userForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pw = e.target.password.value || '';
+    const pwc = e.target.password_confirm.value || '';
+    if (pw !== pwc) {
+      window.showToast(window.T?.err_password_mismatch || 'Passwords do not match.', 'error');
+      return;
+    }
+    const body = {
+      username: e.target.username.value.trim(),
+      role: e.target.role.value,
+      password: pw,
+    };
+    const r = await fetch('/api/users', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    if (r.ok) {
+      window.queueToast(window.T?.msg_saved || 'Saved', 'success');
+      location.reload();
+    } else {
+      const j = await r.json().catch(() => ({}));
+      window.showToast(userErrorMessage(j.error), 'error');
+    }
+  });
+
+  document.querySelectorAll('#users-table button.del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const tpl = window.T?.confirm_delete_user || 'Delete user "{name}"?';
+      if (!confirm(tpl.replace('{name}', btn.dataset.username))) return;
+      const r = await fetch(`/api/users/${btn.dataset.id}`, {method:'DELETE'});
+      if (r.ok) {
+        location.reload();
+      } else {
+        const j = await r.json().catch(() => ({}));
+        window.showToast(userErrorMessage(j.error), 'error');
+      }
+    });
+  });
+
+  document.querySelectorAll('#users-table button.edit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tr = btn.closest('tr');
+      if (tr.classList.contains('editing')) return;
+      tr.classList.add('editing');
+      const { id, role } = tr.dataset;
+      const cells = tr.cells;
+      const adminLabel = window.T?.role_admin || 'Admin';
+      const roLabel = window.T?.role_readonly || 'Read-only';
+      const pwHint = window.T?.placeholder_password_change || 'New password (leave blank to keep)';
+      cells[1].innerHTML = `
+        <select class="edit-role">
+          <option value="admin"${role === 'admin' ? ' selected' : ''}>${adminLabel}</option>
+          <option value="readonly"${role === 'readonly' ? ' selected' : ''}>${roLabel}</option>
+        </select>`;
+      const clearLabel = window.T?.label_clear_password || 'Remove password';
+      const clearTitle = window.T?.title_clear_password || '';
+      const pwConfirmHint = window.T?.placeholder_password_confirm || 'Confirm';
+      cells[2].innerHTML = `
+        <input type="password" class="edit-password" autocomplete="new-password" placeholder="${pwHint}">
+        <input type="password" class="edit-password-confirm" autocomplete="new-password" placeholder="${pwConfirmHint}">
+        <label class="clear-pw-toggle" title="${clearTitle}">
+          <input type="checkbox" class="edit-clear-password"> ${clearLabel}
+        </label>`;
+      cells[3].innerHTML = `
+        <button class="save icon" type="button" aria-label="${window.T?.btn_save || 'Save'}" title="${window.T?.btn_save || 'Save'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+        <button class="cancel icon" type="button" aria-label="${window.T?.btn_cancel || 'Cancel'}" title="${window.T?.btn_cancel || 'Cancel'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      `;
+      cells[3].querySelector('button.cancel').addEventListener('click', () => location.reload());
+      cells[3].querySelector('button.save').addEventListener('click', async () => {
+        const pwValue = tr.querySelector('.edit-password').value;
+        const pwConfirm = tr.querySelector('.edit-password-confirm').value;
+        const clearPw = tr.querySelector('.edit-clear-password').checked;
+        const newRole = tr.querySelector('.edit-role').value;
+
+        // Only check confirmation when a new password is being set; an empty
+        // field means "keep existing".
+        if (pwValue && pwValue !== pwConfirm) {
+          window.showToast(window.T?.err_password_mismatch || 'Passwords do not match.', 'error');
+          return;
+        }
+
+        // Are we editing our own row?
+        const selfId = document.getElementById('users-table')?.dataset.selfId || '';
+        const editingSelf = selfId && String(tr.dataset.id) === String(selfId);
+        const oldRole = tr.dataset.role;
+
+        if (editingSelf && clearPw && !pwValue) {
+          const msg = window.T?.confirm_self_clear_password
+            || 'Remove your own password? Next session will require auto-login (only works if you are the sole user). Continue?';
+          if (!confirm(msg)) return;
+        }
+        if (editingSelf && newRole !== oldRole && newRole !== 'admin') {
+          const msg = window.T?.confirm_self_demote
+            || 'Demote your own admin account? You will lose access to settings immediately on next page load. Continue?';
+          if (!confirm(msg)) return;
+        }
+
+        const body = {
+          role: newRole,
+          password: pwValue || undefined,
+          clear_password: clearPw && !pwValue ? true : undefined,
+        };
+        const r = await fetch(`/api/users/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+        if (r.ok) {
+          window.queueToast(window.T?.msg_saved || 'Saved', 'success');
+          location.reload();
+        } else {
+          const j = await r.json().catch(() => ({}));
+          window.showToast(userErrorMessage(j.error), 'error');
+        }
+      });
+    });
+  });
+}
