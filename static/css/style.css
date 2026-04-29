@@ -466,9 +466,7 @@ form.stacked-form label {
   justify-content: space-between;
   gap: 16px;
   padding: 6px 0;
-  border-bottom: 1px solid var(--border);
 }
-form.stacked-form label:last-of-type { border-bottom: none; }
 form.stacked-form label > input,
 form.stacked-form label > select { flex: 0 0 220px; width: 220px; min-width: 0; }
 form.stacked-form button { align-self: flex-start; margin-top: 6px; }
@@ -683,4 +681,38 @@ code { background: var(--border); padding: 2px 6px; border-radius: 4px; font-siz
   .modal-body ul { padding-left: 18px; }
   .modal-body li { font-size: 13px; }
   .modal-body code { font-size: 11px; word-break: break-word; }
+}
+
+/* ---- Auth / users (v2.1) ---- */
+.login-wrap { max-width: 380px; margin: 8vh auto; }
+.login-card h1 { margin-top: 0; font-size: 18px; }
+.login-card .stacked-form label > input { flex: 1; width: 100%; min-width: 0; }
+.login-error {
+  margin: 0 0 10px; padding: 8px 12px; border-radius: 6px;
+  background: rgba(220, 80, 80, 0.12); color: #f0a0a0; font-size: 13px;
+}
+.warn-banner {
+  margin: 0 0 14px; padding: 10px 14px; border-radius: 6px;
+  background: rgba(230, 165, 60, 0.14); color: #e6a53c;
+  border: 1px solid rgba(230, 165, 60, 0.35); font-size: 13px;
+}
+.clear-pw-toggle {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-left: 8px; font-size: 11px; color: var(--muted);
+  white-space: nowrap; cursor: pointer;
+}
+.clear-pw-toggle input { margin: 0; }
+/* Compact data columns; the .action column (width:1%) absorbs the rest
+   and stays right-aligned at the card edge. */
+#users-table th:nth-child(1), #users-table td:nth-child(1) { width: 240px; }
+#users-table th:nth-child(2), #users-table td:nth-child(2) { width: 120px; }
+#users-table th:nth-child(3), #users-table td:nth-child(3) { width: 200px; }
+#users-table tr.editing .edit-password,
+#users-table tr.editing .edit-password-confirm { display: block; width: 160px; margin-bottom: 4px; }
+.nav-user { color: var(--muted); font-size: 13px; padding: 0 6px; }
+.nav-logout { color: var(--muted); }
+.role-badge {
+  display: inline-block; margin-left: 4px; padding: 1px 6px;
+  font-size: 11px; border-radius: 999px;
+  background: var(--border); color: var(--muted);
 }

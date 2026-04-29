@@ -4,12 +4,22 @@ import logging
 import os
 import re
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from zoneinfo import available_timezones
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, make_response, redirect, render_template, request, url_for
+from flask import (
+    Flask,
+    g,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 
+import auth
 import db
 import i18n
 import metrics
@@ -22,6 +32,20 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 
 app = Flask(__name__)
 db.init_db()
+auth.ensure_default_admin()
+app.secret_key = auth.get_or_create_secret_key()
+app.permanent_session_lifetime = timedelta(days=30)
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true",
+    # Sliding window: re-issue the session cookie with a fresh Max-Age on
+    # every authenticated request, so active users never get logged out
+    # within the 30-day window. After 30 days of inactivity, the cookie
+    # expires. This is Flask's default but we set it explicitly to lock
+    # the behavior in.
+    SESSION_REFRESH_EACH_REQUEST=True,
+)
 
 try:
     with open(os.path.join(os.path.dirname(__file__), "VERSION"), encoding="utf-8") as _vf:
@@ -32,9 +56,34 @@ except OSError:
 telemetry.init(APP_VERSION)
 
 
+_PUBLIC_PATHS = {"/login", "/set-lang", "/i18n.js"}
+
+
+@app.before_request
+def _load_user():
+    g.user = auth.load_current_user()
+    path = request.path
+    if path in _PUBLIC_PATHS or path.startswith("/static/"):
+        return None
+    if g.user is None:
+        if path.startswith("/api/"):
+            return jsonify({"error": "authentication required"}), 401
+        return redirect(url_for("login_page", next=path))
+    return None
+
+
 @app.context_processor
 def _inject_version():
     return {"app_version": APP_VERSION}
+
+
+@app.context_processor
+def _inject_user():
+    user = getattr(g, "user", None)
+    return {
+        "current_user": user,
+        "is_admin": bool(user and user["role"] == auth.ROLE_ADMIN),
+    }
 
 
 _CURRENCY_LOCALE_FMT = {
@@ -159,6 +208,143 @@ def _start_date() -> str | None:
     return val
 
 
+_VALID_USERNAME = re.compile(r"^[a-zA-Z0-9_.-]{2,32}$")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login_page():
+    next_url = request.args.get("next") or request.form.get("next") or url_for("dashboard")
+    # Don't bounce off-site after login.
+    if not next_url.startswith("/"):
+        next_url = url_for("dashboard")
+
+    if g.user is not None:
+        return redirect(next_url)
+
+    error = None
+    if request.method == "POST":
+        username = (request.form.get("username") or "").strip()
+        password = request.form.get("password") or ""
+        user = db.get_user_by_name(username)
+        if user and user["password_hash"] and auth.verify_password(password, user["password_hash"]):
+            auth.login(user)
+            return redirect(next_url)
+        error = "login_failed"
+
+    return render_template("login.html", error=error, next_url=next_url), (
+        401 if error else 200
+    )
+
+
+@app.route("/logout", methods=["POST", "GET"])
+def logout_page():
+    auth.logout()
+    return redirect(url_for("login_page"))
+
+
+@app.route("/api/users", methods=["GET"])
+@auth.require_role(auth.ROLE_ADMIN)
+def api_users_list():
+    return jsonify({"items": db.list_users()})
+
+
+@app.route("/api/users", methods=["POST"])
+@auth.require_role(auth.ROLE_ADMIN)
+def api_users_create():
+    payload = request.get_json(force=True) or {}
+    username = (payload.get("username") or "").strip()
+    role = (payload.get("role") or "").strip()
+    password = payload.get("password") or ""
+
+    # Lockout guard: as soon as a second user exists, zero-config auto-login
+    # is disabled. If the calling admin has no password, they would be locked
+    # out the moment they finish this request. Force them to secure their own
+    # account first.
+    caller = auth.current_user()
+    if caller and not caller["password_hash"]:
+        return jsonify({"error": "set_own_password_first"}), 400
+
+    if not _VALID_USERNAME.match(username):
+        return jsonify({"error": "invalid_username"}), 400
+    if role not in auth.ROLES:
+        return jsonify({"error": "invalid_role"}), 400
+    # A user without a password can never log in, and a second passwordless
+    # user disables the zero-config auto-login -> guaranteed lockout. The
+    # only legitimate passwordless user is the seeded default admin, which
+    # is created server-side, never via this endpoint.
+    if not password:
+        return jsonify({"error": "password_required"}), 400
+    if db.get_user_by_name(username):
+        return jsonify({"error": "username_taken"}), 409
+    new_id = db.create_user(username, role, auth.hash_password(password))
+    return jsonify({"ok": True, "id": new_id})
+
+
+@app.route("/api/users/<int:user_id>", methods=["PUT"])
+@auth.require_role(auth.ROLE_ADMIN)
+def api_users_update(user_id):
+    payload = request.get_json(force=True) or {}
+    target = db.get_user_by_id(user_id)
+    if not target:
+        return jsonify({"error": "not_found"}), 404
+
+    role = payload.get("role")
+    password = payload.get("password")
+    clear_password = bool(payload.get("clear_password"))
+
+    if role is not None and role not in auth.ROLES:
+        return jsonify({"error": "invalid_role"}), 400
+
+    # Don't strand the platform without an admin.
+    if role and role != auth.ROLE_ADMIN and target["role"] == auth.ROLE_ADMIN and db.count_admins() <= 1:
+        return jsonify({"error": "cannot_demote_last_admin"}), 400
+
+    # Effective post-update state, used for the reachability invariant below.
+    effective_role = role or target["role"]
+    will_have_password = bool(password) or (
+        bool(target["password_hash"]) and not clear_password
+    )
+
+    # A passwordless admin is only allowed in zero-config auto-login mode
+    # (the single seeded user). With any other user around it is either a
+    # platform lockout, or - if another admin still has a password - a
+    # zombie admin that can never log in. Demote or delete first instead.
+    if (
+        effective_role == auth.ROLE_ADMIN
+        and not will_have_password
+        and db.count_users() != 1
+    ):
+        return jsonify({"error": "would_lock_platform"}), 400
+
+    pw_hash = None
+    if password:
+        pw_hash = auth.hash_password(password)
+
+    if not db.update_user(
+        user_id,
+        role=role,
+        password_hash=pw_hash,
+        clear_password=clear_password and not password,
+    ):
+        return jsonify({"error": "no_change"}), 400
+    return jsonify({"ok": True})
+
+
+@app.route("/api/users/<int:user_id>", methods=["DELETE"])
+@auth.require_role(auth.ROLE_ADMIN)
+def api_users_delete(user_id):
+    target = db.get_user_by_id(user_id)
+    if not target:
+        return jsonify({"error": "not_found"}), 404
+    if target["role"] == auth.ROLE_ADMIN and db.count_admins() <= 1:
+        return jsonify({"error": "cannot_delete_last_admin"}), 400
+    current = auth.current_user()
+    if current and current["id"] == user_id:
+        return jsonify({"error": "cannot_delete_self"}), 400
+    db.delete_user(user_id)
+    return jsonify({"ok": True})
+
+
 @app.route("/")
 def dashboard():
     years = db.available_years() or [date.today().year]
@@ -172,6 +358,7 @@ def dashboard():
 
 
 @app.route("/settings")
+@auth.require_role(auth.ROLE_ADMIN)
 def settings_page():
     targets = db.get_targets()
     recent = list(reversed(db.get_production()[-30:]))
@@ -193,6 +380,7 @@ def settings_page():
         ha_url=os.environ.get("HA_URL", ""),
         ha_entity=os.environ.get("HA_ENTITY_ID", ""),
         auto_sync_on_open=db.get_setting("auto_sync_on_open", "0") == "1",
+        users=db.list_users(),
     )
 
 
@@ -316,6 +504,7 @@ def api_production():
 
 
 @app.route("/api/production", methods=["POST"])
+@auth.require_role(auth.ROLE_ADMIN)
 def api_production_post():
     payload = request.get_json(force=True)
     d = payload.get("date")
@@ -334,6 +523,7 @@ def api_production_post():
 
 
 @app.route("/api/production/<date_str>", methods=["DELETE"])
+@auth.require_role(auth.ROLE_ADMIN)
 def api_production_delete(date_str):
     db.delete_production(date_str)
     return jsonify({"ok": True})
@@ -345,6 +535,7 @@ def api_targets_get():
 
 
 @app.route("/api/targets", methods=["POST"])
+@auth.require_role(auth.ROLE_ADMIN)
 def api_targets_post():
     payload = request.get_json(force=True)
     month = payload.get("month")
@@ -365,6 +556,7 @@ def api_targets_post():
 
 
 @app.route("/api/settings", methods=["POST"])
+@auth.require_role(auth.ROLE_ADMIN)
 def api_settings_post():
     from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
     payload = request.get_json(force=True)
@@ -384,6 +576,7 @@ def api_settings_post():
 
 
 @app.route("/api/sync/ha", methods=["POST"])
+@auth.require_role(auth.ROLE_ADMIN)
 def api_sync_ha():
     payload = request.get_json(force=True) or {}
     start = payload.get("from")
@@ -428,6 +621,7 @@ def api_costs_get():
 
 
 @app.route("/api/costs", methods=["POST"])
+@auth.require_role(auth.ROLE_ADMIN)
 def api_costs_post():
     payload = request.get_json(force=True)
     label = (payload.get("label") or "").strip()
@@ -449,6 +643,7 @@ def api_costs_post():
 
 
 @app.route("/api/costs/<int:cost_id>", methods=["PUT"])
+@auth.require_role(auth.ROLE_ADMIN)
 def api_costs_put(cost_id):
     payload = request.get_json(force=True)
     label = (payload.get("label") or "").strip()
@@ -471,6 +666,7 @@ def api_costs_put(cost_id):
 
 
 @app.route("/api/costs/<int:cost_id>", methods=["DELETE"])
+@auth.require_role(auth.ROLE_ADMIN)
 def api_costs_delete(cost_id):
     db.delete_cost(cost_id)
     return jsonify({"ok": True})
@@ -486,6 +682,7 @@ def api_grid_get():
 
 
 @app.route("/api/grid", methods=["POST"])
+@auth.require_role(auth.ROLE_ADMIN)
 def api_grid_post():
     payload = request.get_json(force=True)
     kind = (payload.get("kind") or "").strip()
@@ -508,6 +705,7 @@ def api_grid_post():
 
 
 @app.route("/api/grid/<int:bill_id>", methods=["PUT"])
+@auth.require_role(auth.ROLE_ADMIN)
 def api_grid_put(bill_id):
     payload = request.get_json(force=True)
     period_start = (payload.get("period_start") or "").strip()
@@ -528,6 +726,7 @@ def api_grid_put(bill_id):
 
 
 @app.route("/api/grid/<int:bill_id>", methods=["DELETE"])
+@auth.require_role(auth.ROLE_ADMIN)
 def api_grid_delete(bill_id):
     db.delete_grid_bill(bill_id)
     return jsonify({"ok": True})

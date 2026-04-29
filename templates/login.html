@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ T.login_title }} · Solar-Tracker{% endblock %}
+{% block content %}
+<div class="login-wrap">
+  <div class="card login-card">
+    <h1>{{ T.login_title }}</h1>
+    {% if error %}
+      <p class="login-error" role="alert">{{ T.login_failed }}</p>
+    {% endif %}
+    <form method="post" action="{{ url_for('login_page') }}" class="stacked-form">
+      <input type="hidden" name="next" value="{{ next_url }}">
+      <label>{{ T.login_username }}
+        <input type="text" name="username" autocomplete="username" required autofocus>
+      </label>
+      <label>{{ T.login_password }}
+        <input type="password" name="password" autocomplete="current-password" required>
+      </label>
+      <button type="submit">{{ T.login_submit }}</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
