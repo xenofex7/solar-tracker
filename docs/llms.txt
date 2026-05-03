@@ -24,5 +24,6 @@
 - Quarterly grid billing capture (import and export), prorated across months.
 - Home Assistant sync via WebSocket using `recorder/statistics_during_period` (period `day`, types `change`); optional auto-sync of the last 3 months when the dashboard is opened.
 - UI in DE, EN, FR, IT, ES; configurable currency and locale-aware number formatting; light and dark mode.
+- Optional user accounts with two roles (`admin`, `readonly`). Fresh installs start passwordless with auto-login; setting any password switches to classic session login (30-day sliding window). HTTP Basic Auth on `/api/*` for scripted read-only access. Offline `scripts/manage_users.py` CLI for lockout recovery.
 - Anonymous instance telemetry (daily heartbeat with version and a random instance ID) on by default; opt out with `TELEMETRY_ENABLED=false`.
 
