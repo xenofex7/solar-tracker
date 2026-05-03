@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.1.0] - 2026-05-03
 ### Added
 - User accounts with two roles: `admin` (full access) and `readonly` (dashboard + GET APIs only). Read-only users have no access to the Settings page.
 - Login screen and session-based auth with signed cookies; 30-day sliding window (each authenticated request re-issues the cookie, so active users never get logged out within the window; 30 days of inactivity expires the cookie). HTTP Basic Auth is honored on `/api/*` for scripted read-only access.
@@ -284,7 +286,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.0.4...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.1.0...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -311,3 +313,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.0.2
 [2.0.3]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.0.3
 [2.0.4]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.0.4
+[2.1.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.1.0
