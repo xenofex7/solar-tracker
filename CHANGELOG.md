@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Instance heartbeat telemetry now posts to Umami instead of PostHog. The `posthog` Python dependency is dropped (heartbeats use stdlib only).
 
 ## [2.2.0] - 2026-05-06
 ### Added

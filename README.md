@@ -195,8 +195,8 @@ instances are running and which versions are in the wild. The payload is:
 - the Python version
 
 No user data, no IP, no Home Assistant values, no request tracking. Events are
-sent to PostHog Cloud EU (Frankfurt). To opt out, set `TELEMETRY_ENABLED=false`
-in your `.env`.
+sent to a privately-hosted Umami instance. To opt out, set
+`TELEMETRY_ENABLED=false` in your `.env`.
 
 ## Help
 
