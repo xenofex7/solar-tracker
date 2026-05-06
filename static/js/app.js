@@ -86,12 +86,18 @@ if (document.getElementById('year-select')?.dataset.autoSync === '1') {
       const tz = d.getTimezoneOffset() * 60000;
       return new Date(d - tz).toISOString().slice(0, 10);
     };
+    const SOURCE_ENDPOINT = {
+      home_assistant: '/api/sync/ha',
+      solarweb: '/api/sync/solarweb',
+    };
+    const src = document.getElementById('year-select').dataset.syncSource || 'home_assistant';
+    const endpoint = SOURCE_ENDPOINT[src] || SOURCE_ENDPOINT.home_assistant;
     const status = document.getElementById('status');
     const syncingMsg = window.T?.status_auto_syncing || 'Syncing...';
     const prev = status.textContent;
     status.textContent = syncingMsg;
     try {
-      const r = await fetch('/api/sync/ha', {
+      const r = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ from: iso(from), to: iso(today) }),

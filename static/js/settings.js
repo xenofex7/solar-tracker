@@ -252,23 +252,72 @@ document.querySelectorAll('#entries-table button.edit').forEach(btn => {
   });
 });
 
-document.getElementById('sync-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const body = {from: e.target.from.value, to: e.target.to.value};
-  const r = await fetch('/api/sync/ha', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  const j = await r.json();
-  if (r.ok) {
-    const tpl = window.T?.msg_sync_done || '{days} days synced · {inserted} new · {updated} updated';
-    const sub = tpl
-      .replace('{days}', j.days)
-      .replace('{inserted}', j.inserted)
-      .replace('{updated}', j.updated);
-    window.queueToast({ title: window.T?.msg_sync_done_title || 'Done', sub }, 'success');
-    location.reload();
-  } else {
-    window.showToast((window.T?.msg_error_prefix || 'Error: ') + j.error, 'error');
-  }
-});
+(() => {
+  const select = document.getElementById('sync-source-select');
+  const form = document.getElementById('sync-form');
+  if (!select || !form) return;
+
+  const submit = document.getElementById('sync-submit');
+  const SOURCE_ENDPOINT = {
+    home_assistant: '/api/sync/ha',
+    solarweb: '/api/sync/solarweb',
+  };
+
+  const isConfigured = (src) => {
+    if (src === 'home_assistant') return select.dataset.haConfigured === '1';
+    if (src === 'solarweb') return select.dataset.solarwebConfigured === '1';
+    return false;
+  };
+
+  const refreshUI = () => {
+    const src = select.value;
+    document.querySelectorAll('.sync-source-info').forEach((el) => {
+      el.hidden = el.dataset.source !== src;
+    });
+    submit.disabled = !isConfigured(src);
+  };
+
+  select.addEventListener('change', async () => {
+    refreshUI();
+    const r = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sync_source: select.value }),
+    });
+    if (r.ok) {
+      window.showToast(window.T?.msg_saved || 'Saved', 'success');
+    } else {
+      const j = await r.json().catch(() => ({}));
+      window.showToast((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?'), 'error');
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const endpoint = SOURCE_ENDPOINT[select.value];
+    if (!endpoint) return;
+    const body = { from: e.target.from.value, to: e.target.to.value };
+    const r = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const j = await r.json();
+    if (r.ok) {
+      const tpl = window.T?.msg_sync_done || '{days} days synced · {inserted} new · {updated} updated';
+      const sub = tpl
+        .replace('{days}', j.days)
+        .replace('{inserted}', j.inserted)
+        .replace('{updated}', j.updated);
+      window.queueToast({ title: window.T?.msg_sync_done_title || 'Done', sub }, 'success');
+      location.reload();
+    } else {
+      window.showToast((window.T?.msg_error_prefix || 'Error: ') + j.error, 'error');
+    }
+  });
+
+  refreshUI();
+})();
 
 /* ---- Users tab (v2.1) ---- */
 function userErrorMessage(code) {

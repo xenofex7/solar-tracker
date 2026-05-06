@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Fronius Solar.web integration: pulls daily PV production from the Solar.web cloud API and writes it into `daily_production` with `source="solarweb"`. Configurable via `SOLARWEB_ACCESS_KEY_ID` / `SOLARWEB_ACCESS_KEY_VALUE` (Premium account required); `SOLARWEB_PV_SYSTEM_ID` is auto-resolved when exactly one system is linked to the account.
 - `POST /api/sync/solarweb` endpoint (admin-only).
 - `scripts/sync_solarweb.py` CLI for manual or cron-based syncs (`--days N`, `--from`, `--to`, `--list-systems`, `--dry-run`).
+- Settings > Sync: unified "Datensynchronisation" card with a data-source dropdown (Home Assistant / Fronius Solar.web). The choice persists in the `sync_source` setting and is honored by both the manual sync button and the dashboard auto-sync. Sources that are not configured in `.env` are still listed but greyed out so the picker stays self-explanatory.
+
+### Changed
+- Disabled buttons now have a clear visual state (greyed out, not-allowed cursor) instead of looking identical to enabled buttons.
 
 ## [2.1.0] - 2026-05-03
 ### Added

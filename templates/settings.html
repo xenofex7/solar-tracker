@@ -241,16 +241,51 @@
   </div>
 
   <div class="card">
-    <h2>{{ T.section_ha }}</h2>
-    <p class="muted">
-      URL: <code>{{ ha_url or '-' }}</code><br>
-      Entity: <code>{{ ha_entity or '-' }}</code><br>
-      {{ T.desc_ha_env | safe }}
-    </p>
+    <h2>{{ T.section_sync }}</h2>
+    <form id="sync-source-form" class="inline-form">
+      <label>{{ T.label_sync_source }}
+        <select name="sync_source" id="sync-source-select" style="min-width: 280px;"
+                data-ha-configured="{{ '1' if ha_configured else '0' }}"
+                data-solarweb-configured="{{ '1' if solarweb_configured else '0' }}">
+          <option value="home_assistant" {% if sync_source == 'home_assistant' %}selected{% endif %}>
+            {{ T.source_home_assistant }}{% if not ha_configured %} - {{ T.label_not_configured }}{% endif %}
+          </option>
+          <option value="solarweb" {% if sync_source == 'solarweb' %}selected{% endif %}>
+            {{ T.source_solarweb }}{% if not solarweb_configured %} - {{ T.label_not_configured }}{% endif %}
+          </option>
+        </select>
+      </label>
+    </form>
+
+    <div class="sync-source-info" data-source="home_assistant"
+         {% if sync_source != 'home_assistant' %}hidden{% endif %}>
+      <p class="muted">
+        {% if ha_configured %}
+          URL: <code>{{ ha_url or '-' }}</code><br>
+          Entity: <code>{{ ha_entity or '-' }}</code><br>
+        {% else %}
+          <strong>{{ T.warn_ha_not_configured }}</strong><br>
+        {% endif %}
+        {{ T.desc_ha_env | safe }}
+      </p>
+    </div>
+
+    <div class="sync-source-info" data-source="solarweb"
+         {% if sync_source != 'solarweb' %}hidden{% endif %}>
+      <p class="muted">
+        {% if solarweb_configured %}
+          {{ T.label_solarweb_pv_id }}: <code>{{ solarweb_pv_id or T.label_solarweb_auto }}</code><br>
+        {% else %}
+          <strong>{{ T.warn_solarweb_not_configured }}</strong><br>
+        {% endif %}
+        {{ T.desc_solarweb_env | safe }}
+      </p>
+    </div>
+
     <form id="sync-form" class="inline-form">
       <label>{{ T.label_from }} <input type="date" name="from" required></label>
       <label>{{ T.label_to }} <input type="date" name="to" required></label>
-      <button type="submit">{{ T.btn_ha_sync }}</button>
+      <button type="submit" id="sync-submit">{{ T.btn_sync_now }}</button>
     </form>
   </div>
 </section>

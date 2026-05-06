@@ -3,7 +3,7 @@
 {% block header_extra %}
 <div class="header-filter">
   <label for="year-select">{{ T.label_year }}</label>
-  <select id="year-select" data-auto-sync="{{ '1' if auto_sync_on_open and is_admin else '0' }}">
+  <select id="year-select" data-auto-sync="{{ '1' if auto_sync_on_open and is_admin else '0' }}" data-sync-source="{{ sync_source }}">
     <option value="all">{{ T.option_all }}</option>
     {% for y in years %}
       <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>

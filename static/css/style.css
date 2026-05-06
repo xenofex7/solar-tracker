@@ -291,6 +291,8 @@ button {
   font-weight: 600;
 }
 button:hover { filter: brightness(1.08); }
+button:disabled, button[disabled] { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.4); }
+button:disabled:hover, button[disabled]:hover { filter: grayscale(0.4); }
 button.del { background: var(--bad); color: white; padding: 4px 8px; }
 button.del.icon { padding: 6px 8px; display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
 button.del.icon svg { display: block; }

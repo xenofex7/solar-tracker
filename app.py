@@ -347,6 +347,14 @@ def api_users_delete(user_id):
     return jsonify({"ok": True})
 
 
+SYNC_SOURCES = ("home_assistant", "solarweb")
+
+
+def _sync_source() -> str:
+    val = (db.get_setting("sync_source") or "home_assistant").strip()
+    return val if val in SYNC_SOURCES else "home_assistant"
+
+
 @app.route("/")
 def dashboard():
     years = db.available_years() or [date.today().year]
@@ -356,6 +364,7 @@ def dashboard():
         years=years,
         current_year=years[-1],
         auto_sync_on_open=auto_sync,
+        sync_source=_sync_source(),
     )
 
 
@@ -381,6 +390,17 @@ def settings_page():
         grid_totals=db.grid_totals(),
         ha_url=os.environ.get("HA_URL", ""),
         ha_entity=os.environ.get("HA_ENTITY_ID", ""),
+        ha_configured=bool(
+            os.environ.get("HA_URL")
+            and os.environ.get("HA_TOKEN")
+            and os.environ.get("HA_ENTITY_ID")
+        ),
+        solarweb_pv_id=os.environ.get("SOLARWEB_PV_SYSTEM_ID", ""),
+        solarweb_configured=bool(
+            os.environ.get("SOLARWEB_ACCESS_KEY_ID")
+            and os.environ.get("SOLARWEB_ACCESS_KEY_VALUE")
+        ),
+        sync_source=_sync_source(),
         auto_sync_on_open=db.get_setting("auto_sync_on_open", "0") == "1",
         users=db.list_users(),
     )
@@ -572,6 +592,11 @@ def api_settings_post():
         if not cur or len(cur) > 8:
             return jsonify({"error": "Währung muss 1-8 Zeichen lang sein"}), 400
         payload["currency"] = cur
+    if "sync_source" in payload:
+        src = str(payload["sync_source"]).strip()
+        if src not in SYNC_SOURCES:
+            return jsonify({"error": f"Ungueltige sync_source: {src}"}), 400
+        payload["sync_source"] = src
     for key, value in payload.items():
         db.set_setting(key, str(value))
     return jsonify({"ok": True})
