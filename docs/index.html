@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Solar-Tracker - Soll vs. Ist für deine PV-Anlage</title>
-  <meta name="description" content="Selbst-gehostete Web-App, die den realen PV-Ertrag mit dem Jahres-Soll vergleicht. Daten aus Home Assistant oder manueller Eingabe.">
+  <meta name="description" content="Selbst-gehostete Web-App, die den realen PV-Ertrag mit dem Jahres-Soll vergleicht. Daten aus Home Assistant, Fronius Solar.web oder manueller Eingabe.">
   <meta name="theme-color" content="#0f1419" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)">
   <link rel="icon" type="image/png" href="logo.png">
@@ -13,7 +13,7 @@
   <link rel="canonical" href="https://xenofex7.github.io/solar-tracker/">
   <meta property="og:site_name" content="Solar-Tracker">
   <meta property="og:title" content="Solar-Tracker - Actual vs. target for your solar plant">
-  <meta property="og:description" content="Self-hosted dashboard comparing actual vs. target solar yield. Pulls daily PV data from Home Assistant or accepts manual entry.">
+  <meta property="og:description" content="Self-hosted dashboard comparing actual vs. target solar yield. Pulls daily PV data from Home Assistant or Fronius Solar.web, or accepts manual entry.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://xenofex7.github.io/solar-tracker/">
   <meta property="og:image" content="https://xenofex7.github.io/solar-tracker/screenshots/dashboard-overview-dark.png">
@@ -22,7 +22,7 @@
   <meta property="og:locale:alternate" content="de_DE">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Solar-Tracker - Actual vs. target for your solar plant">
-  <meta name="twitter:description" content="Self-hosted dashboard comparing actual vs. target solar yield. Pulls daily PV data from Home Assistant or accepts manual entry.">
+  <meta name="twitter:description" content="Self-hosted dashboard comparing actual vs. target solar yield. Pulls daily PV data from Home Assistant or Fronius Solar.web, or accepts manual entry.">
   <meta name="twitter:image" content="https://xenofex7.github.io/solar-tracker/screenshots/dashboard-overview-dark.png">
   <meta name="twitter:image:alt" content="Solar-Tracker dashboard - KPIs and monthly comparison">
   <link rel="alternate" type="text/markdown" href="llms.txt" title="llms.txt">
@@ -40,12 +40,12 @@
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Solar-Tracker",
-    "description": "Self-hosted dashboard that compares actual vs. target solar yield. Pulls daily PV production from Home Assistant or accepts manual entry. Tracks investment, revenue, payback date, self-consumption rate and effective electricity price.",
+    "description": "Self-hosted dashboard that compares actual vs. target solar yield. Pulls daily PV production from Home Assistant or Fronius Solar.web, or accepts manual entry. Tracks investment, revenue, payback date, self-consumption rate and effective electricity price.",
     "url": "https://xenofex7.github.io/solar-tracker/",
     "softwareVersion": "2.2.0",
     "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "Linux, macOS, Windows (Docker)",
-    "softwareRequirements": "Docker, Home Assistant (optional)",
+    "softwareRequirements": "Docker, Home Assistant or Fronius Solar.web (optional)",
     "license": "https://github.com/xenofex7/solar-tracker/blob/main/LICENSE",
     "codeRepository": "https://github.com/xenofex7/solar-tracker",
     "programmingLanguage": ["Python", "JavaScript"],
@@ -95,8 +95,8 @@
         <span data-en>Actual vs. target for your solar plant</span>
       </h1>
       <p class="tagline">
-        <span data-de>Selbst-gehostetes Dashboard, das den realen PV-Ertrag mit dem Jahres-Soll vergleicht. Daten aus Home Assistant oder manueller Eingabe. SQLite, Docker, fertig.</span>
-        <span data-en>Self-hosted dashboard that compares real PV yield against your annual targets. Data from Home Assistant or manual entry. SQLite, Docker, done.</span>
+        <span data-de>Selbst-gehostetes Dashboard, das den realen PV-Ertrag mit dem Jahres-Soll vergleicht. Daten aus Home Assistant, Fronius Solar.web oder manueller Eingabe. SQLite, Docker, fertig.</span>
+        <span data-en>Self-hosted dashboard that compares real PV yield against your annual targets. Data from Home Assistant, Fronius Solar.web or manual entry. SQLite, Docker, done.</span>
       </p>
       <div class="cta">
         <a class="btn btn-primary" href="https://github.com/xenofex7/solar-tracker" target="_blank" rel="noopener">
@@ -273,7 +273,7 @@
 <span class="tok-k">curl</span> -O https://raw.githubusercontent.com/xenofex7/solar-tracker/main/.env.example
 <span class="tok-k">mv</span> .env.example .env
 
-<span class="tok-c"># <span data-de>HA_URL, HA_TOKEN, HA_ENTITY_ID in .env eintragen, dann starten</span><span data-en>set HA_URL, HA_TOKEN, HA_ENTITY_ID in .env, then start</span></span>
+<span class="tok-c"># <span data-de>Datenquelle in .env konfigurieren (HA_URL/HA_TOKEN/HA_ENTITY_ID oder SOLARWEB_ACCESS_KEY_ID/SOLARWEB_ACCESS_KEY_VALUE), dann starten</span><span data-en>configure a data source in .env (HA_URL/HA_TOKEN/HA_ENTITY_ID or SOLARWEB_ACCESS_KEY_ID/SOLARWEB_ACCESS_KEY_VALUE), then start</span></span>
 <span class="tok-k">docker</span> compose up -d
 </code></pre>
 
