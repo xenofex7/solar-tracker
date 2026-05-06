@@ -192,3 +192,41 @@ git push origin main "v${new}"
 
 echo
 echo "Done. GitHub Actions will build and push ghcr.io/xenofex7/solar-tracker:${new}"
+
+# Docs sanity reminder. The release script auto-updates docs/index.html
+# (softwareVersion in the JSON-LD) and docs/sitemap.xml (lastmod), but the
+# user-facing copy in docs/ - meta descriptions, OG/Twitter tags, JSON-LD
+# description, hero tagline, install snippet, llms.txt - is hand-written
+# and easy to forget. Print the new CHANGELOG entries side-by-side with
+# every description-shaped spot in docs/ so drift jumps out.
+echo
+echo "===================================================================="
+echo " Docs sanity check for v${new}"
+echo "===================================================================="
+echo
+echo " Just released (from CHANGELOG.md):"
+awk -v ver="${new}" '
+  $0 ~ "^## \\["ver"\\]" {flag=1; next}
+  /^## \[/ {flag=0}
+  flag && /^[^[:space:]]/ {print "   " $0}
+' CHANGELOG.md | head -40
+echo
+echo " Description-shaped spots in docs/index.html (meta/SEO):"
+grep -nE 'meta name="description"|og:description|twitter:description|"description":|"softwareRequirements":' docs/index.html 2>/dev/null \
+  | sed 's/^/   /' \
+  | head -10
+echo
+echo " Visible copy in docs/index.html (manual review):"
+grep -nE 'class="tagline"|class="lead"|<h3>' docs/index.html 2>/dev/null \
+  | head -10 \
+  | sed 's/^/   line /'
+echo
+echo " docs/llms.txt:"
+grep -nE '^>|^- ' docs/llms.txt 2>/dev/null \
+  | sed 's/^/   /' \
+  | head -15
+echo
+echo " GitHub Pages will not auto-correct stale wording."
+echo " If anything above looks outdated for v${new}, commit a follow-up:"
+echo "   git commit -m \"Update docs site for v${new}\" && git push"
+echo "===================================================================="
