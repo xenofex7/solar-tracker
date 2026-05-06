@@ -348,11 +348,17 @@ def api_users_delete(user_id):
 
 
 SYNC_SOURCES = ("home_assistant", "solarweb")
+ENTRIES_PAGE_SIZES = ("25", "50", "100", "all")
 
 
 def _sync_source() -> str:
     val = (db.get_setting("sync_source") or "home_assistant").strip()
     return val if val in SYNC_SOURCES else "home_assistant"
+
+
+def _entries_page_size() -> str:
+    val = (db.get_setting("entries_page_size") or "25").strip()
+    return val if val in ENTRIES_PAGE_SIZES else "25"
 
 
 @app.route("/")
@@ -372,7 +378,11 @@ def dashboard():
 @auth.require_role(auth.ROLE_ADMIN)
 def settings_page():
     targets = db.get_targets()
-    recent = list(reversed(db.get_production()[-30:]))
+    recent = list(reversed(db.get_production()))
+    month_totals: dict[str, float] = {}
+    for r in recent:
+        ym = r["date"][:7]
+        month_totals[ym] = month_totals.get(ym, 0.0) + float(r["kwh"] or 0)
     return render_template(
         "settings.html",
         targets=targets,
@@ -385,6 +395,7 @@ def settings_page():
         costs=db.list_costs(),
         total_invested=db.total_invested(),
         recent=recent,
+        month_totals=month_totals,
         grid_imports=db.list_grid_bills("import"),
         grid_exports=db.list_grid_bills("export"),
         grid_totals=db.grid_totals(),
@@ -401,6 +412,7 @@ def settings_page():
             and os.environ.get("SOLARWEB_ACCESS_KEY_VALUE")
         ),
         sync_source=_sync_source(),
+        entries_page_size=_entries_page_size(),
         auto_sync_on_open=db.get_setting("auto_sync_on_open", "0") == "1",
         users=db.list_users(),
     )
@@ -597,6 +609,11 @@ def api_settings_post():
         if src not in SYNC_SOURCES:
             return jsonify({"error": f"Ungueltige sync_source: {src}"}), 400
         payload["sync_source"] = src
+    if "entries_page_size" in payload:
+        ps = str(payload["entries_page_size"]).strip()
+        if ps not in ENTRIES_PAGE_SIZES:
+            return jsonify({"error": f"Ungueltige entries_page_size: {ps}"}), 400
+        payload["entries_page_size"] = ps
     for key, value in payload.items():
         db.set_setting(key, str(value))
     return jsonify({"ok": True})

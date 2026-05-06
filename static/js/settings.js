@@ -216,6 +216,88 @@ document.getElementById('entry-form').addEventListener('submit', async (e) => {
   }
 });
 
+(() => {
+  const table = document.getElementById('entries-table');
+  const pager = document.getElementById('entries-pager');
+  if (!table || !pager) return;
+
+  const tbody = table.querySelector('tbody');
+  const dataRows = [...tbody.querySelectorAll('tr[data-date]')];
+  const headerRows = [...tbody.querySelectorAll('tr.month-header')];
+  const info = document.getElementById('entries-pager-info');
+  const prev = document.getElementById('entries-pager-prev');
+  const next = document.getElementById('entries-pager-next');
+  const sizeButtons = pager.querySelectorAll('button.pager-size');
+
+  let pageSize = table.dataset.pageSize || '25';
+  let page = 0;
+
+  const sizeNum = () => (pageSize === 'all' ? dataRows.length || 1 : parseInt(pageSize, 10));
+  const totalPages = () => Math.max(1, Math.ceil(dataRows.length / sizeNum()));
+
+  const render = () => {
+    const tp = totalPages();
+    if (page >= tp) page = tp - 1;
+    if (page < 0) page = 0;
+    const size = sizeNum();
+    const start = page * size;
+    const end = start + size;
+    const visibleMonths = new Set();
+    dataRows.forEach((row, i) => {
+      const visible = i >= start && i < end;
+      row.hidden = !visible;
+      if (visible) visibleMonths.add(row.dataset.month);
+    });
+    headerRows.forEach((h) => {
+      h.hidden = !visibleMonths.has(h.dataset.month);
+    });
+
+    if (dataRows.length === 0) {
+      info.textContent = window.T?.label_no_entries || 'No entries';
+    } else {
+      const tpl = window.T?.label_page_info || 'Page {page} of {total} ({from}-{to} of {count})';
+      info.textContent = tpl
+        .replace('{page}', page + 1)
+        .replace('{total}', tp)
+        .replace('{from}', start + 1)
+        .replace('{to}', Math.min(end, dataRows.length))
+        .replace('{count}', dataRows.length);
+    }
+    prev.disabled = page <= 0;
+    next.disabled = page >= tp - 1;
+    sizeButtons.forEach((b) => {
+      if (b.dataset.size === pageSize) {
+        b.setAttribute('aria-pressed', 'true');
+      } else {
+        b.removeAttribute('aria-pressed');
+      }
+    });
+  };
+
+  prev.addEventListener('click', () => { page -= 1; render(); });
+  next.addEventListener('click', () => { page += 1; render(); });
+
+  sizeButtons.forEach((b) => {
+    b.addEventListener('click', async () => {
+      if (b.dataset.size === pageSize) return;
+      pageSize = b.dataset.size;
+      page = 0;
+      render();
+      const r = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entries_page_size: pageSize }),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        window.showToast((window.T?.msg_error_prefix || 'Error: ') + (j.error || '?'), 'error');
+      }
+    });
+  });
+
+  render();
+})();
+
 document.querySelectorAll('#entries-table button.del').forEach(btn => {
   btn.addEventListener('click', async () => {
     const tpl = window.T?.confirm_delete_prod || 'Delete entry from {date}?';

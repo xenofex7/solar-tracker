@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - Disabled buttons now have a clear visual state (greyed out, not-allowed cursor) instead of looking identical to enabled buttons.
+- Settings > Production: the "Last 30 entries" list is replaced with a fully paginated table. Footer adds a per-page selector (25 / 50 / 100 / All) and prev/next navigation; the chosen page size persists in the `entries_page_size` setting. The full production history is now available in the UI without resorting to API calls or the database.
+- Settings > Production: entries are visually grouped per month with a sticky month header (e.g. "April 2026 ... 1,857 kWh") that floats below the navbar while scrolling, so it is always clear which month the rows belong to. Headers also show the month total in kWh.
 
 ## [2.1.0] - 2026-05-03
 ### Added

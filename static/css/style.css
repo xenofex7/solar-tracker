@@ -446,6 +446,74 @@ table.data th.num, table.data td.num { text-align: right; font-variant-numeric: 
 table.data th.action, table.data td.action { text-align: right; width: 1%; white-space: nowrap; }
 table.data th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; }
 
+table.entries-table { border-collapse: separate; border-spacing: 0; }
+table.entries-table th, table.entries-table td { border-bottom: 1px solid var(--border); }
+table.entries-table tr.month-header td {
+  position: sticky;
+  top: 64px;
+  z-index: 2;
+  background: var(--panel);
+  padding: 10px 8px;
+  border-top: none;
+  border-bottom: 2px solid var(--accent);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+table.entries-table tr.month-header td.month-label { color: var(--accent); }
+table.entries-table tr.month-header td.month-total {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.table-pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.table-pager-size, .table-pager-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pager-size-buttons { display: inline-flex; gap: 0; }
+.pager-size-buttons button.pager-size {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  font-weight: 500;
+  font-size: 13px;
+  border-radius: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.pager-size-buttons button.pager-size:first-child { border-radius: 6px 0 0 6px; }
+.pager-size-buttons button.pager-size:last-child  { border-radius: 0 6px 6px 0; }
+.pager-size-buttons button.pager-size + button.pager-size { border-left: none; }
+.pager-size-buttons button.pager-size:hover { background: var(--hover, rgba(0,0,0,0.04)); filter: none; }
+.pager-size-buttons button.pager-size[aria-pressed="true"] {
+  background: var(--accent);
+  color: #1a1a1a;
+  border-color: var(--accent);
+}
+.table-pager-nav button {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.table-pager-nav button:hover { background: var(--hover, rgba(0,0,0,0.04)); filter: none; }
+
 form label {
   display: inline-flex;
   flex-direction: column;

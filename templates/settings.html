@@ -203,12 +203,22 @@
       <button type="submit">{{ T.btn_save }}</button>
     </form>
     <div id="entry-status" class="muted"></div>
-    <h3 style="margin-top:18px;">{{ T.section_recent_entries }}</h3>
-    <table class="data" id="entries-table">
+    <h3 style="margin-top:18px;">{{ T.section_entries }}</h3>
+    <table class="data entries-table" id="entries-table" data-page-size="{{ entries_page_size }}">
       <thead><tr><th>{{ T.col_date }}</th><th class="num">kWh</th><th>{{ T.col_source }}</th><th class="action"></th></tr></thead>
       <tbody>
+        {% set ns = namespace(prev_month='', month_total=0.0, month_rows=[]) %}
         {% for r in recent %}
-          <tr data-date="{{ r.date }}" data-kwh="{{ r.kwh }}">
+          {% set ym = r.date[:7] %}
+          {% if ym != ns.prev_month %}
+            <tr class="month-header" data-month="{{ ym }}">
+              <td class="month-label">{{ T.months_long[r.date[5:7] | int - 1] }} {{ r.date[:4] }}</td>
+              <td class="num month-total">{{ fmt_num(month_totals[ym]) }} kWh</td>
+              <td colspan="2"></td>
+            </tr>
+            {% set ns.prev_month = ym %}
+          {% endif %}
+          <tr data-date="{{ r.date }}" data-kwh="{{ r.kwh }}" data-month="{{ ym }}">
             <td>{{ r.date | ddmmyyyy }}</td>
             <td class="num">{{ fmt_num(r.kwh) }} kWh</td>
             <td>{{ r.source }}</td>
@@ -220,6 +230,22 @@
         {% endfor %}
       </tbody>
     </table>
+    <div class="table-pager" id="entries-pager">
+      <div class="table-pager-size">
+        <span class="muted small">{{ T.label_per_page }}</span>
+        <div class="pager-size-buttons" role="group" aria-label="{{ T.label_per_page }}">
+          <button type="button" class="pager-size" data-size="25" {% if entries_page_size == '25' %}aria-pressed="true"{% endif %}>25</button>
+          <button type="button" class="pager-size" data-size="50" {% if entries_page_size == '50' %}aria-pressed="true"{% endif %}>50</button>
+          <button type="button" class="pager-size" data-size="100" {% if entries_page_size == '100' %}aria-pressed="true"{% endif %}>100</button>
+          <button type="button" class="pager-size" data-size="all" {% if entries_page_size == 'all' %}aria-pressed="true"{% endif %}>{{ T.label_page_size_all }}</button>
+        </div>
+      </div>
+      <div class="table-pager-nav">
+        <span class="muted small" id="entries-pager-info"></span>
+        <button type="button" id="entries-pager-prev" aria-label="{{ T.btn_prev_page }}" title="{{ T.btn_prev_page }}">&laquo;</button>
+        <button type="button" id="entries-pager-next" aria-label="{{ T.btn_next_page }}" title="{{ T.btn_next_page }}">&raquo;</button>
+      </div>
+    </div>
   </div>
 </section>
 
