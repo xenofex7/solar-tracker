@@ -1,6 +1,6 @@
 # Solar-Tracker
 
-> Self-hosted web app that compares actual vs. target solar yield. Pulls daily PV production from Home Assistant (Long-Term Statistics via WebSocket) or accepts manual entry. Tracks investment, revenue, payback date, self-consumption rate and effective electricity price using quarterly grid bills (import + export). Stack: Python + Flask + SQLite, vanilla JS + Chart.js, packaged as a Docker image on GHCR.
+> Self-hosted web app that compares actual vs. target solar yield. Pulls daily PV production from Home Assistant (Long-Term Statistics via WebSocket) or directly from the Fronius Solar.web cloud API, or accepts manual entry. Tracks investment, revenue, payback date, self-consumption rate and effective electricity price using quarterly grid bills (import + export). Stack: Python + Flask + SQLite, vanilla JS + Chart.js, packaged as a Docker image on GHCR.
 
 ## Project
 
@@ -14,7 +14,7 @@
 - Docker image: `ghcr.io/xenofex7/solar-tracker:latest` (semver tags also published).
 - Compose file: https://raw.githubusercontent.com/xenofex7/solar-tracker/main/docker-compose.yml
 - Env example: https://raw.githubusercontent.com/xenofex7/solar-tracker/main/.env.example
-- Required env: `HA_URL`, `HA_TOKEN`, `HA_ENTITY_ID`.
+- Required env (pick at least one source): `HA_URL` + `HA_TOKEN` + `HA_ENTITY_ID` for Home Assistant, or `SOLARWEB_ACCESS_KEY_ID` + `SOLARWEB_ACCESS_KEY_VALUE` for Fronius Solar.web (Premium account required).
 
 ## Features
 
@@ -22,7 +22,7 @@
 - Calendar heatmap, daily series with 7-day rolling average, year-on-year comparison, specific yield (kWh/kWp).
 - Financial KPIs: investment, revenue to date, progress, payback date, effective electricity price, self-consumption rate, savings vs. no PV.
 - Quarterly grid billing capture (import and export), prorated across months.
-- Home Assistant sync via WebSocket using `recorder/statistics_during_period` (period `day`, types `change`); optional auto-sync of the last 3 months when the dashboard is opened.
+- Sync sources are pluggable: Home Assistant via WebSocket using `recorder/statistics_during_period` (period `day`, types `change`), or Fronius Solar.web via the `swqapi` cloud API (`/pvsystems/{id}/aggrdata`). The active source is picked from a Settings dropdown and persisted; the same dropdown drives both manual sync and the optional auto-sync of the last 3 months when the dashboard is opened.
 - UI in DE, EN, FR, IT, ES; configurable currency and locale-aware number formatting; light and dark mode.
 - Optional user accounts with two roles (`admin`, `readonly`). Fresh installs start passwordless with auto-login; setting any password switches to classic session login (30-day sliding window). HTTP Basic Auth on `/api/*` for scripted read-only access. Offline `scripts/manage_users.py` CLI for lockout recovery.
 - Anonymous instance telemetry (daily heartbeat with version and a random instance ID) on by default; opt out with `TELEMETRY_ENABLED=false`.
