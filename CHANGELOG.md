@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Fronius Solar.web integration: pulls daily PV production from the Solar.web cloud API and writes it into `daily_production` with `source="solarweb"`. Configurable via `SOLARWEB_ACCESS_KEY_ID` / `SOLARWEB_ACCESS_KEY_VALUE` (Premium account required); `SOLARWEB_PV_SYSTEM_ID` is auto-resolved when exactly one system is linked to the account.
+- `POST /api/sync/solarweb` endpoint (admin-only).
+- `scripts/sync_solarweb.py` CLI for manual or cron-based syncs (`--days N`, `--from`, `--to`, `--list-systems`, `--dry-run`).
 
 ## [2.1.0] - 2026-05-03
 ### Added

@@ -25,6 +25,8 @@ import i18n
 import metrics
 import telemetry
 from ha_client import DEFAULT_TZ, HAClientError, fetch_daily
+from solarweb_client import SolarwebClientError
+from solarweb_client import fetch_daily as solarweb_fetch_daily
 
 load_dotenv()
 
@@ -600,6 +602,43 @@ def api_sync_ha():
 
     app.logger.info(
         "HA sync %s..%s: %d days (ins=%d, upd=%d) - fetch %.2fs, write %.2fs",
+        start, end, len(items), inserted, updated, t_fetch, t_write,
+    )
+
+    return jsonify({
+        "ok": True,
+        "inserted": inserted,
+        "updated": updated,
+        "days": inserted + updated,
+        "timings": {"fetch_s": round(t_fetch, 2), "write_s": round(t_write, 2)},
+    })
+
+
+@app.route("/api/sync/solarweb", methods=["POST"])
+@auth.require_role(auth.ROLE_ADMIN)
+def api_sync_solarweb():
+    payload = request.get_json(force=True) or {}
+    start = payload.get("from")
+    end = payload.get("to") or date.today().isoformat()
+    if not start:
+        return jsonify({"error": "'from' erforderlich (YYYY-MM-DD)"}), 400
+
+    t0 = time.perf_counter()
+    try:
+        daily = solarweb_fetch_daily(start, end, tz=_timezone())
+    except SolarwebClientError as e:
+        return jsonify({"error": str(e)}), 502
+    except Exception as e:
+        return jsonify({"error": f"Unerwarteter Fehler: {e}"}), 500
+    t_fetch = time.perf_counter() - t0
+
+    t1 = time.perf_counter()
+    items = [(d, round(kwh, 3)) for d, kwh in daily.items()]
+    inserted, updated = db.bulk_upsert_production(items, source="solarweb")
+    t_write = time.perf_counter() - t1
+
+    app.logger.info(
+        "Solar.web sync %s..%s: %d days (ins=%d, upd=%d) - fetch %.2fs, write %.2fs",
         start, end, len(items), inserted, updated, t_fetch, t_write,
     )
 
