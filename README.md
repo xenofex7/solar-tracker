@@ -21,8 +21,8 @@
 
 A small, locally-hosted web app that compares **actual** vs. **target** solar
 yield. Actuals come from **Home Assistant** (Long-Term Statistics via
-WebSocket) or **manual entry**. Targets are monthly kWh goals from the plant
-planning.
+WebSocket), **Fronius Solar.web** (cloud API, Premium account), or **manual
+entry**. Targets are monthly kWh goals from the plant planning.
 
 ## Screenshots
 
@@ -142,6 +142,7 @@ the image locally (the compose file keeps `build: .` as a fallback).
 ### Data sources
 
 - Home Assistant (Long-Term Statistics via WebSocket).
+- Fronius Solar.web (cloud API, Premium account required).
 - Manual daily entry on `/entry`.
 - Quarterly grid bills (import + export) on `/settings`.
 
@@ -168,6 +169,32 @@ The sync form on `/settings` defaults to the last six months. Each run
 overwrites existing entries for the selected days - including manual ones -
 so the database stays in sync with Home Assistant.
 
+## Fronius Solar.web
+
+As an alternative to Home Assistant, Solar-Tracker can pull daily PV
+production directly from the Fronius Solar.web cloud API. This requires a
+**Solar.web Premium** subscription and an API access key pair, which you
+generate in your Solar.web account under API access.
+
+Configure `SOLARWEB_ACCESS_KEY_ID` and `SOLARWEB_ACCESS_KEY_VALUE` in `.env`.
+`SOLARWEB_PV_SYSTEM_ID` is optional - if exactly one PV system is linked to
+the account it is auto-resolved on first use.
+
+In **Settings -> Datensynchronisation**, pick "Fronius Solar.web" as the data
+source. The dashboard auto-sync and the manual sync button will then both
+pull from Solar.web instead of Home Assistant. Sources without credentials
+are listed but greyed out.
+
+For manual or cron-based syncs:
+
+```bash
+.venv/bin/python -m scripts.sync_solarweb --days 30
+.venv/bin/python -m scripts.sync_solarweb --from 2026-01-01 --to 2026-04-30
+.venv/bin/python -m scripts.sync_solarweb --list-systems
+```
+
+The HTTP endpoint is `POST /api/sync/solarweb` (admin-only).
+
 ## Configuration
 
 `.env` keys:
@@ -177,6 +204,9 @@ so the database stays in sync with Home Assistant.
 | `HA_URL`        | Base URL of Home Assistant (e.g. `http://ha.local:8123`)   |
 | `HA_TOKEN`      | Long-Lived Access Token                                    |
 | `HA_ENTITY_ID`  | Statistic entity (e.g. `sensor.solar_total_energy`)        |
+| `SOLARWEB_ACCESS_KEY_ID`    | Fronius Solar.web API access key ID (Premium)  |
+| `SOLARWEB_ACCESS_KEY_VALUE` | Fronius Solar.web API access key secret        |
+| `SOLARWEB_PV_SYSTEM_ID`     | Optional; auto-resolved if account has exactly one system |
 | `PLANT_KWP`     | Installed peak power, used for specific yield (kWh/kWp)    |
 | `FLASK_HOST`    | Bind address (default `127.0.0.1`, set `0.0.0.0` in Docker) |
 | `FLASK_PORT`    | HTTP port (default `5000`)                                 |
