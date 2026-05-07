@@ -1,7 +1,10 @@
 # Solar-Tracker
 
 <p align="center">
-  <img src="docs/logo.png" alt="Solar-Tracker logo" width="160">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo_dark.png">
+    <img src="assets/logo_bright.png" alt="Solar-Tracker logo" width="160">
+  </picture>
 </p>
 
 <p align="center">
