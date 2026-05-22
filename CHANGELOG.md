@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-05-22
+### Added
+- API tokens (`Settings -> API tokens`): admins can create role-scoped bearer tokens for external tools. The raw token is shown exactly once; only a SHA-256 hash is persisted. Tokens carry their own role and authenticate `/api/*` via `Authorization: Bearer <token>`.
+- `GET /api/settings` returns plant settings (kwp, price_per_kwh, currency, timezone, start_date, sync_source, auto_sync_on_open, entries_page_size).
+- `mcp_server/`: standalone MCP server (`solar-tracker-mcp`) that wraps the full REST API as 26 tools and 4 guided prompts (`import_electricity_invoice`, `import_investment_receipt`, `yearly_report`, `sync_missing_days`). Lets MCP-aware hosts (Claude Desktop, Claude Code) read every metric and write every input - including importing electricity invoices straight from a PDF.
+
 ## [2.2.1] - 2026-05-07
 ### Changed
 - Instance heartbeat telemetry now posts to Umami instead of PostHog. The `posthog` Python dependency is dropped (heartbeats use stdlib only).
@@ -302,7 +308,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.2.1...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.3.0...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -332,3 +338,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.1.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.1.0
 [2.2.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.2.0
 [2.2.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.2.1
+[2.3.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.3.0

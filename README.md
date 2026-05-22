@@ -198,6 +198,33 @@ For manual or cron-based syncs:
 
 The HTTP endpoint is `POST /api/sync/solarweb` (admin-only).
 
+## MCP server (let an LLM read and write everything)
+
+An optional MCP server in [`mcp_server/`](mcp_server/README.md) exposes
+the full REST API to MCP-aware hosts (Claude Desktop, Claude Code, etc.)
+as 26 tools and 4 guided prompts.
+
+Typical flows:
+
+- Drop an electricity invoice into the chat and have it parsed and
+  imported (`import_electricity_invoice`).
+- Ask for a year-end report (`yearly_report`).
+- Tell the model to find gaps in the production history and sync them
+  (`sync_missing_days`).
+- Record an installer/inverter receipt (`import_investment_receipt`).
+
+Quick setup:
+
+```bash
+pip install -e ./mcp_server
+# In the Solar-Tracker UI: Settings -> API tokens -> create token
+```
+
+Configure the MCP host (env vars `SOLAR_TRACKER_URL`,
+`SOLAR_TRACKER_TOKEN`) and launch with the `solar-tracker-mcp` console
+script. Full instructions and the tool list live in
+[`mcp_server/README.md`](mcp_server/README.md).
+
 ## Configuration
 
 `.env` keys:
