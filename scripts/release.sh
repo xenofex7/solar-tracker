@@ -182,7 +182,42 @@ if count != 1:
 path.write_text(new_text)
 PY
 
-git add VERSION CHANGELOG.md README.md docs/index.html docs/sitemap.xml
+# mcp_server/pyproject.toml: bump version = "X.Y.Z"
+python3 - "$new" <<'PY'
+import re, sys, pathlib
+new = sys.argv[1]
+path = pathlib.Path("mcp_server/pyproject.toml")
+text = path.read_text()
+new_text, count = re.subn(
+    r'(?m)^(version\s*=\s*")[^"]+(")',
+    rf'\g<1>{new}\g<2>',
+    text,
+    count=1,
+)
+if count != 1:
+    print("warning: version not found in mcp_server/pyproject.toml", file=sys.stderr)
+path.write_text(new_text)
+PY
+
+# mcp_server/src/solar_tracker_mcp/__init__.py: bump __version__ = "X.Y.Z"
+python3 - "$new" <<'PY'
+import re, sys, pathlib
+new = sys.argv[1]
+path = pathlib.Path("mcp_server/src/solar_tracker_mcp/__init__.py")
+text = path.read_text()
+new_text, count = re.subn(
+    r'(?m)^(__version__\s*=\s*")[^"]+(")',
+    rf'\g<1>{new}\g<2>',
+    text,
+    count=1,
+)
+if count != 1:
+    print("warning: __version__ not found in mcp_server/__init__.py", file=sys.stderr)
+path.write_text(new_text)
+PY
+
+git add VERSION CHANGELOG.md README.md docs/index.html docs/sitemap.xml \
+        mcp_server/pyproject.toml mcp_server/src/solar_tracker_mcp/__init__.py
 git commit -m "Release v${new}"
 git tag -a "v${new}" -m "Solar-Tracker v${new}"
 
