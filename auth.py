@@ -41,6 +41,19 @@ DEFAULT_ADMIN_USERNAME = "admin"
 _PBKDF2_ITER = 200_000
 _PBKDF2_ALGO = "pbkdf2_sha256"
 
+API_TOKEN_PREFIX = "st_"
+
+
+def generate_api_token() -> str:
+    """Return a fresh API token string. Show this to the user exactly once."""
+    return API_TOKEN_PREFIX + secrets.token_urlsafe(32)
+
+
+def hash_api_token(token: str) -> str:
+    """SHA-256 hash of the raw token. Stable, no salt - the token itself is
+    random enough that salting buys nothing and prevents hash-based lookup."""
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
 
 def hash_password(password: str) -> str:
     """Return a self-describing password hash string."""
@@ -136,8 +149,33 @@ def _basic_auth_user() -> dict | None:
     return user
 
 
+def _bearer_token_user() -> dict | None:
+    """Return a synthetic user dict for a valid Bearer API token, or None."""
+    header = request.headers.get("Authorization", "")
+    if not header.lower().startswith("bearer "):
+        return None
+    raw = header.split(" ", 1)[1].strip()
+    if not raw:
+        return None
+    record = db.get_api_token_by_hash(hash_api_token(raw))
+    if record is None:
+        return None
+    db.touch_api_token(record["id"])
+    # API tokens are not bound to a user row; we return a synthetic dict that
+    # carries the role so authorization decorators can act on it.
+    return {
+        "id": -record["id"],
+        "username": f"token:{record['name']}",
+        "role": record["role"],
+        "password_hash": None,
+        "created_at": record["created_at"],
+        "updated_at": record["created_at"],
+        "is_api_token": True,
+    }
+
+
 def load_current_user() -> dict | None:
-    """Resolve the current user from session, Basic Auth, or auto-login."""
+    """Resolve the current user from session, Bearer/Basic Auth, or auto-login."""
     user_id = session.get("user_id")
     if user_id is not None:
         user = db.get_user_by_id(user_id)
@@ -147,6 +185,9 @@ def load_current_user() -> dict | None:
         session.pop("user_id", None)
 
     if request.path.startswith("/api/"):
+        bearer = _bearer_token_user()
+        if bearer is not None:
+            return bearer
         basic = _basic_auth_user()
         if basic is not None:
             return basic

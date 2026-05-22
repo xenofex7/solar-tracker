@@ -53,6 +53,15 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS api_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    token_hash TEXT UNIQUE NOT NULL,
+    role TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    last_used_at TEXT
+);
+
 DROP TABLE IF EXISTS electricity_costs;
 """
 
@@ -458,6 +467,51 @@ def count_admins() -> int:
             "SELECT COUNT(*) AS c FROM users WHERE role = 'admin'"
         ).fetchone()
     return int(row["c"])
+
+
+def create_api_token(name: str, token_hash: str, role: str) -> int:
+    now = datetime.utcnow().isoformat(timespec="seconds")
+    with connect() as conn:
+        cur = conn.execute(
+            "INSERT INTO api_tokens (name, token_hash, role, created_at, last_used_at) "
+            "VALUES (?, ?, ?, ?, NULL)",
+            (name, token_hash, role, now),
+        )
+        return cur.lastrowid
+
+
+def list_api_tokens() -> list[dict]:
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT id, name, role, created_at, last_used_at "
+            "FROM api_tokens ORDER BY id"
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def get_api_token_by_hash(token_hash: str) -> dict | None:
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT id, name, role, created_at, last_used_at "
+            "FROM api_tokens WHERE token_hash = ?",
+            (token_hash,),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def touch_api_token(token_id: int) -> None:
+    now = datetime.utcnow().isoformat(timespec="seconds")
+    with connect() as conn:
+        conn.execute(
+            "UPDATE api_tokens SET last_used_at = ? WHERE id = ?",
+            (now, token_id),
+        )
+
+
+def delete_api_token(token_id: int) -> bool:
+    with connect() as conn:
+        cur = conn.execute("DELETE FROM api_tokens WHERE id = ?", (token_id,))
+        return cur.rowcount > 0
 
 
 def available_years() -> list[int]:

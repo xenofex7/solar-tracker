@@ -388,3 +388,105 @@ def test_create_user_without_password_rejected(app_ctx):
         json={"username": "ghost", "role": "readonly", "password": "pw"},
     )
     assert r.status_code == 200
+
+
+def _make_auth_bearer(token: str) -> dict:
+    return {"Authorization": f"Bearer {token}"}
+
+
+def test_api_token_create_and_use(app_ctx):
+    """Admin creates a token, then uses it for read + write API calls."""
+    _app, client, _db = app_ctx
+    import auth
+
+    admin = _db.get_user_by_name(auth.DEFAULT_ADMIN_USERNAME)
+    _db.update_user(admin["id"], password_hash=auth.hash_password("adminpw"))
+    client.post("/login", data={"username": "admin", "password": "adminpw"})
+
+    # Create a readonly token.
+    r = client.post("/api/tokens", json={"name": "ro-token", "role": "readonly"})
+    assert r.status_code == 200, r.data
+    ro_token = r.get_json()["token"]
+    assert ro_token.startswith("st_")
+
+    # Create an admin token.
+    r = client.post("/api/tokens", json={"name": "admin-token", "role": "admin"})
+    assert r.status_code == 200
+    admin_token = r.get_json()["token"]
+
+    # Drop the session so we test pure bearer auth.
+    client.post("/logout")
+
+    # Readonly token: GET works, POST is rejected.
+    r = client.get("/api/production", headers=_make_auth_bearer(ro_token))
+    assert r.status_code == 200
+    r = client.post(
+        "/api/production",
+        headers=_make_auth_bearer(ro_token),
+        json={"date": "2026-01-01", "kwh": 1.0},
+    )
+    assert r.status_code == 403
+
+    # Admin token: POST works.
+    r = client.post(
+        "/api/production",
+        headers=_make_auth_bearer(admin_token),
+        json={"date": "2026-01-02", "kwh": 5.0},
+    )
+    assert r.status_code == 200
+
+    # Invalid token -> 401.
+    r = client.get("/api/production", headers=_make_auth_bearer("st_garbage"))
+    assert r.status_code == 401
+
+    # The raw token is only returned on create; listing returns metadata only.
+    r = client.get("/api/tokens", headers=_make_auth_bearer(admin_token))
+    assert r.status_code == 200
+    body = r.get_json()
+    assert {t["name"] for t in body["items"]} == {"ro-token", "admin-token"}
+    for t in body["items"]:
+        assert "token" not in t
+        assert "token_hash" not in t
+
+
+def test_api_token_invalid_role_rejected(app_ctx):
+    _app, client, _db = app_ctx
+    import auth
+
+    admin = _db.get_user_by_name(auth.DEFAULT_ADMIN_USERNAME)
+    _db.update_user(admin["id"], password_hash=auth.hash_password("adminpw"))
+    client.post("/login", data={"username": "admin", "password": "adminpw"})
+
+    r = client.post("/api/tokens", json={"name": "bad", "role": "wizard"})
+    assert r.status_code == 400
+    r = client.post("/api/tokens", json={"name": "", "role": "readonly"})
+    assert r.status_code == 400
+
+
+def test_api_token_delete(app_ctx):
+    _app, client, _db = app_ctx
+    import auth
+
+    admin = _db.get_user_by_name(auth.DEFAULT_ADMIN_USERNAME)
+    _db.update_user(admin["id"], password_hash=auth.hash_password("adminpw"))
+    client.post("/login", data={"username": "admin", "password": "adminpw"})
+
+    r = client.post("/api/tokens", json={"name": "tmp", "role": "readonly"})
+    tok = r.get_json()
+    token_id = tok["id"]
+    raw = tok["token"]
+
+    # Token works.
+    client.post("/logout")
+    r = client.get("/api/production", headers=_make_auth_bearer(raw))
+    assert r.status_code == 200
+
+    # Log back in as admin and delete the token.
+    client.post("/login", data={"username": "admin", "password": "adminpw"})
+    r = client.delete(f"/api/tokens/{token_id}")
+    assert r.status_code == 200
+
+    # Token no longer works.
+    client.post("/logout")
+    r = client.get("/api/production", headers=_make_auth_bearer(raw))
+    assert r.status_code == 401

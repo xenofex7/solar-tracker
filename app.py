@@ -332,6 +332,36 @@ def api_users_update(user_id):
     return jsonify({"ok": True})
 
 
+@app.route("/api/tokens", methods=["GET"])
+@auth.require_role(auth.ROLE_ADMIN)
+def api_tokens_list():
+    return jsonify({"items": db.list_api_tokens()})
+
+
+@app.route("/api/tokens", methods=["POST"])
+@auth.require_role(auth.ROLE_ADMIN)
+def api_tokens_create():
+    payload = request.get_json(force=True) or {}
+    name = (payload.get("name") or "").strip()
+    role = (payload.get("role") or "").strip()
+    if not name or len(name) > 64:
+        return jsonify({"error": "invalid_name"}), 400
+    if role not in auth.ROLES:
+        return jsonify({"error": "invalid_role"}), 400
+    raw = auth.generate_api_token()
+    new_id = db.create_api_token(name, auth.hash_api_token(raw), role)
+    # The raw token is returned exactly once. The DB only stores its hash.
+    return jsonify({"ok": True, "id": new_id, "token": raw})
+
+
+@app.route("/api/tokens/<int:token_id>", methods=["DELETE"])
+@auth.require_role(auth.ROLE_ADMIN)
+def api_tokens_delete(token_id):
+    if not db.delete_api_token(token_id):
+        return jsonify({"error": "not_found"}), 404
+    return jsonify({"ok": True})
+
+
 @app.route("/api/users/<int:user_id>", methods=["DELETE"])
 @auth.require_role(auth.ROLE_ADMIN)
 def api_users_delete(user_id):
@@ -415,6 +445,7 @@ def settings_page():
         entries_page_size=_entries_page_size(),
         auto_sync_on_open=db.get_setting("auto_sync_on_open", "0") == "1",
         users=db.list_users(),
+        api_tokens=db.list_api_tokens(),
     )
 
 
@@ -587,6 +618,20 @@ def api_targets_post():
         return jsonify({"error": "ungültige Werte"}), 400
     db.set_target(month, kwh, year)
     return jsonify({"ok": True})
+
+
+@app.route("/api/settings", methods=["GET"])
+def api_settings_get():
+    return jsonify({
+        "kwp": _kwp(),
+        "price_per_kwh": _price_per_kwh(),
+        "currency": _currency(),
+        "timezone": _timezone(),
+        "start_date": _start_date() or "",
+        "sync_source": _sync_source(),
+        "auto_sync_on_open": db.get_setting("auto_sync_on_open", "0") == "1",
+        "entries_page_size": _entries_page_size(),
+    })
 
 
 @app.route("/api/settings", methods=["POST"])
