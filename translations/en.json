@@ -271,5 +271,22 @@
   "confirm_self_demote": "Really demote your own admin account to read-only? You will lose access to settings on the next reload. Continue?",
   "col_password_confirm": "Confirm",
   "placeholder_password_confirm": "repeat",
-  "err_password_mismatch": "Passwords do not match."
+  "err_password_mismatch": "Passwords do not match.",
+  "tab_tokens": "API tokens",
+  "section_tokens": "API tokens",
+  "desc_tokens": "API tokens for external tools (e.g. the MCP server). A token inherits the rights of its role. The token value is shown only once - copy it somewhere safe immediately.",
+  "col_token_name": "Name",
+  "col_token_created": "Created",
+  "col_token_last_used": "Last used",
+  "placeholder_token_name": "e.g. mcp-server",
+  "btn_create_token": "Create token",
+  "btn_copy": "Copy",
+  "token_reveal_title": "Token created.",
+  "token_reveal_warning": "Save it now - it will never be shown again.",
+  "confirm_delete_token": "Delete token \"{name}\"?",
+  "msg_token_created": "Token created",
+  "msg_copied": "Copied to clipboard",
+  "msg_copy_failed": "Copy failed",
+  "msg_deleted": "Deleted",
+  "err_invalid_token_name": "Invalid name (max 64 characters, not empty)."
 }

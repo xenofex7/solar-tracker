@@ -271,5 +271,22 @@
   "confirm_self_demote": "Declassare davvero il tuo account admin a sola lettura? Perderai l'accesso alle impostazioni al prossimo ricaricamento. Continuare?",
   "col_password_confirm": "Conferma",
   "placeholder_password_confirm": "ripeti",
-  "err_password_mismatch": "Le password non coincidono."
+  "err_password_mismatch": "Le password non coincidono.",
+  "tab_tokens": "Token API",
+  "section_tokens": "Token API",
+  "desc_tokens": "Token API per strumenti esterni (p.es. il server MCP). Un token eredita i permessi del suo ruolo. Il valore del token viene mostrato una sola volta - copialo subito in un luogo sicuro.",
+  "col_token_name": "Nome",
+  "col_token_created": "Creato",
+  "col_token_last_used": "Ultimo utilizzo",
+  "placeholder_token_name": "es. mcp-server",
+  "btn_create_token": "Crea token",
+  "btn_copy": "Copia",
+  "token_reveal_title": "Token creato.",
+  "token_reveal_warning": "Salvalo ora - non verrà più mostrato.",
+  "confirm_delete_token": "Eliminare il token \"{name}\"?",
+  "msg_token_created": "Token creato",
+  "msg_copied": "Copiato negli appunti",
+  "msg_copy_failed": "Copia fallita",
+  "msg_deleted": "Eliminato",
+  "err_invalid_token_name": "Nome non valido (max 64 caratteri, non vuoto)."
 }

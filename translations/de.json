@@ -271,5 +271,22 @@
   "confirm_self_demote": "Eigenen Admin-Account wirklich auf Read-only herabstufen? Du verlierst beim nächsten Reload sofort den Zugriff auf die Einstellungen. Fortfahren?",
   "col_password_confirm": "Bestätigung",
   "placeholder_password_confirm": "wiederholen",
-  "err_password_mismatch": "Die Passwörter stimmen nicht überein."
+  "err_password_mismatch": "Die Passwörter stimmen nicht überein.",
+  "tab_tokens": "API-Tokens",
+  "section_tokens": "API-Tokens",
+  "desc_tokens": "API-Tokens für externe Tools (z.B. MCP-Server). Ein Token erbt die Rechte seiner Rolle. Der Token-Wert wird nur einmal angezeigt - speichere ihn sofort sicher ab.",
+  "col_token_name": "Name",
+  "col_token_created": "Erstellt",
+  "col_token_last_used": "Zuletzt verwendet",
+  "placeholder_token_name": "z.B. mcp-server",
+  "btn_create_token": "Token erstellen",
+  "btn_copy": "Kopieren",
+  "token_reveal_title": "Token erstellt.",
+  "token_reveal_warning": "Speichere ihn jetzt - er wird nie wieder angezeigt.",
+  "confirm_delete_token": "Token \"{name}\" wirklich löschen?",
+  "msg_token_created": "Token erstellt",
+  "msg_copied": "In Zwischenablage kopiert",
+  "msg_copy_failed": "Kopieren fehlgeschlagen",
+  "msg_deleted": "Gelöscht",
+  "err_invalid_token_name": "Ungültiger Name (max. 64 Zeichen, nicht leer)."
 }

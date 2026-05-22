@@ -271,5 +271,22 @@
   "confirm_self_demote": "¿Realmente degradar tu propia cuenta de admin a solo lectura? Perderás el acceso a la configuración en la próxima recarga. ¿Continuar?",
   "col_password_confirm": "Confirmar",
   "placeholder_password_confirm": "repetir",
-  "err_password_mismatch": "Las contraseñas no coinciden."
+  "err_password_mismatch": "Las contraseñas no coinciden.",
+  "tab_tokens": "Tokens API",
+  "section_tokens": "Tokens API",
+  "desc_tokens": "Tokens API para herramientas externas (p.ej. el servidor MCP). Un token hereda los permisos de su rol. El valor del token se muestra solo una vez - cópialo de inmediato en un lugar seguro.",
+  "col_token_name": "Nombre",
+  "col_token_created": "Creado",
+  "col_token_last_used": "Último uso",
+  "placeholder_token_name": "p.ej. mcp-server",
+  "btn_create_token": "Crear token",
+  "btn_copy": "Copiar",
+  "token_reveal_title": "Token creado.",
+  "token_reveal_warning": "Guárdalo ahora - no se mostrará nunca más.",
+  "confirm_delete_token": "¿Eliminar el token \"{name}\"?",
+  "msg_token_created": "Token creado",
+  "msg_copied": "Copiado al portapapeles",
+  "msg_copy_failed": "Fallo al copiar",
+  "msg_deleted": "Eliminado",
+  "err_invalid_token_name": "Nombre no válido (máx. 64 caracteres, no vacío)."
 }

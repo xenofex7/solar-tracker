@@ -271,5 +271,22 @@
   "confirm_self_demote": "Rétrograder vraiment votre propre compte admin en lecture seule ? Vous perdrez l'accès aux paramètres au prochain rechargement. Continuer ?",
   "col_password_confirm": "Confirmation",
   "placeholder_password_confirm": "répéter",
-  "err_password_mismatch": "Les mots de passe ne correspondent pas."
+  "err_password_mismatch": "Les mots de passe ne correspondent pas.",
+  "tab_tokens": "Jetons API",
+  "section_tokens": "Jetons API",
+  "desc_tokens": "Jetons API pour outils externes (par ex. le serveur MCP). Un jeton hérite des droits de son rôle. La valeur du jeton n'est affichée qu'une seule fois - copiez-la immédiatement en lieu sûr.",
+  "col_token_name": "Nom",
+  "col_token_created": "Créé",
+  "col_token_last_used": "Dernière utilisation",
+  "placeholder_token_name": "ex. mcp-server",
+  "btn_create_token": "Créer un jeton",
+  "btn_copy": "Copier",
+  "token_reveal_title": "Jeton créé.",
+  "token_reveal_warning": "Sauvegardez-le maintenant - il ne sera plus jamais affiché.",
+  "confirm_delete_token": "Supprimer le jeton \"{name}\" ?",
+  "msg_token_created": "Jeton créé",
+  "msg_copied": "Copié dans le presse-papiers",
+  "msg_copy_failed": "Échec de la copie",
+  "msg_deleted": "Supprimé",
+  "err_invalid_token_name": "Nom invalide (max 64 caractères, non vide)."
 }

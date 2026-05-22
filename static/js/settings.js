@@ -535,3 +535,68 @@ if (userForm) {
     });
   });
 }
+
+function tokenErrorMessage(code) {
+  const map = {
+    invalid_name: window.T?.err_invalid_token_name || 'Invalid name',
+    invalid_role: window.T?.err_invalid_role || 'Invalid role',
+    not_found: window.T?.err_not_found || 'Not found',
+  };
+  return map[code] || (window.T?.msg_save_error || 'Save error');
+}
+
+const tokenForm = document.getElementById('token-form');
+if (tokenForm) {
+  tokenForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const body = {
+      name: e.target.name.value.trim(),
+      role: e.target.role.value,
+    };
+    const r = await fetch('/api/tokens', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    if (r.ok) {
+      const j = await r.json();
+      const reveal = document.getElementById('token-reveal');
+      const value = document.getElementById('token-reveal-value');
+      if (reveal && value) {
+        value.textContent = j.token;
+        reveal.hidden = false;
+        reveal.scrollIntoView({behavior:'smooth', block:'nearest'});
+      }
+      window.queueToast(window.T?.msg_token_created || 'Token created', 'success');
+      // Don't reload yet: the raw token is only shown once. Reloading would hide it.
+    } else {
+      const j = await r.json().catch(() => ({}));
+      window.showToast(tokenErrorMessage(j.error), 'error');
+    }
+  });
+
+  const copyBtn = document.getElementById('token-copy');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const v = document.getElementById('token-reveal-value')?.textContent || '';
+      if (!v) return;
+      try {
+        await navigator.clipboard.writeText(v);
+        window.showToast(window.T?.msg_copied || 'Copied', 'success');
+      } catch {
+        window.showToast(window.T?.msg_copy_failed || 'Copy failed', 'error');
+      }
+    });
+  }
+
+  document.querySelectorAll('#tokens-table button.del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const tpl = window.T?.confirm_delete_token || 'Delete token "{name}"?';
+      if (!confirm(tpl.replace('{name}', btn.dataset.name))) return;
+      const r = await fetch(`/api/tokens/${btn.dataset.id}`, {method:'DELETE'});
+      if (r.ok) {
+        window.queueToast(window.T?.msg_deleted || 'Deleted', 'success');
+        location.reload();
+      } else {
+        const j = await r.json().catch(() => ({}));
+        window.showToast(tokenErrorMessage(j.error), 'error');
+      }
+    });
+  });
+}
