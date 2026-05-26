@@ -14,6 +14,7 @@ with env vars:
 
 from __future__ import annotations
 
+import functools
 from typing import Any, Literal
 
 from mcp.server.fastmcp import FastMCP
@@ -27,16 +28,19 @@ client = SolarTrackerClient()
 
 def _safe(call):
     """Decorator wrapper that turns SolarTrackerError into a structured error
-    dict instead of crashing the MCP server."""
+    dict instead of crashing the MCP server.
 
+    functools.wraps preserves the wrapped function's signature so FastMCP's
+    schema introspection sees the real parameter names, not (*args, **kwargs).
+    """
+
+    @functools.wraps(call)
     def wrapped(*args: Any, **kwargs: Any) -> Any:
         try:
             return call(*args, **kwargs)
         except SolarTrackerError as e:
             return {"error": str(e)}
 
-    wrapped.__name__ = call.__name__
-    wrapped.__doc__ = call.__doc__
     return wrapped
 
 
