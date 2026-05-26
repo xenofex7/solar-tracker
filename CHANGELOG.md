@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.3.1] - 2026-05-26
 ### Fixed
 - `mcp_server`: tool schemas now reflect the real parameter signatures. The previous `_safe` decorator wrapped each tool without `functools.wraps`, so FastMCP introspected `(*args, **kwargs)` instead of the actual arguments and every tool call from an MCP host failed with a Pydantic validation error.
 
@@ -310,7 +312,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.3.1...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -341,3 +343,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.2.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.2.0
 [2.2.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.2.1
 [2.3.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.3.0
+[2.3.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.3.1
