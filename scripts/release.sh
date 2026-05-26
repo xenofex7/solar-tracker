@@ -228,6 +228,17 @@ git push origin main "v${new}"
 echo
 echo "Done. GitHub Actions will build and push ghcr.io/xenofex7/solar-tracker:${new}"
 
+# Watchtower nudge: ask the Synology host to pull the new image as soon as
+# it appears on GHCR, instead of waiting for the next poll cycle. The helper
+# lives in a sibling repo so the same wiring works for every project. The
+# `|| true` keeps the release green if the Synology is offline or the helper
+# isn't installed - the tag is already pushed, the image will follow.
+if [[ -x "$HOME/Development/synology-server/update.sh" ]]; then
+  echo
+  echo "Nudging Watchtower on the Synology host…"
+  "$HOME/Development/synology-server/update.sh" solar-tracker || true
+fi
+
 # Docs sanity reminder. The release script auto-updates docs/index.html
 # (softwareVersion in the JSON-LD) and docs/sitemap.xml (lastmod), but the
 # user-facing copy in docs/ - meta descriptions, OG/Twitter tags, JSON-LD
