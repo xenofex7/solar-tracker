@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- `mcp_server`: tool schemas now reflect the real parameter signatures. The previous `_safe` decorator wrapped each tool without `functools.wraps`, so FastMCP introspected `(*args, **kwargs)` instead of the actual arguments and every tool call from an MCP host failed with a Pydantic validation error.
 
 ## [2.3.0] - 2026-05-22
 ### Added
