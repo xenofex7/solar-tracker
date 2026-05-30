@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Dashboard KPI "Effective electricity price" now displays per-kWh prices in subunits where the currency has one (CHF -> Rp, EUR -> ct, USD -> ¢, GBP -> p), e.g. `14.5 Rp/kWh` instead of `0.145 CHF/kWh`. The info tooltip's comparison value uses the same unit. Currencies without a configured subunit keep the previous `0.145 CHF/kWh` format.
 
 ## [2.3.1] - 2026-05-26
 ### Fixed
