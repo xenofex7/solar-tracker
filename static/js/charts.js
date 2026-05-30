@@ -496,14 +496,21 @@ function renderKpis(data) {
     const effPrice = sc.effective_price_per_kwh ?? 0;
     const importPrice = grid.totals.import?.avg_price ?? 0;
     const totalCons = sc.total_consumption_kwh ?? 0;
-    const fmtPrice = (v) => `${(Number(v) || 0).toLocaleString(MONEY_LOC(), {minimumFractionDigits: 3, maximumFractionDigits: 3})} ${CUR()}/kWh`;
+    // Show per-kWh prices in subunits (Rappen/cents) where the currency has one.
+    const PRICE_SUBUNIT = { CHF: 'Rp', EUR: 'ct', USD: '¢', GBP: 'p' };
+    const priceSub = PRICE_SUBUNIT[CUR()];
+    const priceUnit = priceSub || CUR();
+    const priceFactor = priceSub ? 100 : 1;
+    const priceDigits = priceSub ? 1 : 3;
+    const fmtPriceNum = (v) => ((Number(v) || 0) * priceFactor).toLocaleString(MONEY_LOC(), {minimumFractionDigits: priceDigits, maximumFractionDigits: priceDigits});
+    const fmtPrice = (v) => `${fmtPriceNum(v)} ${priceUnit}/kWh`;
     const effPriceInfo = `<h4>${esc(T.kpi_effective_price_info_title || 'How this is calculated')}</h4>`
       + `<ul>`
       + `<li>${esc(T.kpi_effective_price_info_net || 'Net cost:')} <strong>${fmtMoney(net)}</strong></li>`
       + `<li>${esc(T.kpi_effective_price_info_cons || 'Total consumption:')} <strong>${fmtKwh(totalCons)}</strong></li>`
       + `<li>${esc(T.kpi_effective_price_info_formula || 'Net cost / (self-consumed + imported)')}</li>`
       + `</ul>`
-      + `<p class="muted">${esc((T.kpi_effective_price_info_note || 'Without PV you would pay {tariff} {currency}/kWh.').replace('{tariff}', importPrice.toLocaleString(MONEY_LOC(), {minimumFractionDigits: 3, maximumFractionDigits: 3})).replace('{currency}', CUR()))}</p>`;
+      + `<p class="muted">${esc((T.kpi_effective_price_info_note || 'Without PV you would pay {tariff} {currency}/kWh.').replace('{tariff}', fmtPriceNum(importPrice)).replace('{currency}', priceUnit))}</p>`;
     energy.push(
       { label: T.kpi_net_cost || 'Net electricity cost', value: fmtMoney(net) },
       { label: T.kpi_savings_vs_no_pv || 'Savings vs. no PV', value: fmtMoney(sc.savings_vs_no_pv ?? 0), cls: (sc.savings_vs_no_pv ?? 0) > 0 ? 'good' : '' },
