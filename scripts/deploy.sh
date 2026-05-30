@@ -4,21 +4,42 @@
 # examples, commits, tags and pushes.
 #
 # Usage:
-#   scripts/release.sh <version>     # e.g. scripts/release.sh 1.1.0
-#   scripts/release.sh patch         # 1.0.0 -> 1.0.1
-#   scripts/release.sh minor         # 1.0.0 -> 1.1.0
-#   scripts/release.sh major         # 1.0.0 -> 2.0.0
+#   scripts/deploy.sh <version>      # e.g. scripts/deploy.sh 1.1.0
+#   scripts/deploy.sh patch          # 1.0.0 -> 1.0.1
+#   scripts/deploy.sh minor          # 1.0.0 -> 1.1.0
+#   scripts/deploy.sh major          # 1.0.0 -> 2.0.0
+#
+# Flags:
+#   -q, --quiet   After pushing, poll the triggered GitHub Actions runs
+#                 without streaming them. On success print "[OK] CI passed";
+#                 on failure write the failure log to .deploy-ci-<run-id>.log,
+#                 print the path and the run URL, then exit 1.
 
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-if [[ $# -ne 1 ]]; then
-  echo "usage: $0 <version|major|minor|patch>" >&2
+arg=""
+quiet=false
+for a in "$@"; do
+  case "$a" in
+    -q|--quiet) quiet=true ;;
+    -*) echo "unknown flag: $a" >&2; exit 1 ;;
+    *)
+      if [[ -n "$arg" ]]; then
+        echo "usage: $0 <version|major|minor|patch> [-q]" >&2
+        exit 1
+      fi
+      arg="$a"
+      ;;
+  esac
+done
+
+if [[ -z "$arg" ]]; then
+  echo "usage: $0 <version|major|minor|patch> [-q]" >&2
   exit 1
 fi
 
-arg="$1"
 current=$(cat VERSION)
 
 bump_part() {
@@ -276,3 +297,68 @@ echo " GitHub Pages will not auto-correct stale wording."
 echo " If anything above looks outdated for v${new}, commit a follow-up:"
 echo "   git commit -m \"Update docs site for v${new}\" && git push"
 echo "===================================================================="
+
+# Quiet CI watch (-q / --quiet): poll the runs this push triggered without
+# streaming them. Compact result so the caller's context stays small. The
+# release is already pushed at this point, so any early-out here exits 0 and
+# leaves the tag in place - only a genuine CI failure exits non-zero.
+if [[ "$quiet" == true ]]; then
+  echo
+  if ! command -v gh >/dev/null 2>&1 || ! gh auth status >/dev/null 2>&1; then
+    echo "[skip] gh not available/authenticated - not watching CI."
+    echo "       Check https://github.com/xenofex7/solar-tracker/actions"
+    exit 0
+  fi
+
+  sha=$(git rev-parse HEAD)
+  echo "Watching GitHub Actions for ${sha:0:7} (quiet)…"
+
+  # Runs may take a few seconds to register after the push.
+  ids=""
+  for _ in $(seq 1 12); do
+    ids=$(gh run list --limit 30 --json databaseId,headSha \
+            --jq ".[] | select(.headSha==\"$sha\") | .databaseId" 2>/dev/null || true)
+    [[ -n "$ids" ]] && break
+    sleep 5
+  done
+  if [[ -z "$ids" ]]; then
+    echo "[skip] no workflow runs found for ${sha:0:7} after waiting."
+    echo "       Check https://github.com/xenofex7/solar-tracker/actions"
+    exit 0
+  fi
+
+  failed=0
+  for id in $ids; do
+    # Poll this run until it completes (max ~30 min, then give up gracefully).
+    status="" conclusion=""
+    for _ in $(seq 1 180); do
+      read -r status conclusion < <(
+        gh run view "$id" --json status,conclusion \
+          --jq '"\(.status) \(.conclusion)"' 2>/dev/null || echo "unknown "
+      )
+      [[ "$status" == "completed" ]] && break
+      sleep 10
+    done
+
+    name=$(gh run view "$id" --json name --jq '.name' 2>/dev/null || echo "run $id")
+    url=$(gh run view "$id" --json url --jq '.url' 2>/dev/null || echo "")
+
+    if [[ "$status" != "completed" ]]; then
+      failed=1
+      echo "[TIMEOUT] ${name} still running -> ${url}"
+    elif [[ "$conclusion" == "success" ]]; then
+      echo "[OK]   ${name}"
+    else
+      failed=1
+      log=".deploy-ci-${id}.log"
+      gh run view "$id" --log-failed > "$log" 2>/dev/null || true
+      echo "[FAIL] ${name} (${conclusion}) -> ${log}"
+      echo "       ${url}"
+    fi
+  done
+
+  if [[ "$failed" -ne 0 ]]; then
+    exit 1
+  fi
+  echo "[OK] CI passed"
+fi
