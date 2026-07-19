@@ -288,5 +288,8 @@
   "msg_copied": "In Zwischenablage kopiert",
   "msg_copy_failed": "Kopieren fehlgeschlagen",
   "msg_deleted": "Gelöscht",
-  "err_invalid_token_name": "Ungültiger Name (max. 64 Zeichen, nicht leer)."
+  "err_invalid_token_name": "Ungültiger Name (max. 64 Zeichen, nicht leer).",
+  "placeholder_date": "tt.mm.jjjj",
+  "err_invalid_date": "Ungültiges Datum (tt.mm.jjjj)",
+  "btn_calendar": "Kalender"
 }

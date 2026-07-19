@@ -288,5 +288,8 @@
   "msg_copied": "Copiado al portapapeles",
   "msg_copy_failed": "Fallo al copiar",
   "msg_deleted": "Eliminado",
-  "err_invalid_token_name": "Nombre no válido (máx. 64 caracteres, no vacío)."
+  "err_invalid_token_name": "Nombre no válido (máx. 64 caracteres, no vacío).",
+  "placeholder_date": "dd.mm.aaaa",
+  "err_invalid_date": "Fecha no válida (dd.mm.aaaa)",
+  "btn_calendar": "Calendario"
 }

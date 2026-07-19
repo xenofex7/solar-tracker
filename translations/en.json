@@ -288,5 +288,8 @@
   "msg_copied": "Copied to clipboard",
   "msg_copy_failed": "Copy failed",
   "msg_deleted": "Deleted",
-  "err_invalid_token_name": "Invalid name (max 64 characters, not empty)."
+  "err_invalid_token_name": "Invalid name (max 64 characters, not empty).",
+  "placeholder_date": "dd.mm.yyyy",
+  "err_invalid_date": "Invalid date (dd.mm.yyyy)",
+  "btn_calendar": "Calendar"
 }

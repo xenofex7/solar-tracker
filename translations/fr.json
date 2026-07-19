@@ -288,5 +288,8 @@
   "msg_copied": "Copié dans le presse-papiers",
   "msg_copy_failed": "Échec de la copie",
   "msg_deleted": "Supprimé",
-  "err_invalid_token_name": "Nom invalide (max 64 caractères, non vide)."
+  "err_invalid_token_name": "Nom invalide (max 64 caractères, non vide).",
+  "placeholder_date": "jj.mm.aaaa",
+  "err_invalid_date": "Date invalide (jj.mm.aaaa)",
+  "btn_calendar": "Calendrier"
 }

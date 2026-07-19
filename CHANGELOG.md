@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- All date fields now enforce the dd.mm.yyyy format regardless of browser or OS locale: native `<input type="date">` is replaced by a masked text field with a calendar popup (day/month/year drill-down, week starts Monday). Typed dates are validated (e.g. 31.02. is rejected) and normalized on blur; values are still submitted as ISO (yyyy-mm-dd), so the API is unchanged.
 
 ## [2.3.2] - 2026-05-30
 ### Changed
