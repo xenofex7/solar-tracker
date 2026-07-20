@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.3.3] - 2026-07-20
 ### Changed
 - All date fields now enforce the dd.mm.yyyy format regardless of browser or OS locale: native `<input type="date">` is replaced by a masked text field with a calendar popup (day/month/year drill-down, week starts Monday). Typed dates are validated (e.g. 31.02. is rejected) and normalized on blur; values are still submitted as ISO (yyyy-mm-dd), so the API is unchanged.
 
@@ -318,7 +320,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.3.2...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.3.3...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -351,3 +353,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.3.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.3.0
 [2.3.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.3.1
 [2.3.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.3.2
+[2.3.3]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.3.3

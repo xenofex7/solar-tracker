@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "solar-tracker-mcp"
-version = "2.3.2"
+version = "2.3.3"
 description = "MCP server for Solar-Tracker - lets LLMs read and write all Solar-Tracker data via tools and prompts."
 readme = "README.md"
 requires-python = ">=3.11"
