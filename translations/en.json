@@ -1,6 +1,10 @@
 {
   "locale": "en-GB",
-  "nav_dashboard": "Dashboard",
+  "nav_overview": "Overview",
+  "nav_production": "Production",
+  "nav_finance": "Finances",
+  "nav_energy": "Grid & Energy",
+  "nav_compare": "Comparisons",
   "nav_settings": "Settings",
   "lang_label": "Language",
   "theme_toggle": "Toggle theme",

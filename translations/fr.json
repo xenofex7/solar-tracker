@@ -1,6 +1,10 @@
 {
   "locale": "fr-FR",
-  "nav_dashboard": "Tableau de bord",
+  "nav_overview": "Aperçu",
+  "nav_production": "Production",
+  "nav_finance": "Finances",
+  "nav_energy": "Réseau & énergie",
+  "nav_compare": "Comparaisons",
   "nav_settings": "Réglages",
   "lang_label": "Langue",
   "theme_toggle": "Changer de thème",

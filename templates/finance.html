@@ -1,0 +1,18 @@
+{% extends "dash.html" %}
+{% block title %}{{ T[page_title_key] }} · Solar-Tracker{% endblock %}
+{% block dash_content %}
+<section class="grid">
+  <div class="card wide">
+    <h3>{{ T.chart_payback_title }}</h3>
+    <canvas id="chart-payback" role="img" aria-label="{{ T.chart_payback_title }}"></canvas>
+  </div>
+  <div class="card wide">
+    <h3>{{ T.chart_savings_title }}</h3>
+    <canvas id="chart-savings-vs-nopv" role="img" aria-label="{{ T.chart_savings_title }}"></canvas>
+  </div>
+  <div class="card wide">
+    <h3>{{ T.chart_finance_flow_title }}</h3>
+    <canvas id="chart-finance-flow" role="img" aria-label="{{ T.chart_finance_flow_title }}"></canvas>
+  </div>
+</section>
+{% endblock %}

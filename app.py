@@ -391,17 +391,42 @@ def _entries_page_size() -> str:
     return val if val in ENTRIES_PAGE_SIZES else "25"
 
 
-@app.route("/")
-def dashboard():
+def _render_dash(template, title_key):
     years = db.available_years() or [date.today().year]
     auto_sync = db.get_setting("auto_sync_on_open", "0") == "1"
     return render_template(
-        "dashboard.html",
+        template,
+        page_title_key=title_key,
         years=years,
         current_year=years[-1],
         auto_sync_on_open=auto_sync,
         sync_source=_sync_source(),
     )
+
+
+@app.route("/")
+def dashboard():
+    return _render_dash("dashboard.html", "nav_overview")
+
+
+@app.route("/production")
+def production_page():
+    return _render_dash("production.html", "nav_production")
+
+
+@app.route("/finance")
+def finance_page():
+    return _render_dash("finance.html", "nav_finance")
+
+
+@app.route("/energy")
+def energy_page():
+    return _render_dash("energy.html", "nav_energy")
+
+
+@app.route("/compare")
+def compare_page():
+    return _render_dash("compare.html", "nav_compare")
 
 
 @app.route("/settings")

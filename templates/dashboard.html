@@ -1,83 +1,16 @@
-{% extends "base.html" %}
-{% block title %}Dashboard · Solar-Tracker{% endblock %}
-{% block header_extra %}
-<div class="header-filter">
-  <label for="year-select">{{ T.label_year }}</label>
-  <select id="year-select" data-auto-sync="{{ '1' if auto_sync_on_open and is_admin else '0' }}" data-sync-source="{{ sync_source }}">
-    <option value="all">{{ T.option_all }}</option>
-    {% for y in years %}
-      <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
-    {% endfor %}
-  </select>
-  <span class="muted" id="status"></span>
-</div>
-{% endblock %}
-{% block content %}
+{% extends "dash.html" %}
+{% block title %}{{ T[page_title_key] }} · Solar-Tracker{% endblock %}
+{% block dash_content %}
 <section class="kpis" id="kpis"></section>
 
 <section class="grid">
-  <div class="card">
+  <div class="card wide">
     <h3>{{ T.chart_monthly_title }}</h3>
     <canvas id="chart-monthly" role="img" aria-label="{{ T.chart_monthly_title }}"></canvas>
-  </div>
-  <div class="card">
-    <h3>{{ T.chart_deviation_title }}</h3>
-    <canvas id="chart-deviation" role="img" aria-label="{{ T.chart_deviation_title }}"></canvas>
   </div>
   <div class="card wide">
     <h3>{{ T.chart_cumulative_title }}</h3>
     <canvas id="chart-cumulative" role="img" aria-label="{{ T.chart_cumulative_title }}"></canvas>
   </div>
-  <div class="card wide">
-    <h3>{{ T.chart_daily_title }}</h3>
-    <canvas id="chart-daily" role="img" aria-label="{{ T.chart_daily_title }}"></canvas>
-  </div>
-  <div class="card wide">
-    <h3>{{ T.chart_heatmap_title }}</h3>
-    <canvas id="chart-heatmap" role="img" aria-label="{{ T.chart_heatmap_title }}"></canvas>
-  </div>
-  <div class="card wide">
-    <h3>{{ T.chart_payback_title }}</h3>
-    <canvas id="chart-payback" role="img" aria-label="{{ T.chart_payback_title }}"></canvas>
-  </div>
-  <div class="card wide">
-    <h3>{{ T.chart_energy_flows_title }}</h3>
-    <canvas id="chart-energy-flows" role="img" aria-label="{{ T.chart_energy_flows_title }}"></canvas>
-  </div>
-  <div class="card">
-    <h3>{{ T.chart_self_ratio_title }}</h3>
-    <canvas id="chart-self-ratio" role="img" aria-label="{{ T.chart_self_ratio_title }}"></canvas>
-  </div>
-  <div class="card">
-    <h3>{{ T.chart_finance_flow_title }}</h3>
-    <canvas id="chart-finance-flow" role="img" aria-label="{{ T.chart_finance_flow_title }}"></canvas>
-  </div>
-  <div class="card wide">
-    <h3>{{ T.chart_savings_title }}</h3>
-    <canvas id="chart-savings-vs-nopv" role="img" aria-label="{{ T.chart_savings_title }}"></canvas>
-  </div>
-  <div class="card">
-    <h3>{{ T.chart_distribution_title }}</h3>
-    <canvas id="chart-distribution" role="img" aria-label="{{ T.chart_distribution_title }}"></canvas>
-  </div>
-  <div class="card">
-    <h3>{{ T.chart_yearcomp_title }}</h3>
-    <canvas id="chart-yearcomp" role="img" aria-label="{{ T.chart_yearcomp_title }}"></canvas>
-  </div>
-  <div class="card">
-    <h3>{{ T.chart_spec_yield_title }}</h3>
-    <canvas id="chart-spec-yield" role="img" aria-label="{{ T.chart_spec_yield_title }}"></canvas>
-  </div>
-  <div class="card">
-    <h3>{{ T.chart_day_quality_title }}</h3>
-    <canvas id="chart-day-quality" role="img" aria-label="{{ T.chart_day_quality_title }}"></canvas>
-  </div>
-  <div class="card">
-    <h3>{{ T.chart_top_title }}</h3>
-    <table class="data" id="top-table"><thead><tr><th>{{ T.col_date }}</th><th>kWh</th></tr></thead><tbody></tbody></table>
-  </div>
 </section>
-
-<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
-<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% endblock %}

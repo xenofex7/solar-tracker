@@ -1,0 +1,26 @@
+{% extends "dash.html" %}
+{% block title %}{{ T[page_title_key] }} · Solar-Tracker{% endblock %}
+{% block dash_content %}
+<section class="grid">
+  <div class="card wide">
+    <h3>{{ T.chart_daily_title }}</h3>
+    <canvas id="chart-daily" role="img" aria-label="{{ T.chart_daily_title }}"></canvas>
+  </div>
+  <div class="card wide">
+    <h3>{{ T.chart_heatmap_title }}</h3>
+    <canvas id="chart-heatmap" role="img" aria-label="{{ T.chart_heatmap_title }}"></canvas>
+  </div>
+  <div class="card">
+    <h3>{{ T.chart_day_quality_title }}</h3>
+    <canvas id="chart-day-quality" role="img" aria-label="{{ T.chart_day_quality_title }}"></canvas>
+  </div>
+  <div class="card">
+    <h3>{{ T.chart_top_title }}</h3>
+    <table class="data" id="top-table"><thead><tr><th>{{ T.col_date }}</th><th>kWh</th></tr></thead><tbody></tbody></table>
+  </div>
+  <div class="card wide">
+    <h3>{{ T.chart_distribution_title }}</h3>
+    <canvas id="chart-distribution" role="img" aria-label="{{ T.chart_distribution_title }}"></canvas>
+  </div>
+</section>
+{% endblock %}

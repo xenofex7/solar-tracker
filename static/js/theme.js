@@ -21,6 +21,13 @@
 
   apply(readMode());
 
+  // Apply persisted sidebar collapse state before first paint to avoid a flash.
+  try {
+    if (localStorage.getItem('sidebar-collapsed') === '1') {
+      document.documentElement.setAttribute('data-sidebar', 'collapsed');
+    }
+  } catch (e) {}
+
   if (mql) {
     var onChange = function () { if (readMode() === 'system') apply('system'); };
     if (mql.addEventListener) mql.addEventListener('change', onChange);
@@ -56,29 +63,38 @@
       });
     }
 
-    var navToggle = document.getElementById('nav-toggle');
-    var navMenu = document.getElementById('nav-menu');
-    var header = document.querySelector('header');
-    if (navToggle && navMenu && header) {
-      var close = function () {
-        header.classList.remove('nav-open');
-        navToggle.setAttribute('aria-expanded', 'false');
+    var sidebar = document.getElementById('sidebar');
+    var openBtn = document.getElementById('sidebar-open');
+    var closeBtn = document.getElementById('sidebar-close');
+    var backdrop = document.getElementById('sidebar-backdrop');
+    if (sidebar && openBtn) {
+      var closeSidebar = function () {
+        document.body.classList.remove('sidebar-open');
+        openBtn.setAttribute('aria-expanded', 'false');
       };
-      navToggle.addEventListener('click', function (e) {
-        e.stopPropagation();
-        var open = header.classList.toggle('nav-open');
-        navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      openBtn.addEventListener('click', function () {
+        document.body.classList.add('sidebar-open');
+        openBtn.setAttribute('aria-expanded', 'true');
       });
-      navMenu.querySelectorAll('a').forEach(function (a) {
-        a.addEventListener('click', close);
-      });
-      document.addEventListener('click', function (e) {
-        if (!header.classList.contains('nav-open')) return;
-        if (navMenu.contains(e.target) || navToggle.contains(e.target)) return;
-        close();
+      if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+      if (backdrop) backdrop.addEventListener('click', closeSidebar);
+      sidebar.querySelectorAll('.sidebar-nav a').forEach(function (a) {
+        a.addEventListener('click', closeSidebar);
       });
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') close();
+        if (e.key === 'Escape') closeSidebar();
+      });
+    }
+
+    var collapseBtn = document.getElementById('sidebar-collapse');
+    if (collapseBtn) {
+      collapseBtn.addEventListener('click', function () {
+        var root = document.documentElement;
+        var collapsed = root.getAttribute('data-sidebar') === 'collapsed';
+        if (collapsed) root.removeAttribute('data-sidebar');
+        else root.setAttribute('data-sidebar', 'collapsed');
+        try { localStorage.setItem('sidebar-collapsed', collapsed ? '0' : '1'); } catch (e) {}
+        window.dispatchEvent(new Event('resize'));
       });
     }
   }

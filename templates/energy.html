@@ -1,0 +1,14 @@
+{% extends "dash.html" %}
+{% block title %}{{ T[page_title_key] }} · Solar-Tracker{% endblock %}
+{% block dash_content %}
+<section class="grid">
+  <div class="card wide">
+    <h3>{{ T.chart_energy_flows_title }}</h3>
+    <canvas id="chart-energy-flows" role="img" aria-label="{{ T.chart_energy_flows_title }}"></canvas>
+  </div>
+  <div class="card wide">
+    <h3>{{ T.chart_self_ratio_title }}</h3>
+    <canvas id="chart-self-ratio" role="img" aria-label="{{ T.chart_self_ratio_title }}"></canvas>
+  </div>
+</section>
+{% endblock %}

@@ -15,22 +15,28 @@ async function loadYear(year) {
     sel.value = current || String(data.year);
   }
 
-  SolarCharts.renderKpis(data);
-  SolarCharts.renderMonthly(data);
-  SolarCharts.renderDeviation(data);
-  SolarCharts.renderCumulative(data);
-  SolarCharts.renderDaily(data);
-  SolarCharts.renderHeatmap(data);
-  SolarCharts.renderDistribution(data);
-  SolarCharts.renderYearComparison(data);
-  SolarCharts.renderSpecificYield(data);
-  SolarCharts.renderDayQuality(data);
-  SolarCharts.renderTopDays(data);
-  SolarCharts.renderPayback(data);
-  SolarCharts.renderEnergyFlows(data);
-  SolarCharts.renderSelfRatio(data);
-  SolarCharts.renderFinanceFlow(data);
-  SolarCharts.renderSavingsVsNoPv(data);
+  // Each page only contains a subset of the chart elements - render what exists.
+  const renderers = [
+    ['kpis', SolarCharts.renderKpis],
+    ['chart-monthly', SolarCharts.renderMonthly],
+    ['chart-deviation', SolarCharts.renderDeviation],
+    ['chart-cumulative', SolarCharts.renderCumulative],
+    ['chart-daily', SolarCharts.renderDaily],
+    ['chart-heatmap', SolarCharts.renderHeatmap],
+    ['chart-distribution', SolarCharts.renderDistribution],
+    ['chart-yearcomp', SolarCharts.renderYearComparison],
+    ['chart-spec-yield', SolarCharts.renderSpecificYield],
+    ['chart-day-quality', SolarCharts.renderDayQuality],
+    ['top-table', SolarCharts.renderTopDays],
+    ['chart-payback', SolarCharts.renderPayback],
+    ['chart-energy-flows', SolarCharts.renderEnergyFlows],
+    ['chart-self-ratio', SolarCharts.renderSelfRatio],
+    ['chart-finance-flow', SolarCharts.renderFinanceFlow],
+    ['chart-savings-vs-nopv', SolarCharts.renderSavingsVsNoPv],
+  ];
+  renderers.forEach(([id, render]) => {
+    if (document.getElementById(id)) render(data);
+  });
   status.textContent = '';
 }
 

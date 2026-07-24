@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Navigation redesigned as a left sidebar (in the style of the Elementar-App): logo on top, icon nav items with active state, footer with user/logout, theme toggle and version/changelog button. On desktop the sidebar collapses to an icons-only rail (persisted in `localStorage`); on mobile it becomes an overlay drawer with hamburger topbar and backdrop.
+- The dashboard is split into five focused pages, each with its own route and sidebar entry: Overview (`/`, KPIs + monthly/cumulative charts), Production (`/production`), Finances (`/finance`), Grid & Energy (`/energy`) and Comparisons (`/compare`). The year filter moved from the old header into a page header on each dashboard page. Pages only render their own charts, so they load less work per view; all data still comes from the single `/api/summary` call.
 
 ## [2.3.3] - 2026-07-20
 ### Changed
