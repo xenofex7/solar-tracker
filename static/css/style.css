@@ -699,7 +699,7 @@ form.stacked-form label {
 }
 form.stacked-form label > input,
 form.stacked-form label > select { flex: 0 0 220px; width: 220px; min-width: 0; }
-form.stacked-form button { align-self: flex-start; margin-top: 6px; }
+form.stacked-form > button { align-self: flex-start; margin-top: 6px; }
 
 .toggle-row { justify-content: space-between; }
 .toggle-label { display: flex; flex-direction: column; gap: 2px; }
