@@ -125,11 +125,28 @@ body {
 .sidebar-nav a svg { flex: 0 0 auto; }
 .sidebar-nav a:hover { background: var(--border); color: var(--text); }
 .sidebar-nav a.active { background: var(--lang-active-bg); color: var(--accent); }
+.sidebar-subnav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 2px 0 4px;
+  padding-left: 26px;
+}
+.sidebar-subnav a {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.sidebar-subnav a:hover { background: var(--border); color: var(--text); }
+.sidebar-subnav a.active { color: var(--accent); background: var(--lang-active-bg); }
 .sidebar-collapse {
   background: transparent;
   color: var(--muted);
   border: none;
-  border-top: 1px solid var(--border);
   border-radius: 0;
   padding: 8px;
   cursor: pointer;
@@ -186,6 +203,7 @@ body {
   [data-sidebar="collapsed"] .sidebar-nav { padding: 12px 8px; }
   [data-sidebar="collapsed"] .sidebar-nav a { justify-content: center; padding: 9px 0; }
   [data-sidebar="collapsed"] .sidebar-nav a span { display: none; }
+  [data-sidebar="collapsed"] .sidebar-subnav { display: none; }
   [data-sidebar="collapsed"] .sidebar-footer { padding: 10px 8px; align-items: center; }
   [data-sidebar="collapsed"] .sidebar-meta { justify-content: center; }
   [data-sidebar="collapsed"] .sidebar-collapse .icon-collapse { display: none; }
@@ -195,7 +213,7 @@ body {
 .theme-toggle {
   background: transparent;
   color: var(--muted);
-  border: 1px solid var(--border);
+  border: none;
   padding: 6px;
   border-radius: 6px;
   cursor: pointer;
@@ -575,30 +593,9 @@ tr.editing td input.edit-label { width: 100%; }
 main > .card + .card,
 .tab-panel > .card + .card { margin-top: 16px; }
 
-.tabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-.tabs button {
-  background: transparent;
-  color: var(--muted);
-  border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  padding: 10px 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.tabs button:hover { color: var(--text); background: transparent; filter: none; }
-.tabs button.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
+.tab-panel > .card { max-width: 960px; }
 
 table.data { width: 100%; border-collapse: collapse; }
 table.data th, table.data td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }

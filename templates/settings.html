@@ -3,18 +3,6 @@
 {% block content %}
 <h1>{{ T.page_title_settings }}</h1>
 
-<nav class="tabs" id="settings-tabs">
-  <button type="button" data-tab="plant" class="active">{{ T.tab_plant }}</button>
-  <button type="button" data-tab="costs">{{ T.tab_costs }}</button>
-  <button type="button" data-tab="electricity">{{ T.tab_electricity }}</button>
-  <button type="button" data-tab="targets">{{ T.tab_targets }}</button>
-  <button type="button" data-tab="entry">{{ T.tab_entry }}</button>
-  <button type="button" data-tab="ha">{{ T.tab_ha }}</button>
-  <button type="button" data-tab="users">{{ T.tab_users }}</button>
-  <button type="button" data-tab="tokens">{{ T.tab_tokens }}</button>
-  <button type="button" data-tab="lang">{{ T.lang_label }}</button>
-</nav>
-
 <section class="tab-panel active" data-tab="plant">
   <div class="card">
     <h2>{{ T.section_plant }}</h2>
@@ -56,9 +44,6 @@
       <button type="submit">{{ T.btn_save }}</button>
     </form>
   </div>
-</section>
-
-<section class="tab-panel" data-tab="costs">
   <div class="card">
     <h2>{{ T.section_costs }}</h2>
     <p class="muted">{{ T.desc_costs | safe }}</p>
@@ -91,9 +76,6 @@
       </tbody>
     </table>
   </div>
-</section>
-
-<section class="tab-panel" data-tab="electricity">
   <div class="card">
     <h2>{{ T.section_electricity }}</h2>
     <p class="muted">{{ T.desc_electricity | safe }}</p>
@@ -174,7 +156,7 @@
   </div>
 </section>
 
-<section class="tab-panel" data-tab="targets">
+<section class="tab-panel" data-tab="data">
   <div class="card">
     <h2>{{ T.section_targets }}</h2>
     <p class="muted">{{ T.desc_targets }}</p>
@@ -191,9 +173,6 @@
       <button type="submit">{{ T.btn_save_targets }}</button>
     </form>
   </div>
-</section>
-
-<section class="tab-panel" data-tab="entry">
   <div class="card">
     <h2>{{ T.section_production }}</h2>
     <p class="muted">{{ T.desc_production }}</p>
@@ -250,7 +229,7 @@
   </div>
 </section>
 
-<section class="tab-panel" data-tab="ha">
+<section class="tab-panel" data-tab="sync">
   <div class="card">
     <h2>{{ T.section_general }}</h2>
     <form id="general-sync-form" class="stacked-form">
@@ -317,7 +296,7 @@
   </div>
 </section>
 
-<section class="tab-panel" data-tab="users">
+<section class="tab-panel" data-tab="access">
   <div class="card">
     <h2>{{ T.section_users }}</h2>
     <p class="muted">{{ T.desc_users }}</p>
@@ -353,9 +332,6 @@
       </tbody>
     </table>
   </div>
-</section>
-
-<section class="tab-panel" data-tab="tokens">
   <div class="card">
     <h2>{{ T.section_tokens }}</h2>
     <p class="muted">{{ T.desc_tokens | safe }}</p>
@@ -395,7 +371,7 @@
   </div>
 </section>
 
-<section class="tab-panel" data-tab="lang">
+<section class="tab-panel" data-tab="general">
   <div class="card">
     <h2>{{ T.lang_label }}</h2>
     <div class="lang-options">

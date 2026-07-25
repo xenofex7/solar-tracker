@@ -1,18 +1,16 @@
 (() => {
-  const tabs = document.getElementById('settings-tabs');
+  const subnav = document.getElementById('settings-subnav');
   const panels = document.querySelectorAll('.tab-panel');
   const activate = (name) => {
-    tabs.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    if (subnav) subnav.querySelectorAll('a[data-tab]').forEach(a => a.classList.toggle('active', a.dataset.tab === name));
     panels.forEach(p => p.classList.toggle('active', p.dataset.tab === name));
   };
-  tabs.addEventListener('click', (e) => {
-    const b = e.target.closest('button[data-tab]');
-    if (!b) return;
-    activate(b.dataset.tab);
-    history.replaceState(null, '', '#' + b.dataset.tab);
-  });
-  const initial = (location.hash || '').replace('#', '');
-  if (initial && document.querySelector(`.tab-panel[data-tab="${initial}"]`)) activate(initial);
+  const fromHash = () => {
+    const h = (location.hash || '').replace('#', '');
+    activate(document.querySelector(`.tab-panel[data-tab="${h}"]`) ? h : 'plant');
+  };
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
 })();
 
 (() => {
