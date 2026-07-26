@@ -621,8 +621,14 @@ function renderTariffTrend(data) {
   const ctx = document.getElementById('chart-tariff');
   if (!ctx) return;
   const bills = data.grid?.bills || {};
-  const imps = (bills.import || []).filter(b => b.kwh > 0);
-  const exps = (bills.export || []).filter(b => b.kwh > 0);
+  let imps = (bills.import || []).filter(b => b.kwh > 0);
+  let exps = (bills.export || []).filter(b => b.kwh > 0);
+  if (typeof data.year === 'number') {
+    const ys = String(data.year);
+    const inYear = (b) => b.period_start.slice(0, 4) <= ys && ys <= b.period_end.slice(0, 4);
+    imps = imps.filter(inYear);
+    exps = exps.filter(inYear);
+  }
   if (!_hideIfEmpty(ctx, imps.length + exps.length > 0)) return;
 
   // One step per billing period: the price is constant within a bill.

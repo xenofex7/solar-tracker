@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- The page header (title + year filter) is now sticky: it stays visible at the top while scrolling, on mobile docked below the topbar - the year can be changed at any time without scrolling back up.
+- Tariff trend chart now honors the year filter: with a year selected it shows only billing periods overlapping that year; "All" keeps the full history.
+
 ### Fixed
 - Number inputs in the German UI showed a comma as decimal separator (e.g. "0,17"): the html lang attribute now carries the full locale (de-CH, en-GB, ...) instead of the bare language code, so browsers render number fields with the Swiss decimal point.
 

@@ -250,12 +250,17 @@ body.no-nav { display: block; }
 body.no-nav .content { overflow: visible; }
 
 .page-head {
+  position: sticky;
+  top: -20px; /* compensates the main scroll container's top padding */
+  z-index: 50;
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 16px;
+  padding: 10px 0;
+  margin-bottom: 8px;
 }
 .page-head h1 { margin: 0; font-size: 22px; }
 
@@ -812,6 +817,7 @@ code { background: var(--border); padding: 2px 6px; border-radius: 4px; font-siz
   .sidebar-collapse { display: none; }
   main { padding-top: 72px; }
   body.no-nav main { padding-top: 20px; }
+  .page-head { top: -16px; } /* 72px main padding - 56px fixed topbar */
 }
 
 .toast-container {
