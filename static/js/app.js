@@ -1,9 +1,14 @@
+let loadSeq = 0;
+
 async function loadYear(year) {
+  const seq = ++loadSeq;
   const status = document.getElementById('status');
   status.textContent = window.T?.status_loading || 'Loading\u2026';
   const r = await fetch(`/api/summary?year=${year}`);
+  if (seq !== loadSeq) return; // a newer request superseded this one
   if (!r.ok) { status.textContent = window.T?.status_load_error || 'Error loading'; return; }
   const data = await r.json();
+  if (seq !== loadSeq) return;
 
   const sel = document.getElementById('year-select');
   if (data.available_years.length) {
@@ -44,10 +49,6 @@ document.getElementById('year-select').addEventListener('change', (e) => {
   loadYear(e.target.value);
 });
 
-
-window.addEventListener('themechange', () => {
-  loadYear(document.getElementById('year-select').value);
-});
 
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.kpi-info');

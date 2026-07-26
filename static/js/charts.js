@@ -123,7 +123,7 @@ function renderDeviation(data) {
     type: 'bar',
     data: {
       labels: localizeMonths(data.months),
-      datasets: [{ label: window.T?.chart_deviation_pct || 'Deviation %', data: data.deviation_pct.map(v => v ?? 0), backgroundColor: colors }],
+      datasets: [{ label: window.T?.chart_deviation_pct || 'Deviation %', data: data.deviation_pct, backgroundColor: colors }],
     },
     options: {
       plugins: { legend: { display: false } },
@@ -195,9 +195,12 @@ function renderHeatmap(data) {
   const ctx = document.getElementById('chart-heatmap');
   const maxKwh = Math.max(1, ...data.heatmap.map(d => d.kwh));
   const points = data.heatmap.map(d => {
-    const dt = new Date(d.date);
-    const startOfYear = new Date(dt.getFullYear(), 0, 1);
-    const dayOfYear = Math.floor((dt - startOfYear) / 86400000);
+    // Parse date components locally: new Date('YYYY-MM-DD') is UTC midnight
+    // and shifts the day in timezones west of UTC.
+    const [yy, mm, dd] = d.date.split('-').map(Number);
+    const dt = new Date(yy, mm - 1, dd);
+    const startOfYear = new Date(yy, 0, 1);
+    const dayOfYear = Math.round((dt - startOfYear) / 86400000);
     const firstDow = (startOfYear.getDay() + 6) % 7;
     const week = Math.floor((dayOfYear + firstDow) / 7);
     const dow = (dt.getDay() + 6) % 7;
@@ -554,8 +557,10 @@ function renderPayback(data) {
   const actualYears = Object.keys(cumByYear).sort();
   const lastCum = cumByYear[actualYears[actualYears.length - 1]] || 0;
 
-  // Build forecast years: cumulative from last actual until investment recovered
-  const yearlyEst = fin.payback?.yearly_yield_estimate || 0;
+  // Build forecast years: cumulative from last actual until investment recovered.
+  // Fall back to the history-based daily rate so the chart projects whenever
+  // the payback KPI does (projection_basis "history" has no target estimate).
+  const yearlyEst = fin.payback?.yearly_yield_estimate || (fin.payback?.avg_daily_revenue || 0) * 365;
   const forecastByYear = {};
   if (yearlyEst > 0 && fin.payback?.remaining > 0) {
     let cum = lastCum;
@@ -755,7 +760,7 @@ function renderSpecificYield(data) {
     const chartData = vals.map((v, mi) => {
       if (firstNonZero >= 0 && mi < firstNonZero) return null;
       if (isCurrent && mi > currentMonth) return null;
-      return v || null;
+      return v;
     });
     return {
       label: year,

@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Deviation chart: months without a target no longer show a misleading "0 %" tooltip; they are simply skipped.
+- Specific yield chart: a real 0 kWh month is drawn as 0 instead of disappearing as a gap (now consistent with the year comparison).
+- Payback chart: forecast bars now also appear when the projection is history-based (previously only with maintained monthly targets, while the KPI showed a payback date either way).
+- Heatmap: dates are parsed as local dates; in timezones west of UTC every day shifted to the previous weekday.
+- Theme toggle no longer refetches /api/summary and rebuilds every chart (charts recolor in place); rapid year switching can no longer end up displaying a stale response.
+
 ### Added
 - New optional setting "Marginal import price" (Settings > Plant & Prices): the variable per-kWh price (energy + grid usage + levies, no standing charges). When set, self-consumption is valued at this marginal price in the payback projection, monthly savings and the "Savings vs. no PV" KPI. Previously the average bill price was used, which includes fixed fees (metering, demand charges) and therefore overstated the avoided cost - especially in low-consumption quarters. Empty keeps the old behavior.
 
