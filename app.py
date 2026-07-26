@@ -426,6 +426,12 @@ def compare_page():
     return _render_dash("compare.html", "nav_compare")
 
 
+@app.route("/lab")
+def lab_page():
+    # Preview page for candidate charts; not linked in the sidebar.
+    return _render_dash("lab.html", "nav_overview")
+
+
 @app.route("/settings")
 @auth.require_role(auth.ROLE_ADMIN)
 def settings_page():
