@@ -42,7 +42,7 @@ const CURRENCY_LOCALES = {
   SEK: 'sv-SE', NOK: 'nb-NO', DKK: 'da-DK', PLN: 'pl-PL', CZK: 'cs-CZ',
 };
 const MONEY_LOC = () => CURRENCY_LOCALES[CUR()] || LANG_LOC();
-const fmtInt = (v) => Math.round(Number(v) || 0).toLocaleString(LANG_LOC());
+const fmtInt = (v) => Math.round(Number(v) || 0).toLocaleString(MONEY_LOC());
 const fmtKwh = (v) => `${fmtInt(v)} kWh`;
 const fmtMoney = (v) => `${Math.round(Number(v) || 0).toLocaleString(MONEY_LOC())} ${CUR()}`;
 const fmtDate = (iso) => {
@@ -396,7 +396,7 @@ function renderKpis(data) {
   const pct = s.delta_pct;
   const deltaCls = delta >= 0 ? 'good' : 'bad';
   const best = s.best_day ? `${fmtDate(s.best_day.date)}<br><span class="sub">${fmtKwh(s.best_day.kwh)}</span>` : '-';
-  const pctStr = pct === null ? '-' : `${pct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`;
+  const pctStr = pct === null ? '-' : `${pct.toLocaleString(MONEY_LOC(), {maximumFractionDigits: 1})} %`;
   const spec = s.specific_yield !== null ? `${fmtInt(s.specific_yield)} kWh/kWp` : '-';
 
   const scopeLabel = s.year === 'all' ? (T.label_total || 'total') : `YTD ${s.year}`;
@@ -473,7 +473,7 @@ function renderKpis(data) {
     finance.push(
       { label: T.kpi_investment || 'Investment', value: fmtMoney(p.invested) },
       { label: T.kpi_revenue_total || 'Revenue to date', value: `${fmtMoney(p.revenue_total)}${revSub}`, info: revInfo },
-      { label: T.kpi_progress || 'Progress', value: `${p.progress_pct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`, cls: progressCls },
+      { label: T.kpi_progress || 'Progress', value: `${p.progress_pct.toLocaleString(MONEY_LOC(), {maximumFractionDigits: 1})} %`, cls: progressCls },
       { label: T.kpi_payback || 'Payback', value: paybackVal, info: paybackInfo },
     );
   }
@@ -516,7 +516,7 @@ function renderKpis(data) {
       { label: T.kpi_savings_vs_no_pv || 'Savings vs. no PV', value: fmtMoney(sc.savings_vs_no_pv ?? 0), cls: (sc.savings_vs_no_pv ?? 0) > 0 ? 'good' : '' },
       { label: T.kpi_effective_price || 'Effective electricity price', value: fmtPrice(effPrice), cls: (effPrice < importPrice && importPrice > 0) ? 'good' : '', info: effPriceInfo },
       { label: T.kpi_self_consumed || 'Self-consumed', value: fmtKwh(sc.self_consumed_kwh ?? 0) },
-      { label: T.kpi_self_ratio || 'Self-cons. rate', value: `${scPct.toLocaleString(T.locale || 'de-CH', {maximumFractionDigits: 1})} %`, cls: pctCls, info: ratioInfo },
+      { label: T.kpi_self_ratio || 'Self-cons. rate', value: `${scPct.toLocaleString(MONEY_LOC(), {maximumFractionDigits: 1})} %`, cls: pctCls, info: ratioInfo },
     );
   }
 
@@ -670,7 +670,7 @@ function renderSelfRatio(data) {
     options: {
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: item => `${item.parsed.y.toLocaleString(window.T?.locale || 'de-CH', {maximumFractionDigits: 1})} %` } },
+        tooltip: { callbacks: { label: item => `${item.parsed.y.toLocaleString(MONEY_LOC(), {maximumFractionDigits: 1})} %` } },
       },
       scales: { y: { beginAtZero: true, suggestedMax: 100, ticks: { callback: v => `${v} %` } } },
     },

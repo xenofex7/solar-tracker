@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 ### Changed
+- Number formatting is now consistent everywhere: plain numbers (kWh, percentages) use the same locale as money amounts, derived from the plant currency (CHF -> 1'826 kWh and 1'877 CHF). Previously kWh values followed the UI language while amounts followed the currency, which mixed separators (1,826 kWh next to 1'877 CHF).
+- Settings: content column is centered.
 - Settings: the nine tabs are grouped into five areas (Plant & Prices, Data, Sync, Access, General) that appear as indented sub-items in the sidebar while on the settings page; the tab bar is gone. Each area is deep-linkable via URL hash (e.g. `/settings#access`) and survives reloads. Settings cards are capped at 960px width for a calmer layout.
 - Sidebar polish: theme toggle without border, collapse button without top separator line.
 - Navigation redesigned as a left sidebar (in the style of the Elementar-App): logo on top, icon nav items with active state, footer with user/logout, theme toggle and version/changelog button. On desktop the sidebar collapses to an icons-only rail (persisted in `localStorage`); on mobile it becomes an overlay drawer with hamburger topbar and backdrop.

@@ -595,7 +595,8 @@ main > .card + .card,
 
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
-.tab-panel > .card { max-width: 960px; }
+/* Settings: narrower, centered content column */
+main .container:has(.tab-panel) { max-width: 960px; }
 
 table.data { width: 100%; border-collapse: collapse; }
 table.data th, table.data td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }

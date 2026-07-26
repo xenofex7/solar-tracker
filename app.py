@@ -104,15 +104,6 @@ _CURRENCY_LOCALE_FMT = {
     "CZK": (" ", ","),
 }
 
-_LANG_LOCALE_FMT = {
-    "en": (",", "."),
-    "de": ("'", "."),
-    "fr": (" ", ","),
-    "es": (".", ","),
-    "it": (".", ","),
-}
-
-
 def _format_with_seps(value, sep_t, sep_d, decimals):
     try:
         v = float(value)
@@ -127,11 +118,6 @@ def _fmt_money_value(value, currency, decimals=0):
     return _format_with_seps(value, sep_t, sep_d, decimals)
 
 
-def _fmt_num_value(value, lang, decimals=0):
-    sep_t, sep_d = _LANG_LOCALE_FMT.get(lang, ("'", "."))
-    return _format_with_seps(value, sep_t, sep_d, decimals)
-
-
 @app.context_processor
 def _inject_i18n():
     lang = i18n.get_lang(request)
@@ -141,7 +127,7 @@ def _inject_i18n():
         "T": i18n.get_translations(lang),
         "currency": cur,
         "fmt_money": lambda v, decimals=0: _fmt_money_value(v, cur, decimals),
-        "fmt_num": lambda v, decimals=0: _fmt_num_value(v, lang, decimals),
+        "fmt_num": lambda v, decimals=0: _fmt_money_value(v, cur, decimals),
     }
 
 
