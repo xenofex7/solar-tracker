@@ -37,6 +37,7 @@ async function loadYear(year) {
     ['chart-tariff', SolarCharts.renderTariffTrend],
     ['chart-energy-flows', SolarCharts.renderEnergyFlows],
     ['chart-self-ratio', SolarCharts.renderSelfRatio],
+    ['chart-autarky', SolarCharts.renderAutarky],
     ['chart-finance-flow', SolarCharts.renderFinanceFlow],
     ['chart-savings-vs-nopv', SolarCharts.renderSavingsVsNoPv],
   ];

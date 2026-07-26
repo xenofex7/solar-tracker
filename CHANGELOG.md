@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - Finances: new "Tariff trend" chart - import and export price per kWh as a stepped line per billing period, straight from the recorded grid bills.
 - Finances: two new KPIs, "Revenue per day (avg)" (with blended price and projection basis as sub-info) and "Projected per year".
-- Preview page /lab (not linked in the sidebar) with one remaining candidate chart: self-sufficiency vs. self-consumption rate.
+- Grid & Energy: new "Self-sufficiency vs. self-consumption rate" chart - how much of the household consumption the PV covers vs. how much of the production is used directly, per billed month.
 
 ### Changed
 - Payback chart: the yearly bars are replaced by the actual daily cumulative revenue line, with a dashed monthly forecast up to the investment line - the intersection now matches the payback KPI date.
