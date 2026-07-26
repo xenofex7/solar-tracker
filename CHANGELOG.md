@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.5.0] - 2026-07-26
 ### Added
 - Finances: new "Tariff trend" chart - import and export price per kWh as a stepped line per billing period, straight from the recorded grid bills.
 - Finances: two new KPIs, "Revenue per day (avg)" (with blended price and projection basis as sub-info) and "Projected per year".
@@ -347,7 +349,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.5.0...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -382,3 +384,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.3.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.3.2
 [2.3.3]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.3.3
 [2.4.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.4.0
+[2.5.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.0
