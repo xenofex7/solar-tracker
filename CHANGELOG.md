@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Number inputs in the German UI showed a comma as decimal separator (e.g. "0,17"): the html lang attribute now carries the full locale (de-CH, en-GB, ...) instead of the bare language code, so browsers render number fields with the Swiss decimal point.
 
 ## [2.5.0] - 2026-07-26
 ### Added
