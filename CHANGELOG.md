@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.5.2] - 2026-07-26
 ### Changed
 - The year filter is now global: the selection persists (localStorage) and is applied on every dashboard page, so switching pages keeps the chosen view instead of resetting to the current year.
 
@@ -359,7 +361,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.5.1...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.5.2...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -396,3 +398,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.4.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.4.0
 [2.5.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.0
 [2.5.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.1
+[2.5.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.2
