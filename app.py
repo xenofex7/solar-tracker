@@ -1001,6 +1001,7 @@ def api_summary():
             "totals": grid_tot,
             "self_consumption": sc,
             "periods": flows,
+            "bills": {"import": imports, "export": exports},
         },
         "available_years": db.available_years(),
     })

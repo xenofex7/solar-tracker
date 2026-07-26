@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Finances: new "Tariff trend" chart - import and export price per kWh as a stepped line per billing period, straight from the recorded grid bills.
+- Finances: two new KPIs, "Revenue per day (avg)" (with blended price and projection basis as sub-info) and "Projected per year".
+- Preview page /lab (not linked in the sidebar) with one remaining candidate chart: self-sufficiency vs. self-consumption rate.
+
+### Changed
+- Payback chart: the yearly bars are replaced by the actual daily cumulative revenue line, with a dashed monthly forecast up to the investment line - the intersection now matches the payback KPI date.
+- Production: the min/median/max bar triplets are replaced by a boxplot (min-max whisker, Q1-Q3 box, median marker); quartiles were already computed but never shown.
+
 ### Fixed
 - Deviation chart: months without a target no longer show a misleading "0 %" tooltip; they are simply skipped.
 - Specific yield chart: a real 0 kWh month is drawn as 0 instead of disappearing as a gap (now consistent with the year comparison).

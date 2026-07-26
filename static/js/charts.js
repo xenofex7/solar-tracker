@@ -42,6 +42,8 @@ const CURRENCY_LOCALES = {
   SEK: 'sv-SE', NOK: 'nb-NO', DKK: 'da-DK', PLN: 'pl-PL', CZK: 'cs-CZ',
 };
 const MONEY_LOC = () => CURRENCY_LOCALES[CUR()] || LANG_LOC();
+// Per-kWh prices are shown in subunits (Rappen/cents) where the currency has one.
+const PRICE_SUBUNIT = { CHF: 'Rp', EUR: 'ct', USD: '¢', GBP: 'p' };
 const fmtInt = (v) => Math.round(Number(v) || 0).toLocaleString(MONEY_LOC());
 const fmtKwh = (v) => `${fmtInt(v)} kWh`;
 const fmtMoney = (v) => `${Math.round(Number(v) || 0).toLocaleString(MONEY_LOC())} ${CUR()}`;
@@ -253,20 +255,29 @@ function renderHeatmap(data) {
 function renderDistribution(data) {
   destroy('distribution');
   const ctx = document.getElementById('chart-distribution');
-  const medians = data.monthly_distribution.map(d => d.median);
-  const mins    = data.monthly_distribution.map(d => d.min);
-  const maxs    = data.monthly_distribution.map(d => d.max);
+  const dist = data.monthly_distribution;
+  const T = window.T || {};
   charts.distribution = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: localizeMonths(data.months),
       datasets: [
-        { label: window.T?.label_min || 'Min',    data: mins,    backgroundColor: 'rgba(52,152,219,0.6)' },
-        { label: window.T?.label_median || 'Median', data: medians, backgroundColor: 'rgba(245,166,35,0.85)' },
-        { label: window.T?.label_max || 'Max',    data: maxs,    backgroundColor: 'rgba(76,175,80,0.75)' },
+        { label: `${T.label_min || 'Min'}-${T.label_max || 'Max'}`, data: dist.map(d => d.count ? [d.min, d.max] : null), backgroundColor: 'rgba(138,154,172,0.35)', barPercentage: 0.18, grouped: false, order: 3 },
+        { label: 'Q1-Q3', data: dist.map(d => d.count ? [d.q1, d.q3] : null), backgroundColor: CHART_COLORS.actual, barPercentage: 0.55, grouped: false, order: 2 },
+        { label: T.label_median || 'Median', data: dist.map(d => d.count ? d.median : null), type: 'line', showLine: false, pointRadius: 5, pointStyle: 'rectRounded', pointBackgroundColor: CHART_COLORS.text, borderColor: CHART_COLORS.text, order: 1 },
       ],
     },
-    options: { scales: { y: { beginAtZero: true, ticks: { callback: v => fmtKwh(v) } } } },
+    options: {
+      plugins: {
+        tooltip: { callbacks: { label: (i) => {
+          const d = dist[i.dataIndex];
+          if (i.datasetIndex === 0) return `${T.label_min || 'Min'} ${fmtKwh(d.min)} · ${T.label_max || 'Max'} ${fmtKwh(d.max)}`;
+          if (i.datasetIndex === 1) return `Q1 ${fmtKwh(d.q1)} · Q3 ${fmtKwh(d.q3)} · ${d.count} ${T.label_days || 'days'}`;
+          return `${T.label_median || 'Median'} ${fmtKwh(d.median)}`;
+        } } },
+      },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => fmtKwh(v) } } },
+    },
   });
 }
 
@@ -479,6 +490,15 @@ function renderKpis(data) {
       { label: T.kpi_progress || 'Progress', value: `${p.progress_pct.toLocaleString(MONEY_LOC(), {maximumFractionDigits: 1})} %`, cls: progressCls },
       { label: T.kpi_payback || 'Payback', value: paybackVal, info: paybackInfo },
     );
+    if (p.avg_daily_revenue > 0) {
+      const fmtMoney2 = (v) => `${(Number(v) || 0).toLocaleString(MONEY_LOC(), {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${CUR()}`;
+      const sub = PRICE_SUBUNIT[CUR()];
+      const blended = ((p.blended_price || 0) * (sub ? 100 : 1)).toLocaleString(MONEY_LOC(), {maximumFractionDigits: 1});
+      finance.push(
+        { label: T.kpi_revenue_per_day || 'Revenue per day', value: `${fmtMoney2(p.avg_daily_revenue)}<br><span class="sub">${blended} ${sub || CUR()}/kWh · ${basisLabel}</span>` },
+        { label: T.kpi_projected_year || 'Projected per year', value: fmtMoney2(p.avg_daily_revenue * 365) },
+      );
+    }
   }
 
   const energy = [];
@@ -499,8 +519,6 @@ function renderKpis(data) {
     const effPrice = sc.effective_price_per_kwh ?? 0;
     const importPrice = grid.totals.import?.avg_price ?? 0;
     const totalCons = sc.total_consumption_kwh ?? 0;
-    // Show per-kWh prices in subunits (Rappen/cents) where the currency has one.
-    const PRICE_SUBUNIT = { CHF: 'Rp', EUR: 'ct', USD: '¢', GBP: 'p' };
     const priceSub = PRICE_SUBUNIT[CUR()];
     const priceUnit = priceSub || CUR();
     const priceFactor = priceSub ? 100 : 1;
@@ -551,70 +569,95 @@ function renderPayback(data) {
   }
   _hideIfEmpty(ctx, true);
 
-  // Cumulative revenue per year-end
-  const cumByYear = {};
-  series.forEach(r => { cumByYear[r.date.slice(0, 4)] = r.revenue; });
-  const actualYears = Object.keys(cumByYear).sort();
-  const lastCum = cumByYear[actualYears[actualYears.length - 1]] || 0;
+  const labels = series.map(r => r.date);
+  const actual = series.map(r => r.revenue);
+  const forecast = new Array(labels.length).fill(null);
 
-  // Build forecast years: cumulative from last actual until investment recovered.
-  // Fall back to the history-based daily rate so the chart projects whenever
-  // the payback KPI does (projection_basis "history" has no target estimate).
-  const yearlyEst = fin.payback?.yearly_yield_estimate || (fin.payback?.avg_daily_revenue || 0) * 365;
-  const forecastByYear = {};
-  if (yearlyEst > 0 && fin.payback?.remaining > 0) {
-    let cum = lastCum;
-    let y = parseInt(actualYears[actualYears.length - 1]) + 1;
-    while (cum < invested && y < 2080) {
-      cum = Math.min(cum + yearlyEst, invested);
-      forecastByYear[String(y)] = cum;
-      y++;
+  // Monthly forecast steps from the last real data point to the payback date.
+  const avgDaily = fin.payback?.avg_daily_revenue || 0;
+  if (avgDaily > 0 && actual[actual.length - 1] < invested) {
+    forecast[forecast.length - 1] = actual[actual.length - 1];
+    let cum = actual[actual.length - 1];
+    let [y, m] = labels[labels.length - 1].split('-').map(Number);
+    let guard = 0;
+    while (cum < invested && guard < 600) {
+      m += 1;
+      if (m > 12) { m = 1; y += 1; }
+      cum = Math.min(cum + avgDaily * 30.44, invested);
+      labels.push(`${y}-${String(m).padStart(2, '0')}-01`);
+      actual.push(null);
+      forecast.push(cum);
+      guard += 1;
     }
   }
 
-  const allYears = [...new Set([...actualYears, ...Object.keys(forecastByYear)])].sort();
-  const actualData   = allYears.map(y => cumByYear[y]     ?? null);
-  const forecastData = allYears.map(y => forecastByYear[y] ?? null);
-  const investedLine = allYears.map(() => invested);
-
   charts.payback = new Chart(ctx, {
-    type: 'bar',
+    type: 'line',
     data: {
-      labels: allYears,
+      labels,
       datasets: [
-        {
-          label: (window.T?.chart_cumulative_revenue || 'Revenue ({currency})').replace('{currency}', CUR()),
-          data: actualData,
-          backgroundColor: CHART_COLORS.actual,
-          order: 2,
-        },
-        {
-          label: (window.T?.chart_forecast || 'Forecast ({currency})').replace('{currency}', CUR()),
-          data: forecastData,
-          backgroundColor: 'rgba(245,166,35,0.28)',
-          borderColor: CHART_COLORS.actualLine,
-          borderWidth: 1,
-          order: 2,
-        },
-        {
-          type: 'line',
-          label: (window.T?.chart_investment || 'Investment ({currency})').replace('{currency}', CUR()),
-          data: investedLine,
-          borderColor: CHART_COLORS.targetLine,
-          borderDash: [6, 4],
-          pointRadius: 0,
-          fill: false,
-          order: 1,
-        },
+        { label: (window.T?.chart_cumulative_revenue || 'Revenue ({currency})').replace('{currency}', CUR()), data: actual, borderColor: CHART_COLORS.actualLine, backgroundColor: 'rgba(245,166,35,0.15)', fill: true, pointRadius: 0, borderWidth: 2 },
+        { label: (window.T?.chart_forecast || 'Forecast ({currency})').replace('{currency}', CUR()), data: forecast, borderColor: CHART_COLORS.actualLine, borderDash: [5, 5], pointRadius: 0, borderWidth: 1.5, fill: false },
+        { label: (window.T?.chart_investment || 'Investment ({currency})').replace('{currency}', CUR()), data: labels.map(() => invested), borderColor: CHART_COLORS.targetLine, borderDash: [6, 4], pointRadius: 0, fill: false },
       ],
     },
     options: {
       plugins: {
-        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtMoney(item.parsed.y)}` } },
+        tooltip: { callbacks: {
+          title: items => fmtDate(items[0].label),
+          label: item => `${item.dataset.label}: ${fmtMoney(item.parsed.y)}`,
+        } },
       },
       scales: {
+        x: { ticks: { maxTicksLimit: 14, callback(v) { return fmtDate(this.getLabelForValue(v)); } } },
         y: { beginAtZero: true, ticks: { callback: v => fmtMoney(v) } },
       },
+    },
+  });
+}
+
+function renderTariffTrend(data) {
+  destroy('tariff');
+  const ctx = document.getElementById('chart-tariff');
+  if (!ctx) return;
+  const bills = data.grid?.bills || {};
+  const imps = (bills.import || []).filter(b => b.kwh > 0);
+  const exps = (bills.export || []).filter(b => b.kwh > 0);
+  if (!_hideIfEmpty(ctx, imps.length + exps.length > 0)) return;
+
+  // One step per billing period: the price is constant within a bill.
+  const keyOf = (b) => `${b.period_start}|${b.period_end}`;
+  const periods = [...new Map([...imps, ...exps].map(b => [keyOf(b), b])).values()]
+    .sort((a, b) => (a.period_start < b.period_start ? -1 : 1));
+  const names = window.T?.months_short || ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const labelOf = (b) => {
+    const sm = names[parseInt(b.period_start.slice(5, 7), 10) - 1];
+    const em = names[parseInt(b.period_end.slice(5, 7), 10) - 1];
+    const yy = b.period_end.slice(2, 4);
+    return sm === em ? `${sm} ${yy}` : `${sm}-${em} ${yy}`;
+  };
+  const sub = PRICE_SUBUNIT[CUR()];
+  const factor = sub ? 100 : 1;
+  const unit = sub || CUR();
+  const priceIn = (pool) => periods.map(p => {
+    const bill = pool.find(b => keyOf(b) === keyOf(p));
+    return bill ? bill.amount / bill.kwh * factor : null;
+  });
+
+  charts.tariff = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: periods.map(labelOf),
+      datasets: [
+        { label: `${window.T?.chart_import || 'Grid import'} (${unit}/kWh)`, data: priceIn(imps), borderColor: CHART_COLORS.targetLine, backgroundColor: 'rgba(52,152,219,0.12)', stepped: true, spanGaps: true },
+        { label: `${window.T?.chart_export || 'Grid export'} (${unit}/kWh)`, data: priceIn(exps), borderColor: CHART_COLORS.actualLine, backgroundColor: 'rgba(245,166,35,0.12)', stepped: true, spanGaps: true },
+      ],
+    },
+    options: {
+      plugins: {
+        tooltip: { callbacks: { label: i => `${i.dataset.label}: ${i.parsed.y.toLocaleString(MONEY_LOC(), { maximumFractionDigits: 1 })} ${unit}/kWh` } },
+      },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => `${v} ${unit}` } } },
     },
   });
 }
@@ -791,5 +834,5 @@ window.SolarCharts = {
   renderDaily, renderHeatmap, renderDistribution, renderYearComparison,
   renderTopDays, renderDayQuality, renderSpecificYield,
   renderPayback, renderEnergyFlows, renderSelfRatio, renderFinanceFlow,
-  renderSavingsVsNoPv,
+  renderSavingsVsNoPv, renderTariffTrend,
 };

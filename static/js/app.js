@@ -34,6 +34,7 @@ async function loadYear(year) {
     ['chart-day-quality', SolarCharts.renderDayQuality],
     ['top-table', SolarCharts.renderTopDays],
     ['chart-payback', SolarCharts.renderPayback],
+    ['chart-tariff', SolarCharts.renderTariffTrend],
     ['chart-energy-flows', SolarCharts.renderEnergyFlows],
     ['chart-self-ratio', SolarCharts.renderSelfRatio],
     ['chart-finance-flow', SolarCharts.renderFinanceFlow],
