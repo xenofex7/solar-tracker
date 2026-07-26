@@ -47,7 +47,17 @@ async function loadYear(year) {
   status.textContent = '';
 }
 
-document.getElementById('year-select').addEventListener('change', (e) => {
+// The year selection is global: persist it so switching pages keeps the view.
+const yearSelect = document.getElementById('year-select');
+try {
+  const savedYear = localStorage.getItem('year-filter');
+  if (savedYear && [...yearSelect.options].some(o => o.value === savedYear)) {
+    yearSelect.value = savedYear;
+  }
+} catch (e) {}
+
+yearSelect.addEventListener('change', (e) => {
+  try { localStorage.setItem('year-filter', e.target.value); } catch (err) {}
   loadYear(e.target.value);
 });
 

@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- The year filter is now global: the selection persists (localStorage) and is applied on every dashboard page, so switching pages keeps the chosen view instead of resetting to the current year.
 
 ## [2.5.1] - 2026-07-26
 ### Changed
