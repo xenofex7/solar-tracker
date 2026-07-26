@@ -158,6 +158,8 @@
   "title_start_date": "Data before this date will be hidden in all metrics and charts.",
   "label_price_kwh": "Est. PV price ({currency} / kWh, fallback)",
   "title_price_kwh": "Used only when no export invoice exists for a period.",
+  "label_import_price": "Marginal import price ({currency}/kWh)",
+  "title_import_price": "Variable per-kWh price (energy + grid usage + levies, no standing charges). Used to value self-consumption. Empty = average price from bills (incl. fixed fees).",
   "label_timezone": "Timezone",
   "title_timezone": "Determines which calendar day a HA daily bucket is assigned to.",
   "btn_save": "Save",

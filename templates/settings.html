@@ -16,6 +16,9 @@
       <label>{{ T.label_price_kwh.replace('{currency}', currency) }}
         <input type="number" step="0.001" name="price_per_kwh" value="{{ price_per_kwh }}" title="{{ T.title_price_kwh }}">
       </label>
+      <label>{{ T.label_import_price.replace('{currency}', currency) }}
+        <input type="number" step="0.001" min="0" name="import_price_per_kwh" value="{{ import_price if import_price else '' }}" title="{{ T.title_import_price }}">
+      </label>
       <label>{{ T.label_currency }}
         <input type="text" name="currency" value="{{ currency_setting }}" maxlength="8" required list="currency-options" title="{{ T.title_currency }}">
         <datalist id="currency-options">

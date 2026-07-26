@@ -51,6 +51,7 @@ document.getElementById('plant-form').addEventListener('submit', async (e) => {
   const body = {
     kwp: e.target.kwp.value,
     price_per_kwh: e.target.price_per_kwh.value,
+    import_price_per_kwh: e.target.import_price_per_kwh.value || '0',
     currency: e.target.currency.value,
     start_date: e.target.start_date.value,
     timezone: e.target.timezone.value,

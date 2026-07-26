@@ -157,6 +157,8 @@
   "title_start_date": "Les données avant cette date seront masquées dans tous les indicateurs et graphiques.",
   "label_price_kwh": "Prix PV estimé ({currency} / kWh, repli)",
   "title_price_kwh": "Utilisé uniquement si aucune facture d’injection n’existe pour une période.",
+  "label_import_price": "Prix variable d'achat ({currency}/kWh)",
+  "title_import_price": "Prix variable par kWh (énergie + réseau + taxes, sans frais fixes). Sert à valoriser l'autoconsommation. Vide = prix moyen des factures (frais fixes inclus).",
   "label_timezone": "Fuseau horaire",
   "title_timezone": "Détermine quel jour calendaire est attribué à un compartiment journalier HA.",
   "btn_save": "Enregistrer",

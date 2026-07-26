@@ -325,12 +325,19 @@ def financial_series(
     import_bills: list[dict],
     export_bills: list[dict],
     fallback_price: float,
+    import_price: float | None = None,
 ) -> tuple[list[dict], dict]:
     rows = sorted(records, key=lambda r: r["date"])
 
-    total_imp_kwh = sum(b["kwh"] for b in import_bills)
-    total_imp_amount = sum(b["amount"] for b in import_bills)
-    avg_import_price = (total_imp_amount / total_imp_kwh) if total_imp_kwh > 0 else fallback_price
+    # Self-consumed kWh are valued at the marginal import price (energy +
+    # volumetric grid fees, no standing charges) when configured; the average
+    # bill price includes fixed fees and overstates the avoided cost.
+    if import_price and import_price > 0:
+        avg_import_price = import_price
+    else:
+        total_imp_kwh = sum(b["kwh"] for b in import_bills)
+        total_imp_amount = sum(b["amount"] for b in import_bills)
+        avg_import_price = (total_imp_amount / total_imp_kwh) if total_imp_kwh > 0 else fallback_price
 
     period_rates = []
     total_pv_in_export = 0.0
@@ -375,8 +382,8 @@ def financial_series(
     return cum, breakdown
 
 
-def cumulative_revenue(records, import_bills, export_bills, fallback_price):
-    return financial_series(records, import_bills, export_bills, fallback_price)[0]
+def cumulative_revenue(records, import_bills, export_bills, fallback_price, import_price=None):
+    return financial_series(records, import_bills, export_bills, fallback_price, import_price)[0]
 
 
 def payback(
@@ -386,8 +393,9 @@ def payback(
     export_bills: list[dict],
     fallback_price: float,
     targets: list[dict] | None = None,
+    import_price: float | None = None,
 ) -> dict:
-    cum, breakdown = financial_series(records, import_bills, export_bills, fallback_price)
+    cum, breakdown = financial_series(records, import_bills, export_bills, fallback_price, import_price)
     if invested <= 0 or not cum:
         return {
             "invested": round(invested, 2),

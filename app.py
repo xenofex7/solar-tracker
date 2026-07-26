@@ -176,6 +176,17 @@ def _price_per_kwh() -> float:
         return 0.0
 
 
+def _import_price() -> float:
+    """Marginal import price per kWh (energy + volumetric fees, no standing
+    charges). 0 = not configured; valuation falls back to the average bill
+    price."""
+    val = db.get_setting("import_price_per_kwh") or "0"
+    try:
+        return float(val)
+    except ValueError:
+        return 0.0
+
+
 def _currency() -> str:
     val = (db.get_setting("currency") or "CHF").strip()
     return val or "CHF"
@@ -429,6 +440,7 @@ def settings_page():
         targets=targets,
         kwp=_kwp(),
         price_per_kwh=_price_per_kwh(),
+        import_price=_import_price(),
         currency_setting=_currency(),
         start_date=_start_date() or "",
         timezone=_timezone(),
@@ -636,6 +648,7 @@ def api_settings_get():
     return jsonify({
         "kwp": _kwp(),
         "price_per_kwh": _price_per_kwh(),
+        "import_price_per_kwh": _import_price(),
         "currency": _currency(),
         "timezone": _timezone(),
         "start_date": _start_date() or "",
@@ -913,13 +926,14 @@ def api_summary():
     summ = metrics.summary(records, targets, year, kwp, start_date=start_date)
     imports = db.list_grid_bills("import")
     exports = db.list_grid_bills("export")
-    cum_rev = metrics.cumulative_revenue(records, imports, exports, price)
-    pay = metrics.payback(records, invested, imports, exports, price, targets=targets)
+    imp_price = _import_price()
+    cum_rev = metrics.cumulative_revenue(records, imports, exports, price, imp_price or None)
+    pay = metrics.payback(records, invested, imports, exports, price, targets=targets, import_price=imp_price or None)
     if start_date:
         pay["start_date"] = start_date
     sc = metrics.self_consumption(records, exports)
     grid_tot = db.grid_totals()
-    avg_import_price = grid_tot.get("import", {}).get("avg_price") or price
+    avg_import_price = imp_price or grid_tot.get("import", {}).get("avg_price") or price
     flows = metrics.monthly_flows(records, imports, exports, avg_import_price)
     if start_date:
         flows = [f for f in flows if f["period_end"] >= start_date]
@@ -950,7 +964,7 @@ def api_summary():
             "self_consumed_kwh": round(sc_kwh, 2),
             "self_consumption_pct": round((sc_kwh / pv_in_flows * 100.0) if pv_in_flows > 0 else 0.0, 1),
         }
-    sc["savings_vs_no_pv"] = round(sc["self_consumed_kwh"] * grid_tot["import"]["avg_price"], 2)
+    sc["savings_vs_no_pv"] = round(sc["self_consumed_kwh"] * (imp_price or grid_tot["import"]["avg_price"]), 2)
     consumption = sc["self_consumed_kwh"] + grid_tot["import"]["kwh"]
     sc["effective_price_per_kwh"] = round(grid_tot["net_cost"] / consumption, 4) if consumption > 0 else 0.0
     sc["total_consumption_kwh"] = round(consumption, 2)

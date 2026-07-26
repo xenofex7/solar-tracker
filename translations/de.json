@@ -157,6 +157,8 @@
   "title_start_date": "Daten vor diesem Datum werden in allen Kennzahlen und Grafiken ausgeblendet.",
   "label_price_kwh": "Schätzpreis PV ({currency} / kWh, Fallback)",
   "title_price_kwh": "Wird nur verwendet, wenn für einen Zeitraum keine Rücklieferungs-Rechnung existiert.",
+  "label_import_price": "Arbeitspreis Bezug ({currency}/kWh)",
+  "title_import_price": "Reiner variabler Strompreis pro kWh (Energie + Netznutzung + Abgaben, ohne Grundgebühren). Bewertet den Eigenverbrauch. Leer = Durchschnittspreis aus den Rechnungen (inkl. Fixkosten).",
   "label_timezone": "Zeitzone",
   "title_timezone": "Bestimmt, welcher Kalendertag einem HA-Tagesbucket zugeordnet wird.",
   "btn_save": "Speichern",

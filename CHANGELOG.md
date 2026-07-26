@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- New optional setting "Marginal import price" (Settings > Plant & Prices): the variable per-kWh price (energy + grid usage + levies, no standing charges). When set, self-consumption is valued at this marginal price in the payback projection, monthly savings and the "Savings vs. no PV" KPI. Previously the average bill price was used, which includes fixed fees (metering, demand charges) and therefore overstated the avoided cost - especially in low-consumption quarters. Empty keeps the old behavior.
 
 ## [2.4.0] - 2026-07-26
 ### Changed

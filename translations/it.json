@@ -157,6 +157,8 @@
   "title_start_date": "I dati precedenti a questa data saranno nascosti in tutti gli indicatori e grafici.",
   "label_price_kwh": "Prezzo PV stimato ({currency} / kWh, fallback)",
   "title_price_kwh": "Usato solo quando non esiste una fattura di esportazione per un periodo.",
+  "label_import_price": "Prezzo variabile di acquisto ({currency}/kWh)",
+  "title_import_price": "Prezzo variabile per kWh (energia + rete + tasse, senza costi fissi). Usato per valorizzare l'autoconsumo. Vuoto = prezzo medio dalle fatture (costi fissi inclusi).",
   "label_timezone": "Fuso orario",
   "title_timezone": "Determina a quale giorno di calendario viene assegnato un bucket giornaliero HA.",
   "btn_save": "Salva",
