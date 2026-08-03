@@ -186,6 +186,7 @@
   "section_grid_import": "Grid import",
   "section_grid_export": "Grid export (feed-in)",
   "section_targets": "Monthly targets (kWh)",
+  "tab_targets": "Targets",
   "desc_targets": "Leave blank = default for all years. If you set a year, the value applies only to that year.",
   "btn_save_targets": "Save targets",
   "section_production": "Production",

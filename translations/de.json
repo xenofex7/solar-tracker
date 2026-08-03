@@ -185,6 +185,7 @@
   "section_grid_import": "Netzbezug (Bezug)",
   "section_grid_export": "Rücklieferung (Einspeisung)",
   "section_targets": "Monatliche Sollwerte (kWh)",
+  "tab_targets": "Sollwerte",
   "desc_targets": "Leer lassen = Standardwert für alle Jahre. Wenn du Jahr setzt, gilt der Wert nur für dieses Jahr.",
   "btn_save_targets": "Sollwerte speichern",
   "section_production": "Produktion",

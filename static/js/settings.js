@@ -13,6 +13,20 @@
   fromHash();
 })();
 
+// Sub-tabs inside a settings area: switch the cards of the active area.
+(() => {
+  document.querySelectorAll('.subtabs').forEach(bar => {
+    const scope = bar.parentElement;
+    bar.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-sub]');
+      if (!btn) return;
+      bar.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+      scope.querySelectorAll(':scope > .subtab-panel').forEach(p =>
+        p.classList.toggle('active', p.dataset.sub === btn.dataset.sub));
+    });
+  });
+})();
+
 (() => {
   const form = document.getElementById('sync-form');
   const today = new Date();

@@ -185,6 +185,7 @@
   "section_grid_import": "Soutirage (achat réseau)",
   "section_grid_export": "Injection (exportation)",
   "section_targets": "Objectifs mensuels (kWh)",
+  "tab_targets": "Objectifs",
   "desc_targets": "Laisser vide = valeur par défaut pour toutes les années. Si vous définissez une année, la valeur s’applique uniquement à cette année.",
   "btn_save_targets": "Enregistrer les objectifs",
   "section_production": "Production",

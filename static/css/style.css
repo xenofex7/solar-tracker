@@ -600,6 +600,31 @@ main > .card + .card,
 
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
+
+/* Sub-tabs inside a settings area */
+.subtabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.subtabs button {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.subtabs button:hover { color: var(--text); background: transparent; filter: none; }
+.subtabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+.subtab-panel { display: none; }
+.subtab-panel.active { display: block; }
+.subtab-panel > .card + .card { margin-top: 16px; }
 /* Settings: narrower, centered content column */
 main .container:has(.tab-panel) { max-width: 960px; }
 

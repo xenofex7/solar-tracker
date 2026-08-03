@@ -185,6 +185,7 @@
   "section_grid_import": "Prelievo dalla rete",
   "section_grid_export": "Immissione in rete",
   "section_targets": "Obiettivi mensili (kWh)",
+  "tab_targets": "Obiettivi",
   "desc_targets": "Lasciare vuoto = predefinito per tutti gli anni. Se si imposta un anno, il valore si applica solo a quell’anno.",
   "btn_save_targets": "Salva obiettivi",
   "section_production": "Produzione",

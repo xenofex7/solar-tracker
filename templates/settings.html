@@ -4,8 +4,13 @@
 <h1>{{ T.page_title_settings }}</h1>
 
 <section class="tab-panel active" data-tab="plant">
+  <nav class="subtabs">
+    <button type="button" data-sub="plant-base" class="active">{{ T.section_plant }}</button>
+    <button type="button" data-sub="plant-costs">{{ T.section_costs }}</button>
+    <button type="button" data-sub="plant-power">{{ T.section_electricity }}</button>
+  </nav>
+  <div class="subtab-panel active" data-sub="plant-base">
   <div class="card">
-    <h2>{{ T.section_plant }}</h2>
     <form id="plant-form" class="stacked-form">
       <label>{{ T.label_kwp }}
         <input type="number" step="0.1" name="kwp" value="{{ kwp }}">
@@ -47,8 +52,9 @@
       <button type="submit">{{ T.btn_save }}</button>
     </form>
   </div>
+  </div>
+  <div class="subtab-panel" data-sub="plant-costs">
   <div class="card">
-    <h2>{{ T.section_costs }}</h2>
     <p class="muted">{{ T.desc_costs | safe }}</p>
     <form id="cost-form" class="inline-form">
       <label>{{ T.col_date }} <input type="date" name="date"></label>
@@ -79,6 +85,8 @@
       </tbody>
     </table>
   </div>
+  </div>
+  <div class="subtab-panel" data-sub="plant-power">
   <div class="card">
     <h2>{{ T.section_electricity }}</h2>
     <p class="muted">{{ T.desc_electricity | safe }}</p>
@@ -157,11 +165,16 @@
       </tbody>
     </table>
   </div>
+  </div>
 </section>
 
 <section class="tab-panel" data-tab="data">
+  <nav class="subtabs">
+    <button type="button" data-sub="data-targets" class="active">{{ T.tab_targets }}</button>
+    <button type="button" data-sub="data-production">{{ T.section_production }}</button>
+  </nav>
+  <div class="subtab-panel active" data-sub="data-targets">
   <div class="card">
-    <h2>{{ T.section_targets }}</h2>
     <p class="muted">{{ T.desc_targets }}</p>
     <form id="targets-form" class="targets-grid">
       {% for m in range(1, 13) %}
@@ -176,8 +189,9 @@
       <button type="submit">{{ T.btn_save_targets }}</button>
     </form>
   </div>
+  </div>
+  <div class="subtab-panel" data-sub="data-production">
   <div class="card">
-    <h2>{{ T.section_production }}</h2>
     <p class="muted">{{ T.desc_production }}</p>
     <h3 style="margin-top:12px;">{{ T.section_manual_entry }}</h3>
     <form id="entry-form" class="inline-form">
@@ -233,8 +247,12 @@
 </section>
 
 <section class="tab-panel" data-tab="sync">
+  <nav class="subtabs">
+    <button type="button" data-sub="sync-general" class="active">{{ T.section_general }}</button>
+    <button type="button" data-sub="sync-source">{{ T.section_sync }}</button>
+  </nav>
+  <div class="subtab-panel active" data-sub="sync-general">
   <div class="card">
-    <h2>{{ T.section_general }}</h2>
     <form id="general-sync-form" class="stacked-form">
       <label class="toggle-row">
         <span class="toggle-label">
@@ -248,9 +266,9 @@
       </label>
     </form>
   </div>
-
+  </div>
+  <div class="subtab-panel" data-sub="sync-source">
   <div class="card">
-    <h2>{{ T.section_sync }}</h2>
     <form id="sync-source-form" class="inline-form">
       <label>{{ T.label_sync_source }}
         <select name="sync_source" id="sync-source-select" style="min-width: 280px;"
@@ -297,11 +315,16 @@
       <button type="submit" id="sync-submit">{{ T.btn_sync_now }}</button>
     </form>
   </div>
+  </div>
 </section>
 
 <section class="tab-panel" data-tab="access">
+  <nav class="subtabs">
+    <button type="button" data-sub="access-users" class="active">{{ T.section_users }}</button>
+    <button type="button" data-sub="access-tokens">{{ T.section_tokens }}</button>
+  </nav>
+  <div class="subtab-panel active" data-sub="access-users">
   <div class="card">
-    <h2>{{ T.section_users }}</h2>
     <p class="muted">{{ T.desc_users }}</p>
     {% if current_user and not current_user.password_hash %}
     <p class="warn-banner" role="alert">{{ T.warn_set_own_password }}</p>
@@ -335,8 +358,9 @@
       </tbody>
     </table>
   </div>
+  </div>
+  <div class="subtab-panel" data-sub="access-tokens">
   <div class="card">
-    <h2>{{ T.section_tokens }}</h2>
     <p class="muted">{{ T.desc_tokens | safe }}</p>
     <form id="token-form" class="inline-form">
       <label>{{ T.col_token_name }} <input type="text" name="name" required maxlength="64" placeholder="{{ T.placeholder_token_name }}"></label>
@@ -371,6 +395,7 @@
         {% endfor %}
       </tbody>
     </table>
+  </div>
   </div>
 </section>
 

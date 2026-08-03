@@ -185,6 +185,7 @@
   "section_grid_import": "Consumo de red",
   "section_grid_export": "Inyección a la red",
   "section_targets": "Objetivos mensuales (kWh)",
+  "tab_targets": "Objetivos",
   "desc_targets": "Dejar vacío = predeterminado para todos los años. Si estableces un año, el valor se aplica solo a ese año.",
   "btn_save_targets": "Guardar objetivos",
   "section_production": "Producción",

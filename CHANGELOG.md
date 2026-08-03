@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Settings: areas holding several cards now split them into sub-tabs, so no page stacks a long column of cards any more. "Plant & Prices" becomes Plant data / Investment costs / Electricity costs, "Data" becomes Targets / Production, "Sync" becomes General / Data source, "Access" becomes Users / API tokens. The sub-tab label replaces the card heading it duplicated.
 
 ## [2.5.2] - 2026-07-26
 ### Changed
