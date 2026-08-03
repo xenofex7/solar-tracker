@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.5.3] - 2026-08-03
 ### Changed
 - Settings: areas holding several cards now split them into sub-tabs, so no page stacks a long column of cards any more. "Plant & Prices" becomes Plant data / Investment costs / Electricity costs, "Data" becomes Targets / Production, "Sync" becomes General / Data source, "Access" becomes Users / API tokens. The sub-tab label replaces the card heading it duplicated.
 
@@ -363,7 +365,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.5.2...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.5.3...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -401,3 +403,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.5.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.0
 [2.5.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.1
 [2.5.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.2
+[2.5.3]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.3
