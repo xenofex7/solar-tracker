@@ -9,21 +9,23 @@
 #   scripts/deploy.sh minor          # 1.0.0 -> 1.1.0
 #   scripts/deploy.sh major          # 1.0.0 -> 2.0.0
 #
+# After pushing, the script always polls the triggered GitHub Actions runs
+# without streaming them. On success it prints "[OK] CI passed" and triggers
+# Watchtower on the Synology; on failure it writes the failure log to
+# .deploy-ci-<run-id>.log, prints the path and the run URL, then exits 1.
+#
 # Flags:
-#   -q, --quiet   After pushing, poll the triggered GitHub Actions runs
-#                 without streaming them. On success print "[OK] CI passed";
-#                 on failure write the failure log to .deploy-ci-<run-id>.log,
-#                 print the path and the run URL, then exit 1.
+#   -q, --quiet   Accepted for compatibility. The CI watch is always compact
+#                 now, so this no longer changes anything.
 
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
 arg=""
-quiet=false
 for a in "$@"; do
   case "$a" in
-    -q|--quiet) quiet=true ;;
+    -q|--quiet) ;;  # no-op, see header
     -*) echo "unknown flag: $a" >&2; exit 1 ;;
     *)
       if [[ -n "$arg" ]]; then
@@ -298,20 +300,19 @@ echo " If anything above looks outdated for v${new}, commit a follow-up:"
 echo "   git commit -m \"Update docs site for v${new}\" && git push"
 echo "===================================================================="
 
-# Quiet CI watch (-q / --quiet): poll the runs this push triggered without
-# streaming them. Compact result so the caller's context stays small. The
-# release is already pushed at this point, so any early-out here exits 0 and
-# leaves the tag in place - only a genuine CI failure exits non-zero.
-if [[ "$quiet" == true ]]; then
-  echo
-  if ! command -v gh >/dev/null 2>&1 || ! gh auth status >/dev/null 2>&1; then
-    echo "[skip] gh not available/authenticated - not watching CI."
-    echo "       Check https://github.com/xenofex7/solar-tracker/actions"
-    exit 0
-  fi
-
+# CI watch: poll the runs this push triggered, without streaming them. Compact
+# result so the caller's context stays small. Runs always - `ci_ok` gates the
+# Watchtower trigger below, and only a green run proves the new image is
+# actually on GHCR. A genuine CI failure exits non-zero; if CI merely cannot be
+# confirmed, the release stays in place and the rollout is skipped.
+ci_ok=false
+echo
+if ! command -v gh >/dev/null 2>&1 || ! gh auth status >/dev/null 2>&1; then
+  echo "[skip] gh not available/authenticated - not watching CI."
+  echo "       Check https://github.com/xenofex7/solar-tracker/actions"
+else
   sha=$(git rev-parse HEAD)
-  echo "Watching GitHub Actions for ${sha:0:7} (quiet)…"
+  echo "Watching GitHub Actions for ${sha:0:7}…"
 
   # Runs may take a few seconds to register after the push.
   ids=""
@@ -324,41 +325,74 @@ if [[ "$quiet" == true ]]; then
   if [[ -z "$ids" ]]; then
     echo "[skip] no workflow runs found for ${sha:0:7} after waiting."
     echo "       Check https://github.com/xenofex7/solar-tracker/actions"
-    exit 0
-  fi
+  else
+    failed=0
+    for id in $ids; do
+      # Poll this run until it completes (max ~30 min, then give up gracefully).
+      status="" conclusion=""
+      for _ in $(seq 1 180); do
+        read -r status conclusion < <(
+          gh run view "$id" --json status,conclusion \
+            --jq '"\(.status) \(.conclusion)"' 2>/dev/null || echo "unknown "
+        )
+        [[ "$status" == "completed" ]] && break
+        sleep 10
+      done
 
-  failed=0
-  for id in $ids; do
-    # Poll this run until it completes (max ~30 min, then give up gracefully).
-    status="" conclusion=""
-    for _ in $(seq 1 180); do
-      read -r status conclusion < <(
-        gh run view "$id" --json status,conclusion \
-          --jq '"\(.status) \(.conclusion)"' 2>/dev/null || echo "unknown "
-      )
-      [[ "$status" == "completed" ]] && break
-      sleep 10
+      name=$(gh run view "$id" --json name --jq '.name' 2>/dev/null || echo "run $id")
+      url=$(gh run view "$id" --json url --jq '.url' 2>/dev/null || echo "")
+
+      if [[ "$status" != "completed" ]]; then
+        failed=1
+        echo "[TIMEOUT] ${name} still running -> ${url}"
+      elif [[ "$conclusion" == "success" ]]; then
+        echo "[OK]   ${name}"
+      else
+        failed=1
+        log=".deploy-ci-${id}.log"
+        gh run view "$id" --log-failed > "$log" 2>/dev/null || true
+        echo "[FAIL] ${name} (${conclusion}) -> ${log}"
+        echo "       ${url}"
+      fi
     done
 
-    name=$(gh run view "$id" --json name --jq '.name' 2>/dev/null || echo "run $id")
-    url=$(gh run view "$id" --json url --jq '.url' 2>/dev/null || echo "")
-
-    if [[ "$status" != "completed" ]]; then
-      failed=1
-      echo "[TIMEOUT] ${name} still running -> ${url}"
-    elif [[ "$conclusion" == "success" ]]; then
-      echo "[OK]   ${name}"
-    else
-      failed=1
-      log=".deploy-ci-${id}.log"
-      gh run view "$id" --log-failed > "$log" 2>/dev/null || true
-      echo "[FAIL] ${name} (${conclusion}) -> ${log}"
-      echo "       ${url}"
+    if [[ "$failed" -ne 0 ]]; then
+      exit 1
     fi
-  done
-
-  if [[ "$failed" -ne 0 ]]; then
-    exit 1
+    echo "[OK] CI passed"
+    ci_ok=true
   fi
-  echo "[OK] CI passed"
+fi
+
+# Trigger Watchtower (on-demand deploy). Watchtower on the Synology only polls
+# at 02:00, so we trigger it via its HTTP-API to roll the new image out
+# immediately. Reuses the shared trigger-watchtower.sh, which sources
+# WATCHTOWER_URL/TOKEN from its own sibling .env. Override the path via the
+# WATCHTOWER_REFRESH env var.
+#
+# Called WITHOUT an image argument on purpose: the ?image= filter is a silent
+# no-op on the running Watchtower version (HTTP 200, nothing pulled). Watchtower
+# updates every container whose image actually changed, so a full sweep is both
+# correct and cheap.
+WATCHTOWER_REFRESH="${WATCHTOWER_REFRESH:-$HOME/Development/docker-hosts/synology/trigger-watchtower.sh}"
+
+echo
+if [[ "$ci_ok" != true ]]; then
+  echo "[skip] CI not confirmed green - not triggering Watchtower."
+  echo "       Once the image is on GHCR: ${WATCHTOWER_REFRESH}"
+  echo "       (otherwise it goes live on the next 02:00 poll)"
+elif [[ -x "$WATCHTOWER_REFRESH" ]]; then
+  echo "Triggering Watchtower on-demand update…"
+  if "$WATCHTOWER_REFRESH"; then
+    echo "[OK]   Watchtower triggered - new version is rolling out"
+  else
+    echo "[WARN] Watchtower trigger failed. The release is published and the"
+    echo "       image is on GHCR; roll out manually with:"
+    echo "       ${WATCHTOWER_REFRESH}"
+    echo "       (otherwise it goes live on the next 02:00 poll)"
+  fi
+else
+  echo "[skip] Watchtower refresh script not found/executable:"
+  echo "       ${WATCHTOWER_REFRESH}"
+  echo "       Watchtower picks the image up at 02:00."
 fi
