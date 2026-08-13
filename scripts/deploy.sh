@@ -14,9 +14,7 @@
 # Watchtower on the Synology; on failure it writes the failure log to
 # .deploy-ci-<run-id>.log, prints the path and the run URL, then exits 1.
 #
-# Flags:
-#   -q, --quiet   Accepted for compatibility. The CI watch is always compact
-#                 now, so this no longer changes anything.
+# -q/--quiet is still accepted and ignored: the CI watch is always compact now.
 
 set -euo pipefail
 
@@ -375,6 +373,9 @@ fi
 # updates every container whose image actually changed, so a full sweep is both
 # correct and cheap.
 WATCHTOWER_REFRESH="${WATCHTOWER_REFRESH:-$HOME/Development/docker-hosts/synology/trigger-watchtower.sh}"
+# Give GHCR a moment to settle the :latest pointer after the build push -
+# triggering too early makes Watchtower see no newer image.
+WATCHTOWER_PREDELAY="${WATCHTOWER_PREDELAY:-30}"
 
 echo
 if [[ "$ci_ok" != true ]]; then
@@ -382,6 +383,10 @@ if [[ "$ci_ok" != true ]]; then
   echo "       Once the image is on GHCR: ${WATCHTOWER_REFRESH}"
   echo "       (otherwise it goes live on the next 02:00 poll)"
 elif [[ -x "$WATCHTOWER_REFRESH" ]]; then
+  if (( WATCHTOWER_PREDELAY > 0 )); then
+    echo "Waiting ${WATCHTOWER_PREDELAY}s for the registry tag to settle…"
+    sleep "$WATCHTOWER_PREDELAY"
+  fi
   echo "Triggering Watchtower on-demand update…"
   if "$WATCHTOWER_REFRESH"; then
     echo "[OK]   Watchtower triggered - new version is rolling out"
