@@ -595,6 +595,9 @@ tr.editing td input.edit-label { width: 100%; }
 }
 .card.wide { grid-column: 1 / -1; }
 .card canvas { max-height: 360px; }
+.chart-note { margin: 10px 0 0; }
+.chart-note .good { color: var(--good); }
+.chart-note .bad { color: var(--bad); }
 main > .card + .card,
 .tab-panel > .card + .card { margin-top: 16px; }
 

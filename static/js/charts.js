@@ -411,7 +411,14 @@ function renderKpis(data) {
   const deltaCls = delta >= 0 ? 'good' : 'bad';
   const best = s.best_day ? `${fmtDate(s.best_day.date)}<br><span class="sub">${fmtKwh(s.best_day.kwh)}</span>` : '-';
   const pctStr = pct === null ? '-' : `${pct.toLocaleString(MONEY_LOC(), {maximumFractionDigits: 1})} %`;
-  const spec = s.specific_yield !== null ? `${fmtInt(s.specific_yield)} kWh/kWp` : '-';
+  let spec = '-';
+  if (s.specific_yield !== null) {
+    spec = `${fmtInt(s.specific_yield)} kWh/kWp`;
+    if (s.year === 'all' && s.specific_yield_annual !== null) {
+      const sub = `${T.kpi_specific_yield_per_year || 'per year (avg)'} \u00b7 ${fmtInt(s.specific_yield)} ${T.kpi_specific_yield_total || 'total'}`;
+      spec = `${fmtInt(s.specific_yield_annual)} kWh/kWp<br><span class="sub">${esc(sub)}</span>`;
+    }
+  }
 
   const scopeLabel = s.year === 'all' ? (T.label_total || 'total') : `YTD ${s.year}`;
   const production = [
@@ -861,10 +868,101 @@ function renderSpecificYield(data) {
   });
 }
 
+function renderForecast(data) {
+  destroy('forecast');
+  const ctx = document.getElementById('chart-forecast');
+  if (!ctx) return;
+  const f = data.forecast;
+  if (!f) { _hideIfEmpty(ctx, false); return; }
+  _hideIfEmpty(ctx, true);
+
+  const T = window.T || {};
+  const lastClosed = f.from_month - 2;
+  const projection = f.cumulative.map((v, i) => (i >= Math.max(lastClosed, 0) ? v : null));
+  const actualCum = data.cumulative_actual.map((v, i) => (i < f.from_month ? v : null));
+  const now = new Date();
+  const monthIdx = now.getMonth() + (now.getDate() - 1) / 30;
+
+  charts.forecast = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: localizeMonths(data.months),
+      datasets: [
+        { label: T.chart_cumulative_actual || 'Actual cumul.', data: actualCum, borderColor: CHART_COLORS.actualLine, backgroundColor: 'rgba(245,166,35,0.15)', fill: true, tension: 0.2 },
+        { label: T.chart_forecast_projection || 'Projection', data: projection, borderColor: CHART_COLORS.actualLine, borderDash: [5, 4], pointRadius: 0, fill: false, tension: 0.2 },
+        { label: T.chart_forecast_year_target || 'Annual target', data: f.cumulative_target, borderColor: CHART_COLORS.targetLine, borderDash: [2, 3], pointRadius: 0, fill: false, tension: 0.2 },
+      ],
+    },
+    options: {
+      plugins: {
+        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtKwh(item.parsed.y)}` } },
+      },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => fmtKwh(v) } } },
+    },
+    plugins: [todayMarker(monthIdx)],
+  });
+
+  const out = document.getElementById('forecast-note');
+  if (out) {
+    const delta = f.year_end_kwh - f.year_end_target;
+    const cls = delta >= 0 ? 'good' : 'bad';
+    const pace = f.pace_pct.toLocaleString(MONEY_LOC(), { maximumFractionDigits: 0 });
+    const tpl = T.chart_forecast_note || 'Year-end projection {kwh}, target {target} ({delta}). Pace so far: {pace} % of target.';
+    const html = tpl
+      .replace('{kwh}', `<strong>${fmtKwh(f.year_end_kwh)}</strong>`)
+      .replace('{target}', fmtKwh(f.year_end_target))
+      .replace('{delta}', `<span class="${cls}">${delta >= 0 ? '+' : '-'}${fmtKwh(Math.abs(delta))}</span>`)
+      .replace('{pace}', pace);
+    out.innerHTML = html;
+  }
+}
+
+function renderDurationCurve(data) {
+  destroy('duration');
+  const ctx = document.getElementById('chart-duration');
+  if (!ctx) return;
+  const days = (data.daily || []).filter(d => d.kwh > 0).sort((a, b) => b.kwh - a.kwh);
+  if (days.length < 14) { _hideIfEmpty(ctx, false); return; }
+  _hideIfEmpty(ctx, true);
+
+  const T = window.T || {};
+  const total = days.reduce((s, d) => s + d.kwh, 0);
+  let run = 0;
+  const share = days.map(d => { run += d.kwh; return total > 0 ? (run / total) * 100 : 0; });
+
+  charts.duration = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: days.map((_, i) => i + 1),
+      datasets: [
+        { label: T.chart_daily_kwh || 'Daily kWh', data: days.map(d => d.kwh), borderColor: CHART_COLORS.actualLine, backgroundColor: 'rgba(245,166,35,0.15)', pointRadius: 0, fill: true, tension: 0.1, yAxisID: 'y' },
+        { label: T.chart_duration_share || 'Cumulative share', data: share, borderColor: CHART_COLORS.targetLine, pointRadius: 0, borderWidth: 2, fill: false, tension: 0.1, yAxisID: 'y1' },
+      ],
+    },
+    options: {
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        tooltip: { callbacks: {
+          title: items => `${T.chart_duration_rank || 'Day'} ${items[0].label} · ${fmtDate(days[items[0].dataIndex].date)}`,
+          label: item => (item.dataset.yAxisID === 'y1'
+            ? `${item.dataset.label}: ${item.parsed.y.toLocaleString(MONEY_LOC(), { maximumFractionDigits: 1 })} %`
+            : `${item.dataset.label}: ${fmtKwh(item.parsed.y)}`),
+        } },
+      },
+      scales: {
+        x: { title: { display: true, text: T.chart_duration_x || 'Days sorted by yield' }, ticks: { maxTicksLimit: 12 } },
+        y: { beginAtZero: true, position: 'left', ticks: { callback: v => fmtKwh(v) } },
+        y1: { beginAtZero: true, max: 100, position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: v => `${v} %` } },
+      },
+    },
+  });
+}
+
 window.SolarCharts = {
   renderKpis, renderMonthly, renderDeviation, renderCumulative,
   renderDaily, renderHeatmap, renderDistribution, renderYearComparison,
   renderTopDays, renderDayQuality, renderSpecificYield,
+  renderForecast, renderDurationCurve,
   renderPayback, renderEnergyFlows, renderSelfRatio, renderFinanceFlow,
   renderSavingsVsNoPv, renderTariffTrend, renderAutarky,
 };

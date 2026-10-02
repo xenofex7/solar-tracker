@@ -924,6 +924,7 @@ def api_summary():
     }
     heat = metrics.heatmap_data(records, year)
     summ = metrics.summary(records, targets, year, kwp, start_date=start_date)
+    forecast = metrics.year_end_forecast(records, targets, year, start_date=start_date)
     imports = db.list_grid_bills("import")
     exports = db.list_grid_bills("export")
     imp_price = _import_price()
@@ -986,6 +987,7 @@ def api_summary():
         "specific_yield_comparison": spec_yield_cmp,
         "heatmap": heat,
         "summary": summ,
+        "forecast": forecast,
         "finance": {
             "price_per_kwh": price,
             "cumulative_revenue": cum_rev,

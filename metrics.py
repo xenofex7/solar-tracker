@@ -454,6 +454,50 @@ def payback(
     }
 
 
+def year_end_forecast(
+    records: list[dict],
+    targets: list[dict],
+    year,
+    start_date: str | None = None,
+    today: date | None = None,
+) -> dict | None:
+    today = today or date.today()
+    if _is_all(year) or year != today.year:
+        return None
+    generic = {t["month"]: t["kwh"] for t in targets if t.get("year") is None}
+    specific = {t["month"]: t["kwh"] for t in targets if t.get("year") == year}
+    year_end = date(year, 12, 31)
+    full = [
+        specific.get(m, generic.get(m, 0.0)) * _eligibility_factor(year, m, start_date, year_end)
+        for m in range(1, 13)
+    ]
+    if sum(full) <= 0:
+        return None
+    actual = monthly_actual(records, year)
+    elapsed = [full[m - 1] * _eligibility_factor(year, m, start_date, today) for m in range(1, 13)]
+    elapsed_sum = sum(elapsed[: today.month])
+    pace = (sum(actual[: today.month]) / elapsed_sum) if elapsed_sum > 0 else 1.0
+    projected = []
+    for m in range(1, 13):
+        if m < today.month:
+            projected.append(actual[m - 1])
+        elif m == today.month:
+            projected.append(actual[m - 1] + max(full[m - 1] - elapsed[m - 1], 0.0) * pace)
+        else:
+            projected.append(full[m - 1] * pace)
+    cum_projected = cumulative(projected)
+    cum_target = cumulative(full)
+    return {
+        "from_month": today.month,
+        "monthly": [round(v, 2) for v in projected],
+        "cumulative": cum_projected,
+        "cumulative_target": cum_target,
+        "year_end_kwh": cum_projected[-1],
+        "year_end_target": cum_target[-1],
+        "pace_pct": round(pace * 100.0, 1),
+    }
+
+
 def summary(records: list[dict], targets: list[dict], year, kwp: float, start_date: str | None = None) -> dict:
     today = date.today()
     sd = date.fromisoformat(start_date) if start_date else None
@@ -481,6 +525,15 @@ def summary(records: list[dict], targets: list[dict], year, kwp: float, start_da
     dev = (delta / ytd_target * 100.0) if ytd_target > 0 else None
     best = max(in_scope, key=lambda r: r["kwh"]) if in_scope else None
     spec_yield = round(ytd_actual / kwp, 2) if kwp else None
+    spec_yield_annual = None
+    if kwp and in_scope and _is_all(year):
+        first = _parse(min(r["date"] for r in in_scope))
+        if sd and sd > first:
+            first = sd
+        last = min(today, _parse(max(r["date"] for r in in_scope)))
+        span_days = (last - first).days + 1
+        if span_days > 0:
+            spec_yield_annual = round(ytd_actual / kwp / span_days * 365.0, 2)
 
     return {
         "year": year,
@@ -491,5 +544,6 @@ def summary(records: list[dict], targets: list[dict], year, kwp: float, start_da
         "best_day": best,
         "days_recorded": len(in_scope),
         "specific_yield": spec_yield,
+        "specific_yield_annual": spec_yield_annual,
         "kwp": kwp,
     }

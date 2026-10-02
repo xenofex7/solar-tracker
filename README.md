@@ -127,11 +127,11 @@ the image locally (the compose file keeps `build: .` as a fallback).
 
 ### Dashboard
 
-- 14 charts including monthly actual vs. target, deviation in %,
-  cumulative yearly yield, daily production with 7-day rolling average,
-  calendar heatmap, daily distribution per month (min/median/max),
-  year-on-year comparison, top 5 days, specific yield (kWh/kWp) and
-  day quality donut.
+- 16 charts including monthly actual vs. target, deviation in %,
+  cumulative yearly yield, year-end projection, daily production with
+  7-day rolling average, calendar heatmap, daily distribution per month
+  (min/median/max), yield duration curve, year-on-year comparison,
+  top 5 days, specific yield (kWh/kWp) and day quality donut.
 - Payback chart with cumulative revenue vs. investment and forecast.
 - Energy and finance flow charts per billing period (import, export,
   self-consumption, savings vs. no PV).

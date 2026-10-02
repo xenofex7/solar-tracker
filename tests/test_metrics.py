@@ -268,3 +268,58 @@ def test_summary_future_year_has_zero_target():
     future = date.today().year + 10
     summ = metrics.summary([], GENERIC_TARGETS, future, kwp=10)
     assert summ["ytd_target"] == 0
+
+
+def test_summary_specific_yield_annual_normalizes_the_span():
+    records = _daily("2024-01-01", "2025-12-31", 5)
+    summ = metrics.summary(records, GENERIC_TARGETS, "all", kwp=10)
+    # 731 days x 5 kWh / 10 kWp = 365.5 kWh/kWp over the whole span, ~182.5 per year
+    assert summ["specific_yield"] == pytest.approx(365.5, rel=1e-3)
+    assert summ["specific_yield_annual"] == pytest.approx(182.5, rel=1e-2)
+
+
+# ---------------------------------------------------------------------------
+# year_end_forecast
+# ---------------------------------------------------------------------------
+
+FORECAST_TODAY = date(2025, 7, 1)
+HALF_YEAR_ON_TARGET = [
+    {"date": f"2025-{m:02d}-15", "kwh": kwh}
+    for m, kwh in enumerate([300, 500, 900, 1200, 1500, 1600], start=1)
+]
+ANNUAL_TARGET = sum(t["kwh"] for t in GENERIC_TARGETS)
+
+
+def test_year_end_forecast_on_target_pace_reaches_the_annual_target():
+    f = metrics.year_end_forecast(HALF_YEAR_ON_TARGET, GENERIC_TARGETS, 2025, today=FORECAST_TODAY)
+    assert f["year_end_target"] == pytest.approx(ANNUAL_TARGET)
+    assert f["pace_pct"] == pytest.approx(100.0, abs=2.0)
+    assert f["year_end_kwh"] == pytest.approx(ANNUAL_TARGET, rel=0.02)
+    assert f["from_month"] == 7
+
+
+def test_year_end_forecast_scales_with_the_pace_so_far():
+    half = [{**r, "kwh": r["kwh"] / 2} for r in HALF_YEAR_ON_TARGET]
+    f = metrics.year_end_forecast(half, GENERIC_TARGETS, 2025, today=FORECAST_TODAY)
+    assert f["pace_pct"] == pytest.approx(50.0, abs=2.0)
+    assert f["year_end_kwh"] == pytest.approx(ANNUAL_TARGET * 0.5, rel=0.05)
+
+
+def test_year_end_forecast_keeps_closed_months_as_actuals():
+    f = metrics.year_end_forecast(HALF_YEAR_ON_TARGET, GENERIC_TARGETS, 2025, today=FORECAST_TODAY)
+    assert f["monthly"][:6] == [300, 500, 900, 1200, 1500, 1600]
+
+
+def test_year_end_forecast_honors_the_commissioning_date():
+    f = metrics.year_end_forecast(
+        HALF_YEAR_ON_TARGET, GENERIC_TARGETS, 2025,
+        start_date="2025-04-01", today=FORECAST_TODAY,
+    )
+    assert f["cumulative_target"][2] == 0.0
+    assert f["year_end_target"] < ANNUAL_TARGET
+
+
+def test_year_end_forecast_only_for_the_current_year_with_targets():
+    assert metrics.year_end_forecast(HALF_YEAR_ON_TARGET, GENERIC_TARGETS, "all", today=FORECAST_TODAY) is None
+    assert metrics.year_end_forecast(HALF_YEAR_ON_TARGET, GENERIC_TARGETS, 2024, today=FORECAST_TODAY) is None
+    assert metrics.year_end_forecast(HALF_YEAR_ON_TARGET, [], 2025, today=FORECAST_TODAY) is None

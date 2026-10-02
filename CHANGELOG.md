@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Overview: new "Year-end projection" chart - cumulative actuals plus a dashed projection of the remaining months, drawn against the full annual target. The projection carries the pace reached so far (actual vs. pro-rated target) into the open months, and a line below the chart names the expected year-end total, the annual target and the gap.
+- Production: new "Yield duration curve" - every day of the selected scope sorted by yield, with the cumulative share of the total yield on the right axis. Shows how few days carry the year.
+
+### Fixed
+- The "Specific yield" KPI summed several years into one kWh/kWp figure when the year filter was set to "All". It now shows the annualised value (normalised to the recorded span) with the raw total as a sub-line.
 
 ## [2.5.3] - 2026-08-03
 ### Changed
