@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.5.4] - 2026-10-04
 ### Added
 - Overview: new "Year-end projection" chart - cumulative actuals plus a dashed projection of the remaining months, drawn against the full annual target. The projection carries the pace reached so far (actual vs. pro-rated target) into the open months, and a line below the chart names the expected year-end total, the annual target and the gap.
 - Production: new "Yield duration curve" - every day of the selected scope sorted by yield, with the cumulative share of the total yield on the right axis. Shows how few days carry the year.
@@ -371,7 +373,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.5.3...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.5.4...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -410,3 +412,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.5.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.1
 [2.5.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.2
 [2.5.3]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.3
+[2.5.4]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.4
