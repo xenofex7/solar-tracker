@@ -172,6 +172,16 @@ The sync form on `/settings` defaults to the last six months. Each run
 overwrites existing entries for the selected days - including manual ones -
 so the database stays in sync with Home Assistant.
 
+For manual or cron-based syncs:
+
+```bash
+.venv/bin/python -m scripts.sync_ha --days 3
+.venv/bin/python -m scripts.sync_ha --from 2026-01-01 --to 2026-04-30
+.venv/bin/python -m scripts.sync_ha --days 3 --quiet
+```
+
+The HTTP endpoint is `POST /api/sync/ha` (admin-only).
+
 ## Fronius Solar.web
 
 As an alternative to Home Assistant, Solar-Tracker can pull daily PV
