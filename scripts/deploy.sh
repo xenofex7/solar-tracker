@@ -249,17 +249,6 @@ git push origin main "v${new}"
 echo
 echo "Done. GitHub Actions will build and push ghcr.io/xenofex7/solar-tracker:${new}"
 
-# Watchtower nudge: ask the Synology host to pull the new image as soon as
-# it appears on GHCR, instead of waiting for the next poll cycle. The helper
-# lives in a sibling repo so the same wiring works for every project. The
-# `|| true` keeps the release green if the Synology is offline or the helper
-# isn't installed - the tag is already pushed, the image will follow.
-if [[ -x "$HOME/Development/synology-server/update.sh" ]]; then
-  echo
-  echo "Nudging Watchtower on the Synology host…"
-  "$HOME/Development/synology-server/update.sh" solar-tracker || true
-fi
-
 # Docs sanity reminder. The release script auto-updates docs/index.html
 # (softwareVersion in the JSON-LD) and docs/sitemap.xml (lastmod), but the
 # user-facing copy in docs/ - meta descriptions, OG/Twitter tags, JSON-LD
@@ -304,6 +293,7 @@ echo "===================================================================="
 # actually on GHCR. A genuine CI failure exits non-zero; if CI merely cannot be
 # confirmed, the release stays in place and the rollout is skipped.
 ci_ok=false
+ci_failed=false
 echo
 if ! command -v gh >/dev/null 2>&1 || ! gh auth status >/dev/null 2>&1; then
   echo "[skip] gh not available/authenticated - not watching CI."
@@ -355,10 +345,11 @@ else
     done
 
     if [[ "$failed" -ne 0 ]]; then
-      exit 1
+      ci_failed=true
+    else
+      echo "[OK] CI passed"
+      ci_ok=true
     fi
-    echo "[OK] CI passed"
-    ci_ok=true
   fi
 fi
 
@@ -400,4 +391,8 @@ else
   echo "[skip] Watchtower refresh script not found/executable:"
   echo "       ${WATCHTOWER_REFRESH}"
   echo "       Watchtower picks the image up at 02:00."
+fi
+
+if [[ "$ci_failed" == true ]]; then
+  exit 1
 fi
