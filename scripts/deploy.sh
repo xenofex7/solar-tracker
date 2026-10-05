@@ -11,7 +11,7 @@
 #
 # After pushing, the script always polls the triggered GitHub Actions runs
 # without streaming them. On success it prints "[OK] CI passed" and triggers
-# Watchtower on the Synology; on failure it writes the failure log to
+# Watchtower on the docker host; on failure it writes the failure log to
 # .deploy-ci-<run-id>.log, prints the path and the run URL, then exits 1.
 #
 # -q/--quiet is still accepted and ignored: the CI watch is always compact now.
@@ -362,7 +362,7 @@ else
   fi
 fi
 
-# Trigger Watchtower (on-demand deploy). Watchtower on the Synology only polls
+# Trigger Watchtower (on-demand deploy). Watchtower on the docker host only polls
 # at 02:00, so we trigger it via its HTTP-API to roll the new image out
 # immediately. Reuses the shared trigger-watchtower.sh, which sources
 # WATCHTOWER_URL/TOKEN from its own sibling .env. Override the path via the
@@ -372,7 +372,7 @@ fi
 # no-op on the running Watchtower version (HTTP 200, nothing pulled). Watchtower
 # updates every container whose image actually changed, so a full sweep is both
 # correct and cheap.
-WATCHTOWER_REFRESH="${WATCHTOWER_REFRESH:-$HOME/Development/docker-hosts/synology/trigger-watchtower.sh}"
+WATCHTOWER_REFRESH="${WATCHTOWER_REFRESH:-$HOME/Development/docker-hosts/br-docker/trigger-watchtower.sh}"
 # Give GHCR a moment to settle the :latest pointer after the build push -
 # triggering too early makes Watchtower see no newer image.
 WATCHTOWER_PREDELAY="${WATCHTOWER_PREDELAY:-30}"
