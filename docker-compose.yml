@@ -10,3 +10,13 @@ services:
       - ./data:/app/data
     env_file:
       - .env
+
+  solar-tracker-sync:
+    image: ghcr.io/xenofex7/solar-tracker:latest
+    container_name: solar-tracker-sync
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    command: sh -c "while true; do python -m scripts.sync_ha --days 3 --quiet; sleep 86400; done"

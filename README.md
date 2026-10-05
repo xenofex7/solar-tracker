@@ -116,6 +116,11 @@ The SQLite database lives in `./data` on the host (mounted into the
 container), so stopping or recreating the container preserves all
 data. The container runs gunicorn with two workers.
 
+A second service, `solar-tracker-sync`, runs `scripts/sync_ha.py` once a
+day against the same database. Without it, production data is only
+fetched when an admin opens the dashboard. Drop the service from
+`docker-compose.yml` if you sync from Solar.web or by hand.
+
 Available tags: `latest`, plus pinned major / minor / patch tags
 (e.g. `1`, `1.8`, `1.8.0`). See
 [ghcr.io/xenofex7/solar-tracker](https://github.com/xenofex7/solar-tracker/pkgs/container/solar-tracker).

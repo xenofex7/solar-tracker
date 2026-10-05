@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Compare: new "Monthly yield against previous years" chart - the running year drawn over the min/max corridor of the completed years, with their median as a reference line. Months a previous year has no data for stay out of the corridor instead of dragging it to zero. The chart needs two completed years and stays hidden until then.
 - Compare: below that chart, a degradation line comparing the specific yield of the two years that share the most ground, annualised and stated with the number of shared full months it rests on.
 - New CLI `scripts/sync_ha.py` for manual and cron-based Home Assistant syncs, mirroring the existing Solar.web script. Until now the only sync trigger was opening the dashboard.
+- Docker: a `solar-tracker-sync` service in `docker-compose.yml` runs that CLI once a day against the same database, so production data no longer depends on someone opening the dashboard.
 
 ## [2.5.4] - 2026-10-04
 ### Added
