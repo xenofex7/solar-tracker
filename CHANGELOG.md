@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - Finances: two new KPIs. "Return p.a." puts the expected annual revenue against the investment, and "LCOE" names what one self-produced kWh costs over the plant's service life, turning green while it stays below the grid tariff. The LCOE tile carries an info popover with investment, expected lifetime yield and the formula.
 - Settings: new "Service life (years)" field under plant data (default 25, range 1-50). It feeds the LCOE calculation.
+- Compare: new "Monthly yield against previous years" chart - the running year drawn over the min/max corridor of the completed years, with their median as a reference line. Months a previous year has no data for stay out of the corridor instead of dragging it to zero. The chart needs two completed years and stays hidden until then.
+- Compare: below that chart, a degradation line comparing the specific yield of the two years that share the most ground, annualised and stated with the number of shared full months it rests on.
+- New CLI `scripts/sync_ha.py` for manual and cron-based Home Assistant syncs, mirroring the existing Solar.web script. Until now the only sync trigger was opening the dashboard.
 
 ## [2.5.4] - 2026-10-04
 ### Added

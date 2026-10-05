@@ -1,6 +1,7 @@
 import calendar
 from collections import defaultdict
 from datetime import date, timedelta
+from itertools import combinations
 from statistics import median
 
 MONTHS_DE = [
@@ -177,6 +178,88 @@ def year_comparison(records: list[dict]) -> dict[int, list[float]]:
         years.setdefault(y, [0.0] * 12)
         years[y][m - 1] += r["kwh"]
     return years
+
+
+def _monthly_totals(records: list[dict]) -> dict[tuple[int, int], float]:
+    totals: dict[tuple[int, int], float] = {}
+    for r in records:
+        key = (int(r["date"][:4]), int(r["date"][5:7]))
+        totals[key] = totals.get(key, 0.0) + r["kwh"]
+    return totals
+
+
+def monthly_band(records: list[dict], today: date | None = None) -> dict | None:
+    today = today or date.today()
+    totals = _monthly_totals(records)
+    prior_years = sorted({y for (y, _m) in totals if y < today.year})
+    if len(prior_years) < 2:
+        return None
+    months: list[int] = []
+    lo: list[float] = []
+    hi: list[float] = []
+    mid: list[float] = []
+    cur: list[float | None] = []
+    for m in range(1, 13):
+        vals = [totals[(y, m)] for y in prior_years if (y, m) in totals]
+        if not vals:
+            continue
+        months.append(m)
+        lo.append(round(min(vals), 2))
+        hi.append(round(max(vals), 2))
+        mid.append(round(median(vals), 2))
+        current = totals.get((today.year, m))
+        cur.append(round(current, 2) if current is not None else None)
+    if not months:
+        return None
+    return {
+        "current_year": today.year,
+        "prior_years": prior_years,
+        "months": months,
+        "min": lo,
+        "max": hi,
+        "median": mid,
+        "current": cur,
+    }
+
+
+def degradation(records: list[dict], kwp: float, min_common_months: int = 6) -> dict | None:
+    if not kwp or kwp <= 0:
+        return None
+    totals = _monthly_totals(records)
+    covered: dict[tuple[int, int], set[int]] = {}
+    for r in records:
+        key = (int(r["date"][:4]), int(r["date"][5:7]))
+        covered.setdefault(key, set()).add(int(r["date"][8:10]))
+    complete: dict[int, set[int]] = {}
+    for (y, m), days in covered.items():
+        if len(days) == calendar.monthrange(y, m)[1]:
+            complete.setdefault(y, set()).add(m)
+    best = None
+    for y1, y2 in combinations(sorted(complete), 2):
+        common = complete[y1] & complete[y2]
+        if len(common) < min_common_months:
+            continue
+        rank = (y2 - y1, len(common))
+        if best is None or rank > best[0]:
+            best = (rank, y1, y2, common)
+    if best is None:
+        return None
+    _rank, from_year, to_year, common = best
+    from_yield = sum(totals[(from_year, m)] for m in common) / kwp
+    to_yield = sum(totals[(to_year, m)] for m in common) / kwp
+    if from_yield <= 0:
+        return None
+    span = to_year - from_year
+    pct = ((to_yield / from_yield) ** (1.0 / span) - 1.0) * 100.0
+    return {
+        "from_year": from_year,
+        "to_year": to_year,
+        "months": sorted(common),
+        "month_count": len(common),
+        "from_specific_yield": round(from_yield, 2),
+        "to_specific_yield": round(to_yield, 2),
+        "pct_per_year": round(pct, 2),
+    }
 
 
 def heatmap_data(records: list[dict], year) -> list[dict]:

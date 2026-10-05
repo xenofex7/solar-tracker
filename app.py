@@ -941,6 +941,8 @@ def api_summary():
         y: [round(v / kwp, 2) if kwp > 0 else 0 for v in vals]
         for y, vals in year_cmp.items()
     }
+    band = metrics.monthly_band(records)
+    degrade = metrics.degradation(records, kwp)
     heat = metrics.heatmap_data(records, year)
     summ = metrics.summary(records, targets, year, kwp, start_date=start_date)
     forecast = metrics.year_end_forecast(records, targets, year, start_date=start_date)
@@ -1007,6 +1009,8 @@ def api_summary():
         "day_quality": day_qual,
         "year_comparison": year_cmp,
         "specific_yield_comparison": spec_yield_cmp,
+        "monthly_band": band,
+        "degradation": degrade,
         "heatmap": heat,
         "summary": summ,
         "forecast": forecast,

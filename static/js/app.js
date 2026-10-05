@@ -33,6 +33,7 @@ async function loadYear(year) {
     ['chart-duration', SolarCharts.renderDurationCurve],
     ['chart-yearcomp', SolarCharts.renderYearComparison],
     ['chart-spec-yield', SolarCharts.renderSpecificYield],
+    ['chart-monthly-band', SolarCharts.renderMonthlyBand],
     ['chart-day-quality', SolarCharts.renderDayQuality],
     ['top-table', SolarCharts.renderTopDays],
     ['chart-payback', SolarCharts.renderPayback],

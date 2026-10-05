@@ -367,3 +367,81 @@ def test_year_end_forecast_only_for_the_current_year_with_targets():
     assert metrics.year_end_forecast(HALF_YEAR_ON_TARGET, GENERIC_TARGETS, "all", today=FORECAST_TODAY) is None
     assert metrics.year_end_forecast(HALF_YEAR_ON_TARGET, GENERIC_TARGETS, 2024, today=FORECAST_TODAY) is None
     assert metrics.year_end_forecast(HALF_YEAR_ON_TARGET, [], 2025, today=FORECAST_TODAY) is None
+
+
+# ---------------------------------------------------------------------------
+# monthly_band
+# ---------------------------------------------------------------------------
+
+def test_monthly_band_is_none_without_a_prior_year():
+    records = _daily("2026-01-01", "2026-09-30", 10)
+    assert metrics.monthly_band(records, today=date(2026, 10, 5)) is None
+
+
+def test_monthly_band_needs_two_prior_years_for_a_corridor():
+    records = _daily("2025-08-01", "2025-12-31", 10) + _daily("2026-01-01", "2026-02-28", 20)
+    assert metrics.monthly_band(records, today=date(2026, 3, 15)) is None
+
+
+def test_monthly_band_ignores_months_without_prior_year_data():
+    records = (
+        _daily("2024-01-01", "2024-12-31", 10)
+        + _daily("2025-08-01", "2025-12-31", 20)
+        + _daily("2026-01-01", "2026-06-30", 30)
+    )
+    band = metrics.monthly_band(records, today=date(2026, 7, 15))
+    assert band["prior_years"] == [2024, 2025]
+    assert band["months"] == list(range(1, 13))
+    assert band["min"][0] == pytest.approx(310)
+    assert band["max"][0] == pytest.approx(310)
+    assert band["min"][7] == pytest.approx(310)
+    assert band["max"][7] == pytest.approx(620)
+    assert band["median"][7] == pytest.approx(465)
+    assert band["current"][0] == pytest.approx(930)
+    assert band["current"][6] is None
+
+
+# ---------------------------------------------------------------------------
+# degradation
+# ---------------------------------------------------------------------------
+
+def test_degradation_needs_enough_shared_full_months():
+    records = _daily("2025-09-01", "2025-12-31", 10) + _daily("2026-09-01", "2026-12-31", 9)
+    assert metrics.degradation(records, kwp=10) is None
+
+
+def test_degradation_is_none_without_kwp():
+    records = _daily("2025-01-01", "2025-12-31", 10) + _daily("2026-01-01", "2026-12-31", 9)
+    assert metrics.degradation(records, kwp=0) is None
+
+
+def test_degradation_compares_the_same_full_months():
+    records = _daily("2025-01-01", "2025-12-31", 10) + _daily("2026-01-01", "2026-12-31", 9)
+    deg = metrics.degradation(records, kwp=10)
+    assert deg["from_year"] == 2025
+    assert deg["to_year"] == 2026
+    assert deg["month_count"] == 12
+    assert deg["from_specific_yield"] == pytest.approx(365.0)
+    assert deg["to_specific_yield"] == pytest.approx(328.5)
+    assert deg["pct_per_year"] == pytest.approx(-10.0, abs=0.01)
+
+
+def test_degradation_skips_months_that_are_incomplete_in_one_year():
+    records = (
+        _daily("2025-01-01", "2025-12-31", 10)
+        + _daily("2026-01-01", "2026-06-30", 9)
+        + _daily("2026-07-02", "2026-12-31", 9)
+    )
+    deg = metrics.degradation(records, kwp=10)
+    assert deg["month_count"] == 11
+    assert 7 not in deg["months"]
+    assert deg["pct_per_year"] == pytest.approx(-10.0, abs=0.01)
+
+
+def test_degradation_annualizes_over_a_multi_year_span():
+    records = _daily("2023-01-01", "2023-12-31", 10) + _daily("2025-01-01", "2025-12-31", 8.1)
+    deg = metrics.degradation(records, kwp=10)
+    assert deg["from_year"] == 2023
+    assert deg["to_year"] == 2025
+    assert deg["month_count"] == 12
+    assert deg["pct_per_year"] == pytest.approx(-10.0, abs=0.01)

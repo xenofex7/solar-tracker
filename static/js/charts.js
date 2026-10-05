@@ -890,6 +890,55 @@ function renderSpecificYield(data) {
   });
 }
 
+function renderMonthlyBand(data) {
+  destroy('monthly-band');
+  const ctx = document.getElementById('chart-monthly-band');
+  if (!ctx) return;
+  const note = document.getElementById('degradation-note');
+  if (note) note.innerHTML = '';
+  const band = data.monthly_band;
+  if (!band || !band.months.length) { _hideIfEmpty(ctx, false); return; }
+  _hideIfEmpty(ctx, true);
+
+  const T = window.T || {};
+  const years = band.prior_years;
+  const span = years.length > 1 ? `${years[0]}-${years[years.length - 1]}` : String(years[0]);
+  const bandLabel = (T.chart_band_range || 'Previous years {years} (min-max)').replace('{years}', span);
+
+  charts['monthly-band'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: localizeMonths(band.months),
+      datasets: [
+        { label: bandLabel, data: band.max, borderColor: CHART_COLORS.targetLine + '55', backgroundColor: CHART_COLORS.targetLine + '2e', borderWidth: 1, pointRadius: 0, fill: '+1', tension: 0.25, order: 4 },
+        { label: bandLabel, data: band.min, borderColor: CHART_COLORS.targetLine + '55', backgroundColor: CHART_COLORS.targetLine + '2e', borderWidth: 1, pointRadius: 0, fill: false, tension: 0.25, order: 3 },
+        { label: T.label_median || 'Median', data: band.median, borderColor: CHART_COLORS.muted, borderWidth: 1, borderDash: [4, 3], pointRadius: 0, fill: false, tension: 0.25, order: 2 },
+        { label: String(band.current_year), data: band.current, borderColor: CHART_COLORS.actualLine, backgroundColor: CHART_COLORS.actualLine + '22', borderWidth: 2.5, fill: false, tension: 0.25, order: 1 },
+      ],
+    },
+    options: {
+      plugins: {
+        legend: { labels: { filter: item => item.datasetIndex !== 1 } },
+        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${fmtKwh(item.parsed.y)}` } },
+      },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => fmtKwh(v) } } },
+    },
+  });
+
+  const deg = data.degradation;
+  if (note && deg) {
+    const down = deg.pct_per_year < 0;
+    const pct = Math.abs(deg.pct_per_year).toLocaleString(MONEY_LOC(), { maximumFractionDigits: 1 });
+    const tpl = T.chart_degradation_note
+      || 'Specific yield {from} vs {to}: {pct} per year, based on {months} shared full months.';
+    note.innerHTML = tpl
+      .replace('{from}', deg.from_year)
+      .replace('{to}', deg.to_year)
+      .replace('{pct}', `<span class="${down ? 'bad' : 'good'}">${down ? '-' : '+'}${pct} %</span>`)
+      .replace('{months}', deg.month_count);
+  }
+}
+
 function renderForecast(data) {
   destroy('forecast');
   const ctx = document.getElementById('chart-forecast');
@@ -983,7 +1032,7 @@ function renderDurationCurve(data) {
 window.SolarCharts = {
   renderKpis, renderMonthly, renderDeviation, renderCumulative,
   renderDaily, renderHeatmap, renderDistribution, renderYearComparison,
-  renderTopDays, renderDayQuality, renderSpecificYield,
+  renderTopDays, renderDayQuality, renderSpecificYield, renderMonthlyBand,
   renderForecast, renderDurationCurve,
   renderPayback, renderEnergyFlows, renderSelfRatio, renderFinanceFlow,
   renderSavingsVsNoPv, renderTariffTrend, renderAutarky,
