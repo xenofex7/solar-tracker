@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Finances: two new KPIs. "Return p.a." puts the expected annual revenue against the investment, and "LCOE" names what one self-produced kWh costs over the plant's service life, turning green while it stays below the grid tariff. The LCOE tile carries an info popover with investment, expected lifetime yield and the formula.
+- Settings: new "Service life (years)" field under plant data (default 25, range 1-50). It feeds the LCOE calculation.
 
 ## [2.5.4] - 2026-10-04
 ### Added

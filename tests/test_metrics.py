@@ -199,6 +199,50 @@ def test_payback_projects_using_yearly_target_when_available():
     assert pay["yearly_yield_estimate"] == pytest.approx(yearly * 0.2, rel=1e-3)
 
 
+def test_payback_annual_return_is_yearly_yield_over_invested():
+    records = _daily("2025-01-01", "2025-01-10", 10)
+    pay = metrics.payback(records, 20000, [], [], 0.2, targets=GENERIC_TARGETS)
+    yearly = sum(t["kwh"] for t in GENERIC_TARGETS) * 0.2
+    assert pay["annual_return_pct"] == pytest.approx(yearly / 20000 * 100.0, rel=1e-3)
+
+
+def test_payback_annual_return_is_none_without_targets():
+    records = _daily("2025-01-01", "2025-01-10", 10)
+    pay = metrics.payback(records, 20000, [], [], 0.2)
+    assert pay["annual_return_pct"] is None
+
+
+def test_payback_lcoe_divides_investment_by_lifetime_yield():
+    records = _daily("2025-01-01", "2025-01-10", 10)
+    pay = metrics.payback(records, 24000, [], [], 0.2, targets=GENERIC_TARGETS, lifetime_years=20)
+    yearly_kwh = sum(t["kwh"] for t in GENERIC_TARGETS)
+    assert pay["lifetime_years"] == 20
+    assert pay["lifetime_yield_kwh"] == pytest.approx(yearly_kwh * 20)
+    assert pay["lcoe"] == pytest.approx(24000 / (yearly_kwh * 20), rel=1e-3)
+
+
+def test_payback_lcoe_defaults_to_25_years():
+    records = _daily("2025-01-01", "2025-01-10", 10)
+    pay = metrics.payback(records, 24000, [], [], 0.2, targets=GENERIC_TARGETS)
+    yearly_kwh = sum(t["kwh"] for t in GENERIC_TARGETS)
+    assert pay["lifetime_years"] == 25
+    assert pay["lcoe"] == pytest.approx(24000 / (yearly_kwh * 25), rel=1e-3)
+
+
+def test_payback_lcoe_is_none_without_targets():
+    records = _daily("2025-01-01", "2025-01-10", 10)
+    pay = metrics.payback(records, 24000, [], [], 0.2)
+    assert pay["lcoe"] is None
+
+
+def test_payback_lcoe_ignores_year_specific_targets():
+    records = _daily("2025-01-01", "2025-01-10", 10)
+    targets = GENERIC_TARGETS + [{"year": 2025, "month": 1, "kwh": 9999}]
+    pay = metrics.payback(records, 24000, [], [], 0.2, targets=targets, lifetime_years=10)
+    yearly_kwh = sum(t["kwh"] for t in GENERIC_TARGETS)
+    assert pay["lifetime_yield_kwh"] == pytest.approx(yearly_kwh * 10)
+
+
 # ---------------------------------------------------------------------------
 # monthly_flows
 # ---------------------------------------------------------------------------

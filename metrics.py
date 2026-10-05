@@ -394,6 +394,7 @@ def payback(
     fallback_price: float,
     targets: list[dict] | None = None,
     import_price: float | None = None,
+    lifetime_years: int = 25,
 ) -> dict:
     cum, breakdown = financial_series(records, import_bills, export_bills, fallback_price, import_price)
     if invested <= 0 or not cum:
@@ -406,6 +407,10 @@ def payback(
             "avg_daily_revenue": 0.0,
             "projection_basis": "none",
             "yearly_yield_estimate": 0.0,
+            "annual_return_pct": None,
+            "lifetime_years": lifetime_years,
+            "lifetime_yield_kwh": 0.0,
+            "lcoe": None,
             "breakdown": breakdown,
         }
     revenue_total = cum[-1]["revenue"] if cum else 0.0
@@ -440,6 +445,10 @@ def payback(
         last_date = date.fromisoformat(cum[-1]["date"])
         projected = last_date + timedelta(days=int(round(days_needed)))
         payback_date = projected.isoformat()
+
+    annual_return_pct = (yearly_yield / invested * 100.0) if yearly_yield > 0 else None
+    lifetime_yield_kwh = yearly_target_kwh * max(0, lifetime_years)
+    lcoe = (invested / lifetime_yield_kwh) if lifetime_yield_kwh > 0 else None
     return {
         "invested": round(invested, 2),
         "revenue_total": round(revenue_total, 2),
@@ -450,6 +459,10 @@ def payback(
         "projection_basis": projection_basis,
         "yearly_yield_estimate": round(yearly_yield, 2),
         "blended_price": round(blended_price, 4),
+        "annual_return_pct": round(annual_return_pct, 2) if annual_return_pct is not None else None,
+        "lifetime_years": lifetime_years,
+        "lifetime_yield_kwh": round(lifetime_yield_kwh, 2),
+        "lcoe": round(lcoe, 4) if lcoe is not None else None,
         "breakdown": breakdown,
     }
 

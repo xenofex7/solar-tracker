@@ -187,6 +187,15 @@ def _import_price() -> float:
         return 0.0
 
 
+def _lifetime_years() -> int:
+    val = db.get_setting("lifetime_years") or "25"
+    try:
+        years = int(val)
+    except ValueError:
+        return 25
+    return min(50, max(1, years))
+
+
 def _currency() -> str:
     val = (db.get_setting("currency") or "CHF").strip()
     return val or "CHF"
@@ -441,6 +450,7 @@ def settings_page():
         kwp=_kwp(),
         price_per_kwh=_price_per_kwh(),
         import_price=_import_price(),
+        lifetime_years=_lifetime_years(),
         currency_setting=_currency(),
         start_date=_start_date() or "",
         timezone=_timezone(),
@@ -649,6 +659,7 @@ def api_settings_get():
         "kwp": _kwp(),
         "price_per_kwh": _price_per_kwh(),
         "import_price_per_kwh": _import_price(),
+        "lifetime_years": _lifetime_years(),
         "currency": _currency(),
         "timezone": _timezone(),
         "start_date": _start_date() or "",
@@ -673,6 +684,14 @@ def api_settings_post():
         if not cur or len(cur) > 8:
             return jsonify({"error": "Währung muss 1-8 Zeichen lang sein"}), 400
         payload["currency"] = cur
+    if "lifetime_years" in payload:
+        try:
+            years = int(str(payload["lifetime_years"]).strip())
+        except ValueError:
+            return jsonify({"error": "Nutzungsdauer muss eine ganze Zahl sein"}), 400
+        if not 1 <= years <= 50:
+            return jsonify({"error": "Nutzungsdauer muss zwischen 1 und 50 Jahren liegen"}), 400
+        payload["lifetime_years"] = years
     if "sync_source" in payload:
         src = str(payload["sync_source"]).strip()
         if src not in SYNC_SOURCES:
@@ -929,7 +948,10 @@ def api_summary():
     exports = db.list_grid_bills("export")
     imp_price = _import_price()
     cum_rev = metrics.cumulative_revenue(records, imports, exports, price, imp_price or None)
-    pay = metrics.payback(records, invested, imports, exports, price, targets=targets, import_price=imp_price or None)
+    pay = metrics.payback(
+        records, invested, imports, exports, price,
+        targets=targets, import_price=imp_price or None, lifetime_years=_lifetime_years(),
+    )
     if start_date:
         pay["start_date"] = start_date
     sc = metrics.self_consumption(records, exports)

@@ -506,6 +506,28 @@ function renderKpis(data) {
         { label: T.kpi_projected_year || 'Projected per year', value: fmtMoney2(p.avg_daily_revenue * 365) },
       );
     }
+    if (p.yearly_yield_estimate > 0 && p.annual_return_pct) {
+      finance.push(
+        { label: T.kpi_annual_return || 'Return p.a.', value: `${p.annual_return_pct.toLocaleString(MONEY_LOC(), {maximumFractionDigits: 1})} %` },
+      );
+    }
+    if (p.lcoe) {
+      const lcoeSub = PRICE_SUBUNIT[CUR()];
+      const lcoeUnit = lcoeSub || CUR();
+      const lcoeDigits = lcoeSub ? 1 : 3;
+      const lcoeNum = (v) => ((Number(v) || 0) * (lcoeSub ? 100 : 1)).toLocaleString(MONEY_LOC(), {minimumFractionDigits: lcoeDigits, maximumFractionDigits: lcoeDigits});
+      const gridPrice = data.grid?.totals?.import?.avg_price ?? 0;
+      const lcoeInfo = `<h4>${esc(T.kpi_lcoe_info_title || 'How this is calculated')}</h4>`
+        + `<ul>`
+        + `<li>${esc(T.kpi_lcoe_info_invested || 'Investment:')} <strong>${fmtMoney(p.invested)}</strong></li>`
+        + `<li>${esc((T.kpi_lcoe_info_lifetime || 'Expected yield over {years} years:').replace('{years}', p.lifetime_years))} <strong>${fmtKwh(p.lifetime_yield_kwh)}</strong></li>`
+        + `<li>${esc(T.kpi_lcoe_info_formula || 'Investment / (annual target × service life)')}</li>`
+        + `</ul>`
+        + (gridPrice > 0 ? `<p class="muted">${esc((T.kpi_lcoe_info_note || 'Current import price: {tariff} {currency}/kWh.').replace('{tariff}', lcoeNum(gridPrice)).replace('{currency}', lcoeUnit))}</p>` : '');
+      finance.push(
+        { label: T.kpi_lcoe || 'LCOE', value: `${lcoeNum(p.lcoe)} ${lcoeUnit}/kWh`, cls: (p.lcoe < gridPrice && gridPrice > 0) ? 'good' : '', info: lcoeInfo },
+      );
+    }
   }
 
   const energy = [];
