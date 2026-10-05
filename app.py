@@ -385,6 +385,7 @@ def api_users_delete(user_id):
 
 SYNC_SOURCES = ("home_assistant", "solarweb")
 ENTRIES_PAGE_SIZES = ("25", "50", "100", "all")
+COST_KINDS = ("investment", "operating")
 
 
 def _sync_source() -> str:
@@ -457,6 +458,7 @@ def settings_page():
         timezones=sorted(available_timezones()),
         costs=db.list_costs(),
         total_invested=db.total_invested(),
+        total_operating=db.total_operating(),
         recent=recent,
         month_totals=month_totals,
         grid_imports=db.list_grid_bills("import"),
@@ -786,6 +788,7 @@ def api_costs_get():
     return jsonify({
         "items": db.list_costs(),
         "total": round(db.total_invested(), 2),
+        "total_operating": round(db.total_operating(), 2),
     })
 
 
@@ -796,6 +799,7 @@ def api_costs_post():
     label = (payload.get("label") or "").strip()
     amount = payload.get("amount")
     cdate = payload.get("date") or None
+    kind = (payload.get("kind") or "investment").strip()
     if not label or amount is None:
         return jsonify({"error": "label und amount erforderlich"}), 400
     try:
@@ -807,7 +811,9 @@ def api_costs_post():
             datetime.fromisoformat(cdate)
         except ValueError:
             return jsonify({"error": "ungültiges Datum"}), 400
-    new_id = db.add_cost(label, amount, cdate)
+    if kind not in COST_KINDS:
+        return jsonify({"error": f"Ungültige Kategorie: {kind}"}), 400
+    new_id = db.add_cost(label, amount, cdate, kind)
     return jsonify({"ok": True, "id": new_id})
 
 
@@ -818,6 +824,9 @@ def api_costs_put(cost_id):
     label = (payload.get("label") or "").strip()
     amount = payload.get("amount")
     cdate = payload.get("date") or None
+    kind = payload.get("kind")
+    if kind is not None:
+        kind = str(kind).strip()
     if not label or amount is None:
         return jsonify({"error": "label und amount erforderlich"}), 400
     try:
@@ -829,7 +838,9 @@ def api_costs_put(cost_id):
             datetime.fromisoformat(cdate)
         except ValueError:
             return jsonify({"error": "ungültiges Datum"}), 400
-    if not db.update_cost(cost_id, label, amount, cdate):
+    if kind is not None and kind not in COST_KINDS:
+        return jsonify({"error": f"Ungültige Kategorie: {kind}"}), 400
+    if not db.update_cost(cost_id, label, amount, cdate, kind):
         return jsonify({"error": "nicht gefunden"}), 404
     return jsonify({"ok": True})
 
@@ -919,6 +930,7 @@ def api_summary():
     kwp = _kwp()
     price = _price_per_kwh()
     invested = db.total_invested()
+    operating_costs = [c for c in db.list_costs() if c["kind"] == "operating"]
 
     actual = metrics.monthly_actual(records, year)
     years_in_data = metrics.years_in_records(records)
@@ -949,10 +961,13 @@ def api_summary():
     imports = db.list_grid_bills("import")
     exports = db.list_grid_bills("export")
     imp_price = _import_price()
-    cum_rev = metrics.cumulative_revenue(records, imports, exports, price, imp_price or None)
+    cum_rev = metrics.cumulative_revenue(
+        records, imports, exports, price, imp_price or None, operating_costs
+    )
     pay = metrics.payback(
         records, invested, imports, exports, price,
         targets=targets, import_price=imp_price or None, lifetime_years=_lifetime_years(),
+        operating_costs=operating_costs, start_date=start_date,
     )
     if start_date:
         pay["start_date"] = start_date

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Compare: below that chart, a degradation line comparing the specific yield of the two years that share the most ground, annualised and stated with the number of shared full months it rests on.
 - New CLI `scripts/sync_ha.py` for manual and cron-based Home Assistant syncs, mirroring the existing Solar.web script. Until now the only sync trigger was opening the dashboard.
 - Docker: a `solar-tracker-sync` service in `docker-compose.yml` runs that CLI once a day against the same database, so production data no longer depends on someone opening the dashboard.
+- Costs can now be filed as investment or operating cost. Operating costs stay out of the investment total and reduce the cumulative yield from their date on, so payback, progress, return p.a. and LCOE stop treating a recurring insurance premium like a one-off installer invoice. Existing entries migrate to "investment", which leaves every figure unchanged.
 
 ## [2.5.4] - 2026-10-04
 ### Added

@@ -246,15 +246,17 @@ def update_settings(
 
 @mcp.tool()
 @_safe
-def add_cost(label: str, amount: float, date: str | None = None) -> dict:
-    """Add an investment cost item (e.g. solar installer invoice line).
+def add_cost(label: str, amount: float, date: str | None = None, kind: str = "investment") -> dict:
+    """Add a cost item (e.g. solar installer invoice line, insurance premium).
 
     Args:
         label: Free-form description.
         amount: Amount in the plant's currency (>= 0).
         date: Optional ISO date YYYY-MM-DD.
+        kind: 'investment' (one-off, counts towards payback) or 'operating'
+            (recurring, reduces the yield from its date on).
     """
-    body: dict[str, Any] = {"label": label, "amount": amount}
+    body: dict[str, Any] = {"label": label, "amount": amount, "kind": kind}
     if date is not None:
         body["date"] = date
     return client.post("/api/costs", body)
@@ -262,11 +264,13 @@ def add_cost(label: str, amount: float, date: str | None = None) -> dict:
 
 @mcp.tool()
 @_safe
-def update_cost(id: int, label: str, amount: float, date: str | None = None) -> dict:
-    """Update an existing investment cost item by id."""
+def update_cost(id: int, label: str, amount: float, date: str | None = None, kind: str | None = None) -> dict:
+    """Update an existing cost item by id. `kind` is 'investment' or 'operating'; omit it to keep the current one."""
     body: dict[str, Any] = {"label": label, "amount": amount}
     if date is not None:
         body["date"] = date
+    if kind is not None:
+        body["kind"] = kind
     return client.put(f"/api/costs/{id}", body)
 
 

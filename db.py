@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS plant_costs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT NOT NULL,
     amount REAL NOT NULL,
-    date TEXT
+    date TEXT,
+    kind TEXT NOT NULL DEFAULT 'investment'
 );
 
 CREATE TABLE IF NOT EXISTS grid_billing (
@@ -83,6 +84,7 @@ def init_db():
     with connect() as conn:
         conn.executescript(SCHEMA)
         _migrate_amount_columns(conn)
+        _migrate_cost_kind(conn)
 
 
 def _migrate_amount_columns(conn):
@@ -91,6 +93,14 @@ def _migrate_amount_columns(conn):
         cols = [r[1] for r in conn.execute(f"PRAGMA table_info({table})").fetchall()]
         if "amount_chf" in cols and "amount" not in cols:
             conn.execute(f"ALTER TABLE {table} RENAME COLUMN amount_chf TO amount")
+
+
+def _migrate_cost_kind(conn):
+    cols = [r[1] for r in conn.execute("PRAGMA table_info(plant_costs)").fetchall()]
+    if "kind" not in cols:
+        conn.execute(
+            "ALTER TABLE plant_costs ADD COLUMN kind TEXT NOT NULL DEFAULT 'investment'"
+        )
 
 
 def upsert_production(date: str, kwh: float, source: str) -> str:
@@ -236,11 +246,11 @@ def get_setting(key: str, default=None):
         return row["value"] if row else default
 
 
-def add_cost(label: str, amount: float, date: str | None = None) -> int:
+def add_cost(label: str, amount: float, date: str | None = None, kind: str = "investment") -> int:
     with connect() as conn:
         cur = conn.execute(
-            "INSERT INTO plant_costs (label, amount, date) VALUES (?, ?, ?)",
-            (label, amount, date or None),
+            "INSERT INTO plant_costs (label, amount, date, kind) VALUES (?, ?, ?, ?)",
+            (label, amount, date or None, kind),
         )
         return cur.lastrowid
 
@@ -248,17 +258,29 @@ def add_cost(label: str, amount: float, date: str | None = None) -> int:
 def list_costs() -> list[dict]:
     with connect() as conn:
         rows = conn.execute(
-            "SELECT id, label, amount, date FROM plant_costs ORDER BY date IS NULL, date, id"
+            "SELECT id, label, amount, date, kind FROM plant_costs ORDER BY date IS NULL, date, id"
         ).fetchall()
     return [dict(r) for r in rows]
 
 
-def update_cost(cost_id: int, label: str, amount: float, date: str | None = None) -> bool:
+def update_cost(
+    cost_id: int,
+    label: str,
+    amount: float,
+    date: str | None = None,
+    kind: str | None = None,
+) -> bool:
     with connect() as conn:
-        cur = conn.execute(
-            "UPDATE plant_costs SET label = ?, amount = ?, date = ? WHERE id = ?",
-            (label, amount, date or None, cost_id),
-        )
+        if kind is None:
+            cur = conn.execute(
+                "UPDATE plant_costs SET label = ?, amount = ?, date = ? WHERE id = ?",
+                (label, amount, date or None, cost_id),
+            )
+        else:
+            cur = conn.execute(
+                "UPDATE plant_costs SET label = ?, amount = ?, date = ?, kind = ? WHERE id = ?",
+                (label, amount, date or None, kind, cost_id),
+            )
         return cur.rowcount > 0
 
 
@@ -270,7 +292,15 @@ def delete_cost(cost_id: int):
 def total_invested() -> float:
     with connect() as conn:
         row = conn.execute(
-            "SELECT COALESCE(SUM(amount), 0) AS t FROM plant_costs"
+            "SELECT COALESCE(SUM(amount), 0) AS t FROM plant_costs WHERE kind = 'investment'"
+        ).fetchone()
+    return float(row["t"])
+
+
+def total_operating() -> float:
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT COALESCE(SUM(amount), 0) AS t FROM plant_costs WHERE kind = 'operating'"
         ).fetchone()
     return float(row["t"])
 

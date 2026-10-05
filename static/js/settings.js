@@ -87,6 +87,7 @@ document.getElementById('cost-form').addEventListener('submit', async (e) => {
     label: e.target.label.value,
     amount: Number(e.target.amount.value),
     date: e.target.date.value || null,
+    kind: e.target.kind.value,
   };
   const r = await fetch('/api/costs', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   if (r.ok) {
@@ -112,22 +113,28 @@ document.querySelectorAll('#costs-table button.edit').forEach(btn => {
     const tr = btn.closest('tr');
     if (tr.classList.contains('editing')) return;
     tr.classList.add('editing');
-    const { id, date, label, amount } = tr.dataset;
+    const { id, date, label, amount, kind } = tr.dataset;
     const cells = tr.cells;
     cells[0].innerHTML = `<input type="date" class="edit-date" value="${date}">`;
     cells[1].innerHTML = `<input type="text" class="edit-label">`;
     cells[1].querySelector('.edit-label').value = label;
-    cells[2].innerHTML = `<input type="number" class="edit-amount num" step="0.01" value="${amount}">`;
-    cells[3].innerHTML = `
+    cells[2].innerHTML = `<select class="edit-kind">
+      <option value="investment">${window.T?.opt_investment || 'Investment'}</option>
+      <option value="operating">${window.T?.opt_operating || 'Operating costs'}</option>
+    </select>`;
+    cells[2].querySelector('.edit-kind').value = kind;
+    cells[3].innerHTML = `<input type="number" class="edit-amount num" step="0.01" value="${amount}">`;
+    cells[4].innerHTML = `
       <button class="save icon" type="button" aria-label="${window.T?.btn_save || 'Save'}" title="${window.T?.btn_save || 'Save'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
       <button class="cancel icon" type="button" aria-label="${window.T?.btn_cancel || 'Cancel'}" title="${window.T?.btn_cancel || 'Cancel'}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     `;
-    cells[3].querySelector('button.cancel').addEventListener('click', () => location.reload());
-    cells[3].querySelector('button.save').addEventListener('click', async () => {
+    cells[4].querySelector('button.cancel').addEventListener('click', () => location.reload());
+    cells[4].querySelector('button.save').addEventListener('click', async () => {
       const body = {
         date: tr.querySelector('.edit-date').value || null,
         label: tr.querySelector('.edit-label').value,
         amount: Number(tr.querySelector('.edit-amount').value),
+        kind: tr.querySelector('.edit-kind').value,
       };
       const r = await fetch(`/api/costs/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
       if (r.ok) {

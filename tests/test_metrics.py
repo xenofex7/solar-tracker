@@ -243,6 +243,101 @@ def test_payback_lcoe_ignores_year_specific_targets():
     assert pay["lifetime_yield_kwh"] == pytest.approx(yearly_kwh * 10)
 
 
+def test_financial_series_subtracts_operating_cost_from_its_date():
+    records = _daily("2025-01-01", "2025-01-04", 10)
+    cum, breakdown = metrics.financial_series(
+        records, [], [], fallback_price=0.2,
+        operating_costs=[{"amount": 1.0, "date": "2025-01-03"}],
+    )
+    assert [row["revenue"] for row in cum] == [2, 4, 5, 7]
+    assert breakdown["total_revenue"] == 8
+
+
+def test_financial_series_undated_operating_cost_counts_from_the_start():
+    records = _daily("2025-01-01", "2025-01-02", 10)
+    cum, _ = metrics.financial_series(
+        records, [], [], fallback_price=0.2,
+        operating_costs=[{"amount": 1.0, "date": None}],
+    )
+    assert [row["revenue"] for row in cum] == [1, 3]
+
+
+def test_payback_operating_costs_delay_the_payback_date():
+    records = _daily("2025-01-01", "2025-12-31", 10)
+    gross = metrics.payback(records, 700, [], [], 0.2)
+    net = metrics.payback(
+        records, 700, [], [], 0.2,
+        operating_costs=[{"amount": 100.0, "date": "2025-01-01"}],
+    )
+    assert net["payback_date"] > gross["payback_date"]
+    assert net["revenue_total"] == pytest.approx(gross["revenue_total"] - 100.0)
+    assert net["remaining"] > gross["remaining"]
+    assert net["progress_pct"] < gross["progress_pct"]
+
+
+def test_payback_annual_return_is_net_of_operating_costs():
+    records = _daily("2025-01-01", "2025-12-31", 10)
+    pay = metrics.payback(
+        records, 20000, [], [], 0.2, targets=GENERIC_TARGETS,
+        operating_costs=[{"amount": 365.0, "date": "2025-01-01"}],
+        start_date="2025-01-01",
+    )
+    yearly = sum(t["kwh"] for t in GENERIC_TARGETS) * 0.2
+    assert pay["operating_cost_total"] == 365.0
+    assert pay["annual_operating_cost"] == pytest.approx(365.0)
+    assert pay["annual_return_pct"] == pytest.approx((yearly - 365.0) / 20000 * 100.0, rel=1e-3)
+
+
+def test_payback_lcoe_adds_operating_costs_over_the_service_life():
+    records = _daily("2025-01-01", "2025-12-31", 10)
+    bare = metrics.payback(records, 24000, [], [], 0.2, targets=GENERIC_TARGETS, lifetime_years=20)
+    pay = metrics.payback(
+        records, 24000, [], [], 0.2, targets=GENERIC_TARGETS, lifetime_years=20,
+        operating_costs=[{"amount": 200.0, "date": "2025-06-01"}],
+        start_date="2025-01-01",
+    )
+    yearly_kwh = sum(t["kwh"] for t in GENERIC_TARGETS)
+    assert pay["lcoe"] > bare["lcoe"]
+    assert pay["lcoe"] == pytest.approx((24000 + 200.0 * 20) / (yearly_kwh * 20), rel=1e-3)
+
+
+def test_payback_annual_operating_cost_spreads_over_the_runtime():
+    records = _daily("2024-01-01", "2025-12-31", 10)
+    pay = metrics.payback(
+        records, 20000, [], [], 0.2, targets=GENERIC_TARGETS,
+        operating_costs=[
+            {"amount": 200.0, "date": "2024-01-01"},
+            {"amount": 200.0, "date": "2025-01-01"},
+        ],
+        start_date="2024-01-01",
+    )
+    assert pay["annual_operating_cost"] == pytest.approx(400.0 / (731 / 365.0), rel=1e-3)
+
+
+def test_payback_annual_operating_cost_uses_at_least_one_year():
+    records = _daily("2025-01-01", "2025-03-31", 10)
+    pay = metrics.payback(
+        records, 5000, [], [], 0.2, targets=GENERIC_TARGETS,
+        operating_costs=[{"amount": 300.0, "date": "2025-01-01"}],
+        start_date="2025-01-01",
+    )
+    assert pay["annual_operating_cost"] == 300.0
+
+
+def test_payback_without_operating_costs_matches_the_gross_formulas():
+    records = _daily("2025-01-01", "2025-01-10", 10)
+    base = metrics.payback(records, 24000, [], [], 0.2, targets=GENERIC_TARGETS)
+    assert base == metrics.payback(
+        records, 24000, [], [], 0.2, targets=GENERIC_TARGETS, operating_costs=[]
+    )
+    yearly_kwh = sum(t["kwh"] for t in GENERIC_TARGETS)
+    assert base["operating_cost_total"] == 0.0
+    assert base["annual_operating_cost"] == 0.0
+    assert base["revenue_total"] == pytest.approx(20.0)
+    assert base["annual_return_pct"] == pytest.approx(yearly_kwh * 0.2 / 24000 * 100.0, rel=1e-3)
+    assert base["lcoe"] == pytest.approx(24000 / (yearly_kwh * 25), rel=1e-3)
+
+
 # ---------------------------------------------------------------------------
 # monthly_flows
 # ---------------------------------------------------------------------------

@@ -409,6 +409,7 @@ def financial_series(
     export_bills: list[dict],
     fallback_price: float,
     import_price: float | None = None,
+    operating_costs: list[dict] | None = None,
 ) -> tuple[list[dict], dict]:
     rows = sorted(records, key=lambda r: r["date"])
 
@@ -441,10 +442,14 @@ def financial_series(
                 return p["rate"]
         return fallback_price
 
-    cum, s = [], 0.0
+    ops = sorted(operating_costs or [], key=lambda c: c.get("date") or "")
+    cum, s, spent, next_op = [], 0.0, 0.0, 0
     for r in rows:
         s += r["kwh"] * rate_for(r["date"])
-        cum.append({"date": r["date"], "revenue": round(s, 2)})
+        while next_op < len(ops) and (ops[next_op].get("date") or "") <= r["date"]:
+            spent += ops[next_op]["amount"]
+            next_op += 1
+        cum.append({"date": r["date"], "revenue": round(s - spent, 2)})
 
     total_exported_kwh = sum(b["kwh"] for b in export_bills)
     total_export_credit = sum(b["amount"] for b in export_bills)
@@ -465,8 +470,10 @@ def financial_series(
     return cum, breakdown
 
 
-def cumulative_revenue(records, import_bills, export_bills, fallback_price, import_price=None):
-    return financial_series(records, import_bills, export_bills, fallback_price, import_price)[0]
+def cumulative_revenue(records, import_bills, export_bills, fallback_price, import_price=None, operating_costs=None):
+    return financial_series(
+        records, import_bills, export_bills, fallback_price, import_price, operating_costs
+    )[0]
 
 
 def payback(
@@ -478,8 +485,13 @@ def payback(
     targets: list[dict] | None = None,
     import_price: float | None = None,
     lifetime_years: int = 25,
+    operating_costs: list[dict] | None = None,
+    start_date: str | None = None,
 ) -> dict:
-    cum, breakdown = financial_series(records, import_bills, export_bills, fallback_price, import_price)
+    cum, breakdown = financial_series(
+        records, import_bills, export_bills, fallback_price, import_price, operating_costs
+    )
+    operating_total = sum((c["amount"] for c in (operating_costs or [])), 0.0)
     if invested <= 0 or not cum:
         return {
             "invested": round(invested, 2),
@@ -494,6 +506,8 @@ def payback(
             "lifetime_years": lifetime_years,
             "lifetime_yield_kwh": 0.0,
             "lcoe": None,
+            "operating_cost_total": round(operating_total, 2),
+            "annual_operating_cost": 0.0,
             "breakdown": breakdown,
         }
     revenue_total = cum[-1]["revenue"] if cum else 0.0
@@ -504,9 +518,14 @@ def payback(
             break
     remaining = max(0.0, invested - revenue_total)
 
+    first_day = date.fromisoformat(start_date or cum[0]["date"])
+    last_day = date.fromisoformat(cum[-1]["date"])
+    runtime_years = max(1.0, ((last_day - first_day).days + 1) / 365.0)
+    annual_operating = operating_total / runtime_years
+
     # Preferred projection: yearly target kWh × blended effective price
     total_pv = sum(r["kwh"] for r in records)
-    blended_price = (revenue_total / total_pv) if total_pv > 0 else fallback_price
+    blended_price = (breakdown["total_revenue"] / total_pv) if total_pv > 0 else fallback_price
     yearly_target_kwh = 0.0
     if targets:
         generic = {t["month"]: t["kwh"] for t in targets if t.get("year") is None}
@@ -529,9 +548,10 @@ def payback(
         projected = last_date + timedelta(days=int(round(days_needed)))
         payback_date = projected.isoformat()
 
-    annual_return_pct = (yearly_yield / invested * 100.0) if yearly_yield > 0 else None
+    annual_return_pct = ((yearly_yield - annual_operating) / invested * 100.0) if yearly_yield > 0 else None
     lifetime_yield_kwh = yearly_target_kwh * max(0, lifetime_years)
-    lcoe = (invested / lifetime_yield_kwh) if lifetime_yield_kwh > 0 else None
+    lifetime_cost = invested + annual_operating * max(0, lifetime_years)
+    lcoe = (lifetime_cost / lifetime_yield_kwh) if lifetime_yield_kwh > 0 else None
     return {
         "invested": round(invested, 2),
         "revenue_total": round(revenue_total, 2),
@@ -546,6 +566,8 @@ def payback(
         "lifetime_years": lifetime_years,
         "lifetime_yield_kwh": round(lifetime_yield_kwh, 2),
         "lcoe": round(lcoe, 4) if lcoe is not None else None,
+        "operating_cost_total": round(operating_total, 2),
+        "annual_operating_cost": round(annual_operating, 2),
         "breakdown": breakdown,
     }
 
