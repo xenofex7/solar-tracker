@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.6.1] - 2026-10-06
 ### Fixed
 - Phone layout: the app had no breakpoint below 900px for its content, which showed. Charts collapsed to a 4px plot area on a 375px screen (the payback chart was a flat line), the cost and grid-bill tables pushed the whole page 130px sideways, and KPI info popovers rendered 93 percent off-screen. Charts now get a fixed height instead of a 2:1 ratio, tables scroll inside their own container, popovers dock to the bottom of the screen, KPI tiles sit in two columns, and controls reach a 44px touch target. The overview went from 3'731px of scrolling to 2'523px, with the first chart at 1'448px instead of 2'997px.
 
@@ -389,7 +391,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.6.0...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.6.1...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -430,3 +432,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.5.3]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.3
 [2.5.4]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.5.4
 [2.6.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.0
+[2.6.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.1
