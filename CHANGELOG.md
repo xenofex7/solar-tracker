@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Docker: a push to `main` now only builds the image as a check and no longer publishes it. The `main` tag is gone; images come from `v*` tags only. Build the current branch locally with `docker compose build` if you need it.
+
 
 ## [2.6.1] - 2026-10-06
 ### Fixed
