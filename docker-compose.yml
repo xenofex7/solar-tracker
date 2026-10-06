@@ -19,4 +19,12 @@ services:
       - ./data:/app/data
     env_file:
       - .env
-    command: sh -c "while true; do python -m scripts.sync_ha --days 3 --quiet; sleep 86400; done"
+    environment:
+      TZ: Europe/Zurich
+    command: >
+      sh -c 'while true; do
+        now=$$(date +%s); at=$$(date -d 03:15 +%s);
+        [ $$at -le $$now ] && at=$$(date -d "tomorrow 03:15" +%s);
+        sleep $$(( at - now ));
+        python -m scripts.sync_ha --days 3 --quiet;
+      done'

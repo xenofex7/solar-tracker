@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- The sync sidecar now runs at a fixed time (03:15, Europe/Zurich) instead of every 24 hours from container start, so a restart no longer drifts the sync into the middle of the day.
+- Docker: the `latest` tag is now published from version tags only. A push to `main` still builds the image as a check, but no longer moves `latest` - so a README or script commit cannot trigger a rollout.
 
 ## [2.6.0] - 2026-10-05
 ### Added
