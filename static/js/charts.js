@@ -28,6 +28,7 @@ function refreshChartTheme() {
 
 refreshChartTheme();
 Chart.defaults.font.family = '-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
+Chart.defaults.maintainAspectRatio = false;
 
 window.addEventListener('themechange', () => {
   refreshChartTheme();

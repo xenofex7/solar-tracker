@@ -71,35 +71,37 @@
       <label>{{ T.label_amount.replace('{currency}', currency) }} <input type="number" step="0.01" name="amount" required></label>
       <button type="submit">{{ T.btn_add_item }}</button>
     </form>
-    <table class="data" id="costs-table">
-      <thead><tr><th>{{ T.col_date }}</th><th>{{ T.col_label }}</th><th>{{ T.label_kind }}</th><th class="num">{{ T.col_amount }}</th><th class="action"></th></tr></thead>
-      <tbody>
-        {% for c in costs %}
-          <tr data-id="{{ c.id }}" data-date="{{ c.date or '' }}" data-label="{{ c.label }}" data-amount="{{ c.amount }}" data-kind="{{ c.kind }}">
-            <td>{{ (c.date | ddmmyyyy) if c.date else '-' }}</td>
-            <td>{{ c.label }}</td>
-            <td>{{ T.opt_operating if c.kind == 'operating' else T.opt_investment }}</td>
-            <td class="num">{{ fmt_money(c.amount) }} {{ currency }}</td>
-            <td class="action">
-              <button class="edit icon" data-id="{{ c.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
-              <button class="del icon" data-id="{{ c.id }}" data-label="{{ c.label }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-            </td>
+    <div class="table-wrap">
+      <table class="data" id="costs-table">
+        <thead><tr><th>{{ T.col_date }}</th><th>{{ T.col_label }}</th><th>{{ T.label_kind }}</th><th class="num">{{ T.col_amount }}</th><th class="action"></th></tr></thead>
+        <tbody>
+          {% for c in costs %}
+            <tr data-id="{{ c.id }}" data-date="{{ c.date or '' }}" data-label="{{ c.label }}" data-amount="{{ c.amount }}" data-kind="{{ c.kind }}">
+              <td>{{ (c.date | ddmmyyyy) if c.date else '-' }}</td>
+              <td>{{ c.label }}</td>
+              <td>{{ T.opt_operating if c.kind == 'operating' else T.opt_investment }}</td>
+              <td class="num">{{ fmt_money(c.amount) }} {{ currency }}</td>
+              <td class="action">
+                <button class="edit icon" data-id="{{ c.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+                <button class="del icon" data-id="{{ c.id }}" data-label="{{ c.label }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+              </td>
+            </tr>
+          {% endfor %}
+          <tr class="total">
+            <td></td>
+            <td colspan="2"><strong>{{ T.total_investment }}</strong></td>
+            <td class="num" id="cost-total"><strong>{{ fmt_money(total_invested) }} {{ currency }}</strong></td>
+            <td class="action"></td>
           </tr>
-        {% endfor %}
-        <tr class="total">
-          <td></td>
-          <td colspan="2"><strong>{{ T.total_investment }}</strong></td>
-          <td class="num" id="cost-total"><strong>{{ fmt_money(total_invested) }} {{ currency }}</strong></td>
-          <td class="action"></td>
-        </tr>
-        <tr class="total">
-          <td></td>
-          <td colspan="2"><strong>{{ T.total_operating }}</strong></td>
-          <td class="num" id="cost-total-operating"><strong>{{ fmt_money(total_operating) }} {{ currency }}</strong></td>
-          <td class="action"></td>
-        </tr>
-      </tbody>
-    </table>
+          <tr class="total">
+            <td></td>
+            <td colspan="2"><strong>{{ T.total_operating }}</strong></td>
+            <td class="num" id="cost-total-operating"><strong>{{ fmt_money(total_operating) }} {{ currency }}</strong></td>
+            <td class="action"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
   </div>
   <div class="subtab-panel" data-sub="plant-power">
@@ -124,62 +126,66 @@
 
   <div class="card">
     <h3>{{ T.section_grid_import }}</h3>
-    <table class="data" id="imports-table">
-      <thead><tr><th>{{ T.col_period }}</th><th class="num">kWh</th><th class="num">{{ T.col_costs }}</th><th class="num">{{ T.col_avg_price }}</th><th>{{ T.col_invoice }}</th><th class="action"></th></tr></thead>
-      <tbody>
-        {% for b in grid_imports %}
-          <tr data-id="{{ b.id }}" data-period-start="{{ b.period_start }}" data-period-end="{{ b.period_end }}" data-kwh="{{ b.kwh }}" data-amount="{{ b.amount }}" data-invoice="{{ b.invoice_no or '' }}">
-            <td>{{ b.period_start | ddmmyyyy }} - {{ b.period_end | ddmmyyyy }}</td>
-            <td class="num">{{ fmt_num(b.kwh) }} kWh</td>
-            <td class="num">{{ fmt_money(b.amount) }} {{ currency }}</td>
-            <td class="num">{{ fmt_money((b.amount / b.kwh) if b.kwh else 0, 3) }} {{ currency }}/kWh</td>
-            <td>{{ b.invoice_no or '-' }}</td>
-            <td class="action">
-              <button class="edit icon" data-id="{{ b.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
-              <button class="del icon" data-id="{{ b.id }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-            </td>
+    <div class="table-wrap">
+      <table class="data" id="imports-table">
+        <thead><tr><th>{{ T.col_period }}</th><th class="num">kWh</th><th class="num">{{ T.col_costs }}</th><th class="num">{{ T.col_avg_price }}</th><th>{{ T.col_invoice }}</th><th class="action"></th></tr></thead>
+        <tbody>
+          {% for b in grid_imports %}
+            <tr data-id="{{ b.id }}" data-period-start="{{ b.period_start }}" data-period-end="{{ b.period_end }}" data-kwh="{{ b.kwh }}" data-amount="{{ b.amount }}" data-invoice="{{ b.invoice_no or '' }}">
+              <td>{{ b.period_start | ddmmyyyy }} - {{ b.period_end | ddmmyyyy }}</td>
+              <td class="num">{{ fmt_num(b.kwh) }} kWh</td>
+              <td class="num">{{ fmt_money(b.amount) }} {{ currency }}</td>
+              <td class="num">{{ fmt_money((b.amount / b.kwh) if b.kwh else 0, 3) }} {{ currency }}/kWh</td>
+              <td>{{ b.invoice_no or '-' }}</td>
+              <td class="action">
+                <button class="edit icon" data-id="{{ b.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+                <button class="del icon" data-id="{{ b.id }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+              </td>
+            </tr>
+          {% endfor %}
+          <tr class="total">
+            <td><strong>{{ T.total }}</strong></td>
+            <td class="num"><strong>{{ fmt_num(grid_totals['import'].kwh) }} kWh</strong></td>
+            <td class="num"><strong>{{ fmt_money(grid_totals['import'].amount) }} {{ currency }}</strong></td>
+            <td class="num"><strong>{{ fmt_money(grid_totals['import'].avg_price, 3) }} {{ currency }}/kWh</strong></td>
+            <td></td>
+            <td class="action"></td>
           </tr>
-        {% endfor %}
-        <tr class="total">
-          <td><strong>{{ T.total }}</strong></td>
-          <td class="num"><strong>{{ fmt_num(grid_totals['import'].kwh) }} kWh</strong></td>
-          <td class="num"><strong>{{ fmt_money(grid_totals['import'].amount) }} {{ currency }}</strong></td>
-          <td class="num"><strong>{{ fmt_money(grid_totals['import'].avg_price, 3) }} {{ currency }}/kWh</strong></td>
-          <td></td>
-          <td class="action"></td>
-        </tr>
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="card">
     <h3>{{ T.section_grid_export }}</h3>
-    <table class="data" id="exports-table">
-      <thead><tr><th>{{ T.col_period }}</th><th class="num">kWh</th><th class="num">{{ T.col_credit }}</th><th class="num">{{ T.col_avg_price }}</th><th>{{ T.col_invoice }}</th><th class="action"></th></tr></thead>
-      <tbody>
-        {% for b in grid_exports %}
-          <tr data-id="{{ b.id }}" data-period-start="{{ b.period_start }}" data-period-end="{{ b.period_end }}" data-kwh="{{ b.kwh }}" data-amount="{{ b.amount }}" data-invoice="{{ b.invoice_no or '' }}">
-            <td>{{ b.period_start | ddmmyyyy }} - {{ b.period_end | ddmmyyyy }}</td>
-            <td class="num">{{ fmt_num(b.kwh) }} kWh</td>
-            <td class="num">{{ fmt_money(b.amount) }} {{ currency }}</td>
-            <td class="num">{{ fmt_money((b.amount / b.kwh) if b.kwh else 0, 3) }} {{ currency }}/kWh</td>
-            <td>{{ b.invoice_no or '-' }}</td>
-            <td class="action">
-              <button class="edit icon" data-id="{{ b.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
-              <button class="del icon" data-id="{{ b.id }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-            </td>
+    <div class="table-wrap">
+      <table class="data" id="exports-table">
+        <thead><tr><th>{{ T.col_period }}</th><th class="num">kWh</th><th class="num">{{ T.col_credit }}</th><th class="num">{{ T.col_avg_price }}</th><th>{{ T.col_invoice }}</th><th class="action"></th></tr></thead>
+        <tbody>
+          {% for b in grid_exports %}
+            <tr data-id="{{ b.id }}" data-period-start="{{ b.period_start }}" data-period-end="{{ b.period_end }}" data-kwh="{{ b.kwh }}" data-amount="{{ b.amount }}" data-invoice="{{ b.invoice_no or '' }}">
+              <td>{{ b.period_start | ddmmyyyy }} - {{ b.period_end | ddmmyyyy }}</td>
+              <td class="num">{{ fmt_num(b.kwh) }} kWh</td>
+              <td class="num">{{ fmt_money(b.amount) }} {{ currency }}</td>
+              <td class="num">{{ fmt_money((b.amount / b.kwh) if b.kwh else 0, 3) }} {{ currency }}/kWh</td>
+              <td>{{ b.invoice_no or '-' }}</td>
+              <td class="action">
+                <button class="edit icon" data-id="{{ b.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+                <button class="del icon" data-id="{{ b.id }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+              </td>
+            </tr>
+          {% endfor %}
+          <tr class="total">
+            <td><strong>{{ T.total }}</strong></td>
+            <td class="num"><strong>{{ fmt_num(grid_totals['export'].kwh) }} kWh</strong></td>
+            <td class="num"><strong>{{ fmt_money(grid_totals['export'].amount) }} {{ currency }}</strong></td>
+            <td class="num"><strong>{{ fmt_money(grid_totals['export'].avg_price, 3) }} {{ currency }}/kWh</strong></td>
+            <td></td>
+            <td class="action"></td>
           </tr>
-        {% endfor %}
-        <tr class="total">
-          <td><strong>{{ T.total }}</strong></td>
-          <td class="num"><strong>{{ fmt_num(grid_totals['export'].kwh) }} kWh</strong></td>
-          <td class="num"><strong>{{ fmt_money(grid_totals['export'].amount) }} {{ currency }}</strong></td>
-          <td class="num"><strong>{{ fmt_money(grid_totals['export'].avg_price, 3) }} {{ currency }}/kWh</strong></td>
-          <td></td>
-          <td class="action"></td>
-        </tr>
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   </div>
   </div>
 </section>
@@ -217,32 +223,34 @@
     </form>
     <div id="entry-status" class="muted"></div>
     <h3 style="margin-top:18px;">{{ T.section_entries }}</h3>
-    <table class="data entries-table" id="entries-table" data-page-size="{{ entries_page_size }}">
-      <thead><tr><th>{{ T.col_date }}</th><th class="num">kWh</th><th>{{ T.col_source }}</th><th class="action"></th></tr></thead>
-      <tbody>
-        {% set ns = namespace(prev_month='', month_total=0.0, month_rows=[]) %}
-        {% for r in recent %}
-          {% set ym = r.date[:7] %}
-          {% if ym != ns.prev_month %}
-            <tr class="month-header" data-month="{{ ym }}">
-              <td class="month-label">{{ T.months_long[r.date[5:7] | int - 1] }} {{ r.date[:4] }}</td>
-              <td class="num month-total">{{ fmt_num(month_totals[ym]) }} kWh</td>
-              <td colspan="2"></td>
+    <div class="table-wrap">
+      <table class="data entries-table" id="entries-table" data-page-size="{{ entries_page_size }}">
+        <thead><tr><th>{{ T.col_date }}</th><th class="num">kWh</th><th>{{ T.col_source }}</th><th class="action"></th></tr></thead>
+        <tbody>
+          {% set ns = namespace(prev_month='', month_total=0.0, month_rows=[]) %}
+          {% for r in recent %}
+            {% set ym = r.date[:7] %}
+            {% if ym != ns.prev_month %}
+              <tr class="month-header" data-month="{{ ym }}">
+                <td class="month-label">{{ T.months_long[r.date[5:7] | int - 1] }} {{ r.date[:4] }}</td>
+                <td class="num month-total">{{ fmt_num(month_totals[ym]) }} kWh</td>
+                <td colspan="2"></td>
+              </tr>
+              {% set ns.prev_month = ym %}
+            {% endif %}
+            <tr data-date="{{ r.date }}" data-kwh="{{ r.kwh }}" data-month="{{ ym }}">
+              <td>{{ r.date | ddmmyyyy }}</td>
+              <td class="num">{{ fmt_num(r.kwh) }} kWh</td>
+              <td>{{ r.source }}</td>
+              <td class="action">
+                <button class="edit icon" data-date="{{ r.date }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+                <button class="del icon" data-date="{{ r.date }}" data-display="{{ r.date | ddmmyyyy }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+              </td>
             </tr>
-            {% set ns.prev_month = ym %}
-          {% endif %}
-          <tr data-date="{{ r.date }}" data-kwh="{{ r.kwh }}" data-month="{{ ym }}">
-            <td>{{ r.date | ddmmyyyy }}</td>
-            <td class="num">{{ fmt_num(r.kwh) }} kWh</td>
-            <td>{{ r.source }}</td>
-            <td class="action">
-              <button class="edit icon" data-date="{{ r.date }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
-              <button class="del icon" data-date="{{ r.date }}" data-display="{{ r.date | ddmmyyyy }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     <div class="table-pager" id="entries-pager">
       <div class="table-pager-size">
         <span class="muted small">{{ T.label_per_page }}</span>
@@ -357,22 +365,24 @@
       <label>{{ T.col_password_confirm }} <input type="password" name="password_confirm" autocomplete="new-password" required minlength="1" placeholder="{{ T.placeholder_password_confirm }}"></label>
       <button type="submit">{{ T.btn_add_user }}</button>
     </form>
-    <table class="data" id="users-table" data-self-id="{{ current_user.id if current_user else '' }}">
-      <thead><tr><th>{{ T.col_username }}</th><th>{{ T.col_role }}</th><th>{{ T.col_password }}</th><th class="action"></th></tr></thead>
-      <tbody>
-        {% for u in users %}
-          <tr data-id="{{ u.id }}" data-username="{{ u.username }}" data-role="{{ u.role }}">
-            <td>{{ u.username }}{% if current_user and current_user.id == u.id %} <span class="role-badge">{{ T.label_you }}</span>{% endif %}</td>
-            <td>{{ T['role_' + u.role] }}</td>
-            <td>{% if u.has_password %}{{ T.label_password_set }}{% else %}<span class="muted">{{ T.label_password_none }}</span>{% endif %}</td>
-            <td class="action">
-              <button class="edit icon" data-id="{{ u.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
-              <button class="del icon" data-id="{{ u.id }}" data-username="{{ u.username }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-wrap">
+      <table class="data" id="users-table" data-self-id="{{ current_user.id if current_user else '' }}">
+        <thead><tr><th>{{ T.col_username }}</th><th>{{ T.col_role }}</th><th>{{ T.col_password }}</th><th class="action"></th></tr></thead>
+        <tbody>
+          {% for u in users %}
+            <tr data-id="{{ u.id }}" data-username="{{ u.username }}" data-role="{{ u.role }}">
+              <td>{{ u.username }}{% if current_user and current_user.id == u.id %} <span class="role-badge">{{ T.label_you }}</span>{% endif %}</td>
+              <td>{{ T['role_' + u.role] }}</td>
+              <td>{% if u.has_password %}{{ T.label_password_set }}{% else %}<span class="muted">{{ T.label_password_none }}</span>{% endif %}</td>
+              <td class="action">
+                <button class="edit icon" data-id="{{ u.id }}" aria-label="{{ T.btn_edit }}" title="{{ T.btn_edit }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+                <button class="del icon" data-id="{{ u.id }}" data-username="{{ u.username }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
   </div>
   <div class="subtab-panel" data-sub="access-tokens">
@@ -395,22 +405,24 @@
         <button type="button" id="token-copy">{{ T.btn_copy }}</button>
       </div>
     </div>
-    <table class="data" id="tokens-table">
-      <thead><tr><th>{{ T.col_token_name }}</th><th>{{ T.col_role }}</th><th>{{ T.col_token_created }}</th><th>{{ T.col_token_last_used }}</th><th class="action"></th></tr></thead>
-      <tbody>
-        {% for t in api_tokens %}
-          <tr data-id="{{ t.id }}" data-name="{{ t.name }}">
-            <td>{{ t.name }}</td>
-            <td>{{ T['role_' + t.role] }}</td>
-            <td>{{ (t.created_at[:10]) | ddmmyyyy if t.created_at else '-' }}</td>
-            <td>{{ (t.last_used_at[:10]) | ddmmyyyy if t.last_used_at else '-' }}</td>
-            <td class="action">
-              <button class="del icon" data-id="{{ t.id }}" data-name="{{ t.name }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-wrap">
+      <table class="data" id="tokens-table">
+        <thead><tr><th>{{ T.col_token_name }}</th><th>{{ T.col_role }}</th><th>{{ T.col_token_created }}</th><th>{{ T.col_token_last_used }}</th><th class="action"></th></tr></thead>
+        <tbody>
+          {% for t in api_tokens %}
+            <tr data-id="{{ t.id }}" data-name="{{ t.name }}">
+              <td>{{ t.name }}</td>
+              <td>{{ T['role_' + t.role] }}</td>
+              <td>{{ (t.created_at[:10]) | ddmmyyyy if t.created_at else '-' }}</td>
+              <td>{{ (t.last_used_at[:10]) | ddmmyyyy if t.last_used_at else '-' }}</td>
+              <td class="action">
+                <button class="del icon" data-id="{{ t.id }}" data-name="{{ t.name }}" aria-label="{{ T.btn_delete }}" title="{{ T.btn_delete }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
   </div>
 </section>

@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Phone layout: the app had no breakpoint below 900px for its content, which showed. Charts collapsed to a 4px plot area on a 375px screen (the payback chart was a flat line), the cost and grid-bill tables pushed the whole page 130px sideways, and KPI info popovers rendered 93 percent off-screen. Charts now get a fixed height instead of a 2:1 ratio, tables scroll inside their own container, popovers dock to the bottom of the screen, KPI tiles sit in two columns, and controls reach a 44px touch target. The overview went from 3'731px of scrolling to 2'523px, with the first chart at 1'448px instead of 2'997px.
+
 ### Changed
 - The sync sidecar now runs at a fixed time (03:15, Europe/Zurich) instead of every 24 hours from container start, so a restart no longer drifts the sync into the middle of the day.
 - Docker: the `latest` tag is now published from version tags only. A push to `main` still builds the image as a check, but no longer moves `latest` - so a README or script commit cannot trigger a rollout.
