@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Settings > Sync now shows how the last sync run ended: the time of the last successful sync and, when the most recent run failed, a warning with its time and error message. Both paths record it - the `scripts/sync_ha.py` / `scripts/sync_solarweb.py` CLIs the nightly sidecar calls, and the sync endpoints behind the UI buttons. A locked `solar.db` is recorded as a failed run instead of ending in a traceback. Until now a failing sync was only visible in `docker logs solar-tracker-sync`: from 07.10. to 16.10.2026 the nightly run hit an invalid Home Assistant token every night, and the dashboard simply showed days without data.
+
 ### Changed
 - Docker: a push to `main` now only builds the image as a check and no longer publishes it. The `main` tag is gone; images come from `v*` tags only. Build the current branch locally with `docker compose build` if you need it.
 

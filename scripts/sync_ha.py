@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import sqlite3
 import sys
 from datetime import date, timedelta
 
@@ -86,20 +87,31 @@ def _timezone() -> str:
     return setting.strip() or ha_client.DEFAULT_TZ
 
 
+def _fail(message: str) -> int:
+    print(f"error: {message}", file=sys.stderr)
+    try:
+        db.record_sync_result(False, message)
+    except sqlite3.Error as e:
+        print(f"error: could not record sync status: {e}", file=sys.stderr)
+    return 2
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv if argv is not None else sys.argv[1:])
     start, end = _resolve_range(args)
 
-    db.init_db()
-    tz = _timezone()
+    try:
+        db.init_db()
+        tz = _timezone()
+    except sqlite3.OperationalError as e:
+        return _fail(f"database unavailable: {e}")
     if not args.quiet:
         print(f"Home Assistant sync: {start} .. {end} (tz={tz})")
 
     try:
         daily = ha_client.fetch_daily(start, end, tz=tz)
     except (ha_client.HAClientError, OSError, WebSocketException) as e:
-        print(f"error: {e}", file=sys.stderr)
-        return 2
+        return _fail(str(e))
 
     if not daily:
         if not args.quiet:
@@ -116,7 +128,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     items = [(d, round(kwh, 3)) for d, kwh in daily.items()]
-    inserted, updated = db.bulk_upsert_production(items, source="home_assistant")
+    try:
+        inserted, updated = db.bulk_upsert_production(items, source="home_assistant")
+        db.record_sync_result(True)
+    except sqlite3.OperationalError as e:
+        return _fail(f"database unavailable: {e}")
     print(f"done: {len(items)} days (inserted={inserted}, updated={updated})")
     return 0
 

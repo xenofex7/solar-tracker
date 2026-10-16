@@ -1,4 +1,4 @@
-"""Tests for the plant_costs schema migration against throwaway SQLite files."""
+"""Tests for the SQLite layer against throwaway SQLite files."""
 
 from __future__ import annotations
 
@@ -73,3 +73,22 @@ def test_update_cost_switches_kind(db_path):
     assert _db.update_cost(cost_id, "Zaehlermiete", 60, "2025-02-01", "operating") is True
     assert _db.total_invested() == 0.0
     assert _db.total_operating() == 60
+
+
+def test_record_sync_result_keeps_last_success(db_path):
+    import db as _db
+    _db.init_db()
+    _db.record_sync_result(False, "HA auth failed")
+    assert _db.get_setting("last_sync_status") == "error"
+    assert _db.get_setting("last_sync_error") == "HA auth failed"
+    assert _db.get_setting("last_sync_ok_at") is None
+
+    _db.record_sync_result(True)
+    assert _db.get_setting("last_sync_status") == "ok"
+    assert _db.get_setting("last_sync_error") == ""
+    success_at = _db.get_setting("last_sync_ok_at")
+    assert success_at
+
+    _db.record_sync_result(False, "HA auth failed again")
+    assert _db.get_setting("last_sync_status") == "error"
+    assert _db.get_setting("last_sync_ok_at") == success_at

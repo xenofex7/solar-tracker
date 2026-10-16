@@ -246,6 +246,25 @@ def get_setting(key: str, default=None):
         return row["value"] if row else default
 
 
+def record_sync_result(ok: bool, error: str | None = None) -> None:
+    now = datetime.utcnow().isoformat(timespec="seconds")
+    rows = [
+        ("last_sync_at", now),
+        ("last_sync_status", "ok" if ok else "error"),
+        ("last_sync_error", "" if ok else (error or "")[:500]),
+    ]
+    if ok:
+        rows.append(("last_sync_ok_at", now))
+    with connect() as conn:
+        conn.executemany(
+            """
+            INSERT INTO settings (key, value) VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+            """,
+            rows,
+        )
+
+
 def add_cost(label: str, amount: float, date: str | None = None, kind: str = "investment") -> int:
     with connect() as conn:
         cur = conn.execute(

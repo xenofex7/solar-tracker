@@ -4,8 +4,8 @@ import logging
 import os
 import re
 import time
-from datetime import date, datetime, timedelta
-from zoneinfo import available_timezones
+from datetime import UTC, date, datetime, timedelta
+from zoneinfo import ZoneInfo, available_timezones
 
 from dotenv import load_dotenv
 from flask import (
@@ -158,6 +158,17 @@ def _fmt_ddmmyyyy(value):
     if len(s) >= 10 and s[4] == "-" and s[7] == "-":
         return f"{s[8:10]}.{s[5:7]}.{s[0:4]}"
     return s
+
+
+@app.template_filter("datetime_local")
+def _fmt_datetime_local(value):
+    if not value:
+        return ""
+    try:
+        stamp = datetime.fromisoformat(str(value)).replace(tzinfo=UTC)
+    except ValueError:
+        return str(value)
+    return stamp.astimezone(ZoneInfo(_timezone())).strftime("%d.%m.%Y %H:%M")
 
 
 def _kwp() -> float:
@@ -479,6 +490,10 @@ def settings_page():
         sync_source=_sync_source(),
         entries_page_size=_entries_page_size(),
         auto_sync_on_open=db.get_setting("auto_sync_on_open", "0") == "1",
+        last_sync_at=db.get_setting("last_sync_at"),
+        last_sync_ok_at=db.get_setting("last_sync_ok_at"),
+        last_sync_status=db.get_setting("last_sync_status"),
+        last_sync_error=db.get_setting("last_sync_error"),
         users=db.list_users(),
         api_tokens=db.list_api_tokens(),
     )
@@ -722,8 +737,10 @@ def api_sync_ha():
     try:
         daily = fetch_daily(start, end, tz=_timezone())
     except HAClientError as e:
+        db.record_sync_result(False, str(e))
         return jsonify({"error": str(e)}), 502
     except Exception as e:
+        db.record_sync_result(False, f"Unerwarteter Fehler: {e}")
         return jsonify({"error": f"Unerwarteter Fehler: {e}"}), 500
     t_fetch = time.perf_counter() - t0
 
@@ -731,6 +748,7 @@ def api_sync_ha():
     items = [(d, round(kwh, 3)) for d, kwh in daily.items()]
     inserted, updated = db.bulk_upsert_production(items, source="home_assistant")
     t_write = time.perf_counter() - t1
+    db.record_sync_result(True)
 
     app.logger.info(
         "HA sync %s..%s: %d days (ins=%d, upd=%d) - fetch %.2fs, write %.2fs",
@@ -759,8 +777,10 @@ def api_sync_solarweb():
     try:
         daily = solarweb_fetch_daily(start, end, tz=_timezone())
     except SolarwebClientError as e:
+        db.record_sync_result(False, str(e))
         return jsonify({"error": str(e)}), 502
     except Exception as e:
+        db.record_sync_result(False, f"Unerwarteter Fehler: {e}")
         return jsonify({"error": f"Unerwarteter Fehler: {e}"}), 500
     t_fetch = time.perf_counter() - t0
 
@@ -768,6 +788,7 @@ def api_sync_solarweb():
     items = [(d, round(kwh, 3)) for d, kwh in daily.items()]
     inserted, updated = db.bulk_upsert_production(items, source="solarweb")
     t_write = time.perf_counter() - t1
+    db.record_sync_result(True)
 
     app.logger.info(
         "Solar.web sync %s..%s: %d days (ins=%d, upd=%d) - fetch %.2fs, write %.2fs",

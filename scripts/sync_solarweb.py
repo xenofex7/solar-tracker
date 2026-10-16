@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import sqlite3
 import sys
 from datetime import date, timedelta
 
@@ -82,6 +83,15 @@ def _resolve_range(args: argparse.Namespace) -> tuple[str, str]:
     return start.isoformat(), end.isoformat()
 
 
+def _fail(message: str) -> int:
+    print(f"error: {message}", file=sys.stderr)
+    try:
+        db.record_sync_result(False, message)
+    except sqlite3.Error as e:
+        print(f"error: could not record sync status: {e}", file=sys.stderr)
+    return 2
+
+
 def _list_systems() -> int:
     try:
         systems = solarweb_client.list_pv_systems()
@@ -107,14 +117,17 @@ def main(argv: list[str] | None = None) -> int:
         return _list_systems()
 
     start, end = _resolve_range(args)
+    try:
+        db.init_db()
+    except sqlite3.OperationalError as e:
+        return _fail(f"database unavailable: {e}")
     if not args.quiet:
         print(f"Solar.web sync: {start} .. {end} (tz={args.tz})")
 
     try:
         daily = solarweb_client.fetch_daily(start, end, tz=args.tz)
     except solarweb_client.SolarwebClientError as e:
-        print(f"error: {e}", file=sys.stderr)
-        return 2
+        return _fail(str(e))
 
     if not daily:
         if not args.quiet:
@@ -130,9 +143,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"dry-run: would upsert {len(daily)} days")
         return 0
 
-    db.init_db()
     items = [(d, round(kwh, 3)) for d, kwh in daily.items()]
-    inserted, updated = db.bulk_upsert_production(items, source="solarweb")
+    try:
+        inserted, updated = db.bulk_upsert_production(items, source="solarweb")
+        db.record_sync_result(True)
+    except sqlite3.OperationalError as e:
+        return _fail(f"database unavailable: {e}")
     print(f"done: {len(items)} days (inserted={inserted}, updated={updated})")
     return 0
 

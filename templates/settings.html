@@ -277,6 +277,15 @@
   </nav>
   <div class="subtab-panel active" data-sub="sync-general">
   <div class="card">
+    {% if last_sync_status == 'error' %}
+    <p class="warn-banner" role="alert">
+      {{ T.warn_last_sync_failed }} ({{ last_sync_at | datetime_local }}){% if last_sync_error %}: {{ last_sync_error }}{% endif %}
+    </p>
+    {% endif %}
+    <p class="muted small">
+      {{ T.label_last_sync_ok }}:
+      <strong>{% if last_sync_ok_at %}{{ last_sync_ok_at | datetime_local }}{% else %}{{ T.label_sync_never }}{% endif %}</strong>
+    </p>
     <form id="general-sync-form" class="stacked-form">
       <label class="toggle-row">
         <span class="toggle-label">
