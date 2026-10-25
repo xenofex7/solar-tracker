@@ -294,7 +294,7 @@ def add_grid_billing(
     period_end: str,
     kwh: float,
     amount: float,
-    invoice_no: str | None = None,
+    invoice_no: str | int | None = None,
 ) -> dict:
     """Add or upsert a grid billing entry from an electricity invoice.
 
@@ -317,7 +317,7 @@ def add_grid_billing(
         "amount": amount,
     }
     if invoice_no is not None:
-        body["invoice_no"] = invoice_no
+        body["invoice_no"] = str(invoice_no)
     return client.post("/api/grid", body)
 
 
@@ -329,7 +329,7 @@ def update_grid_billing(
     period_end: str,
     kwh: float,
     amount: float,
-    invoice_no: str | None = None,
+    invoice_no: str | int | None = None,
 ) -> dict:
     """Update an existing grid billing row by id. (kind is not editable; to
     change kind, delete and re-add.)"""
@@ -340,7 +340,7 @@ def update_grid_billing(
         "amount": amount,
     }
     if invoice_no is not None:
-        body["invoice_no"] = invoice_no
+        body["invoice_no"] = str(invoice_no)
     return client.put(f"/api/grid/{id}", body)
 
 
