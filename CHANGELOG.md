@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- MCP server: filing a grid bill no longer fails when the client sends the invoice number as a number instead of a string. `add_grid_billing` and `update_grid_billing` accept both and always store it as text, so an invoice number like 4824534 ends up on the row instead of being rejected by schema validation.
 
 ## [2.6.2] - 2026-10-16
 ### Added
