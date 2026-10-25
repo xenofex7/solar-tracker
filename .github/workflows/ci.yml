@@ -20,6 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.lock.txt
+          pip install -e ./mcp_server
           pip install ruff pytest
 
       - name: Lint
