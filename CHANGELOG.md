@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.6.4] - 2026-10-25
 ### Fixed
 - The MCP server now pins the Python MCP SDK below 2.x. `mcp>=1.2.0` resolved to 2.3.0, where `mcp.server.fastmcp` no longer exists (FastMCP was renamed to MCPServer), so a fresh `pip install -e mcp_server` produced a server that died on import. Existing installs on an SDK 1.x were never affected.
 
@@ -408,7 +410,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.6.3...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.6.4...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -452,3 +454,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.6.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.1
 [2.6.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.2
 [2.6.3]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.3
+[2.6.4]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.4
