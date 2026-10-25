@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.6.3] - 2026-10-25
 ### Fixed
 - MCP server: filing a grid bill no longer fails when the client sends the invoice number as a number instead of a string. `add_grid_billing` and `update_grid_billing` accept both and always store it as text, so an invoice number like 4824534 ends up on the row instead of being rejected by schema validation.
 
@@ -401,7 +403,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.6.2...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.6.3...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -444,3 +446,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.6.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.0
 [2.6.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.1
 [2.6.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.2
+[2.6.3]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.3
