@@ -72,6 +72,13 @@ if [[ -n "$(git status --porcelain)" ]]; then
   exit 1
 fi
 
+if command -v gitleaks > /dev/null; then
+  echo "Scanning git history for secrets..."
+  gitleaks git --redact --no-banner --verbose .
+else
+  echo "WARN: gitleaks not installed (brew install gitleaks) - skipping secret scan" >&2
+fi
+
 if git rev-parse "v${new}" >/dev/null 2>&1; then
   echo "tag v${new} already exists" >&2
   exit 1
