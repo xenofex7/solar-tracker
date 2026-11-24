@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.6.5] - 2026-11-24
 ### Security
 - Update certifi to 2026.11.20, which drops the emSign root CAs with compromised intermediate keys, and urllib3 to 2.8.0, Werkzeug to 3.1.9 and idna to 3.20 to close the open Dependabot advisories.
 
@@ -413,7 +414,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.6.4...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.6.5...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -458,3 +459,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.6.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.2
 [2.6.3]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.3
 [2.6.4]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.4
+[2.6.5]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.5
