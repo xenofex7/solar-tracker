@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+- Update certifi to 2026.11.20, which drops the emSign root CAs with compromised intermediate keys, and urllib3 to 2.8.0, Werkzeug to 3.1.9 and idna to 3.20 to close the open Dependabot advisories.
+
 ## [2.6.4] - 2026-10-25
 ### Fixed
 - The MCP server now pins the Python MCP SDK below 2.x. `mcp>=1.2.0` resolved to 2.3.0, where `mcp.server.fastmcp` no longer exists (FastMCP was renamed to MCPServer), so a fresh `pip install -e mcp_server` produced a server that died on import. Existing installs on an SDK 1.x were never affected.
