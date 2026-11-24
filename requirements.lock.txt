@@ -13,7 +13,7 @@ charset-normalizer==3.4.7
 click==8.3.2
 distro==1.9.0
 gunicorn==25.3.0
-idna==3.11
+idna==3.15
 itsdangerous==2.2.0
 monotonic==1.6
 packaging==26.1
