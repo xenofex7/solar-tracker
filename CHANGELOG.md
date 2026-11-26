@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Routine dependency updates: requests 2.34.2, click 8.5.1, charset-normalizer 3.5.3, packaging 26.3, python-dotenv 1.2.4, MarkupSafe 3.0.4 and websocket-client 1.9.2. Dependency updates are now proposed by Renovate through the shared `xenofex7/renovate-config` preset.
 
 ## [2.6.5] - 2026-11-24
 ### Security
