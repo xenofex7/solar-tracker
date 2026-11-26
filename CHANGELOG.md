@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.6.6] - 2026-11-26
 ### Changed
 - Routine dependency updates: requests 2.34.2, click 8.5.1, charset-normalizer 3.5.3, packaging 26.3, python-dotenv 1.2.4, MarkupSafe 3.0.4 and websocket-client 1.9.2. Dependency updates are now proposed by Renovate through the shared `xenofex7/renovate-config` preset.
 
@@ -416,7 +418,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dockerfile and docker compose setup, gunicorn runtime.
 - GitHub Actions workflow that publishes multi-arch images to GHCR.
 
-[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.6.5...HEAD
+[Unreleased]: https://github.com/xenofex7/solar-tracker/compare/v2.6.6...HEAD
 [1.0.0]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.0
 [1.0.1]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.1
 [1.0.2]: https://github.com/xenofex7/solar-tracker/releases/tag/v1.0.2
@@ -462,3 +464,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.6.3]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.3
 [2.6.4]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.4
 [2.6.5]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.5
+[2.6.6]: https://github.com/xenofex7/solar-tracker/releases/tag/v2.6.6
